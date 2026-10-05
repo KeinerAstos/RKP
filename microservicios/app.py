@@ -38,13 +38,6 @@ async def worker_topologias() -> None:
                 topologias_service.materializar_aleatoria
             )
 
-            print(
-                "[TOPOLOGIAS AUTO] "
-                f"Prefijo: {resultado['prefijo']} | "
-                f"Archivo: {resultado['seleccionada']} | "
-                f"Cache: {resultado['desde_cache']}"
-            )
-
         except Exception as exc:
             print(f"[TOPOLOGIAS AUTO] ERROR: {exc}")
 

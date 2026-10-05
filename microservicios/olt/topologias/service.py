@@ -1,5 +1,4 @@
 """Acceso bajo demanda a topologias OLT por SSH/SFTP."""
-
 import random
 import hashlib
 import json
@@ -10,6 +9,9 @@ import shutil
 import stat
 import unicodedata
 import uuid
+import ctypes
+import time
+from ctypes import wintypes
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
@@ -17,9 +19,14 @@ from threading import RLock
 from typing import Iterator
 
 import paramiko
+import pythoncom
+import win32com.client
+import win32gui
+import win32ui
+
+from PIL import Image, ImageChops
 
 from microservicios.config import settings
-
 
 CATEGORIAS = {
     "huawei": "01 - OLT Huawei Topologia",
@@ -34,58 +41,62 @@ PREFIJOS_CATEGORIA = {
     "NAC": "nokia",
     "OH": "onnet",
 }
-EXTENSIONES = {".vsd", ".vsdx", ".jpg", ".jpeg", ".png", ".pdf", ".xlsx", ".docx"}
+EXTENSIONES = {
+    ".vsd",
+    ".vsdx",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".pdf",
+    ".xlsx",
+    ".docx",
+}
 IMAGENES = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}
 VISIO = {".vsd", ".vsdx"}
+ANCHO_RENDER = 3840
+ALTO_RENDER = 2160
+MARGEN_RENDER = 30
 CACHEABLES = VISIO | set(IMAGENES)
 TIPOS_ARCHIVO = {**IMAGENES, ".vsd": "application/vnd.visio", ".vsdx": "application/vnd.ms-visio.drawing"}
 PATRON_CACHE = re.compile(r"[0-9a-f]{64}\.(?:vsd|vsdx|jpg|jpeg|png)")
 _INDICE_LOCK = RLock()
 _PROYECTO = Path(__file__).resolve().parents[3]
 
-
 class TopologiasError(Exception):
-    def __init__(self, mensaje: str, estado: int = 500):
+
+    def __init__(self, mensaje: str, estado: int=500):
         self.mensaje = mensaje
         self.estado = estado
         super().__init__(mensaje)
 
-
 def _normalizar(texto: str) -> str:
-    return "".join(
-        caracter for caracter in unicodedata.normalize("NFKD", texto.casefold())
-        if not unicodedata.combining(caracter)
-    )
-
+    return "".join((caracter for caracter in unicodedata.normalize("NFKD", texto.casefold()) if not unicodedata.combining(caracter)))
 
 def detectar_categoria_por_prefijo(texto: str) -> str | None:
     normalizado = _normalizar(texto).upper().strip()
-    primero = re.split(r"[-\s_/]", normalizado, maxsplit=1)[0]
+    primero = re.split("[-\\s_/]", normalizado, maxsplit=1)[0]
     if primero in PREFIJOS_CATEGORIA:
         return PREFIJOS_CATEGORIA[primero]
-    prefijos = "|".join(re.escape(prefijo) for prefijo in PREFIJOS_CATEGORIA)
-    coincidencia = re.search(rf"(?<![A-Z0-9])({prefijos})-", normalizado)
+    prefijos = "|".join((re.escape(prefijo) for prefijo in PREFIJOS_CATEGORIA))
+    coincidencia = re.search(f"(?<![A-Z0-9])({prefijos})-", normalizado)
     if coincidencia:
         return PREFIJOS_CATEGORIA[coincidencia.group(1)]
     return None
-
 
 def _categoria(categoria: str) -> str:
     if categoria not in CATEGORIAS:
         raise TopologiasError("Categoria invalida", 400)
     return CATEGORIAS[categoria]
 
-
 def _ruta_relativa(ruta: str) -> str:
-    if not ruta or "\\" in ruta or "\x00" in ruta:
+    if not ruta or "\\\\" in ruta or "\x00" in ruta:
         raise TopologiasError("Ruta invalida", 400)
     partes = PurePosixPath(ruta)
-    if partes.is_absolute() or any(p in {".", "..", ""} for p in ruta.split("/")):
+    if partes.is_absolute() or any((p in {".", "..", ""} for p in ruta.split("/"))):
         raise TopologiasError("Ruta invalida", 400)
-    if any(p.startswith(".") for p in partes.parts):
+    if any((p.startswith(".") for p in partes.parts)):
         raise TopologiasError("Ruta invalida", 400)
     return str(partes)
-
 
 @contextmanager
 def conexion() -> Iterator[tuple[paramiko.SSHClient, paramiko.SFTPClient]]:
@@ -95,27 +106,16 @@ def conexion() -> Iterator[tuple[paramiko.SSHClient, paramiko.SFTPClient]]:
     ssh.load_system_host_keys()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(
-            hostname=settings.topologias_ssh_host,
-            port=settings.topologias_ssh_port,
-            username=settings.topologias_ssh_user,
-            password=settings.topologias_ssh_password,
-            timeout=settings.topologias_ssh_timeout_seconds,
-            auth_timeout=settings.topologias_ssh_timeout_seconds,
-            banner_timeout=settings.topologias_ssh_timeout_seconds,
-            look_for_keys=False,
-            allow_agent=False,
-        )
+        ssh.connect(hostname=settings.topologias_ssh_host, port=settings.topologias_ssh_port, username=settings.topologias_ssh_user, password=settings.topologias_ssh_password, timeout=settings.topologias_ssh_timeout_seconds, auth_timeout=settings.topologias_ssh_timeout_seconds, banner_timeout=settings.topologias_ssh_timeout_seconds, look_for_keys=False, allow_agent=False)
         sftp = ssh.open_sftp()
     except (OSError, EOFError, paramiko.SSHException) as exc:
         ssh.close()
         raise TopologiasError("No se pudo conectar al servidor de topologias", 503) from exc
     try:
-        yield ssh, sftp
+        yield (ssh, sftp)
     finally:
         sftp.close()
         ssh.close()
-
 
 def _directorio_categoria(sftp: paramiko.SFTPClient, categoria: str) -> str:
     carpeta = _categoria(categoria)
@@ -129,7 +129,6 @@ def _directorio_categoria(sftp: paramiko.SFTPClient, categoria: str) -> str:
     except OSError as exc:
         raise TopologiasError("Ruta de topologias no disponible", 503) from exc
     return destino
-
 
 def archivo_validado(sftp: paramiko.SFTPClient, categoria: str, ruta: str):
     raiz = _directorio_categoria(sftp, categoria)
@@ -149,17 +148,20 @@ def archivo_validado(sftp: paramiko.SFTPClient, categoria: str, ruta: str):
         raise TopologiasError("Archivo no encontrado", 404) from exc
     if not stat.S_ISREG(datos.st_mode):
         raise TopologiasError("Archivo no encontrado", 404)
-    return destino, datos, extension
-
+    return (destino, datos, extension)
 
 def estado() -> dict:
     limpiar_cache_expirada()
-    data = {"ssh": False, "ruta": False, "data_dir": False,
-            "temporales_dir": False, "imagenes_dir": False}
+    data = {
+        "ssh": False,
+        "ruta": False,
+        "data_dir": False,
+        "temporales_dir": False,
+        "imagenes_dir": False,
+    }
     try:
         raiz, imagenes, temporales, _ = _directorios_locales()
-        data.update(data_dir=raiz.is_dir(), temporales_dir=temporales.is_dir(),
-                    imagenes_dir=imagenes.is_dir())
+        data.update(data_dir=raiz.is_dir(), temporales_dir=temporales.is_dir(), imagenes_dir=imagenes.is_dir())
     except TopologiasError:
         pass
     try:
@@ -174,11 +176,7 @@ def estado() -> dict:
         pass
     return data
 
-
-def _buscar_en_sftp(
-    sftp: paramiko.SFTPClient, categoria: str, texto: str, limite: int,
-    incluir_categoria: bool = False,
-) -> list[dict]:
+def _buscar_en_sftp(sftp: paramiko.SFTPClient, categoria: str, texto: str, limite: int, incluir_categoria: bool=False) -> list[dict]:
     consulta = _normalizar(texto)
     resultados: list[dict] = []
     try:
@@ -211,14 +209,12 @@ def _buscar_en_sftp(
         raise TopologiasError("No se pudo consultar el servidor de topologias", 503) from exc
     return resultados
 
-
 def buscar(categoria: str, texto: str, limite: int) -> dict:
     _categoria(categoria)
     limpiar_cache_expirada()
     with conexion() as (_, sftp):
         resultados = _buscar_en_sftp(sftp, categoria, texto, limite)
     return {"categoria": categoria, "buscar": texto, "cantidad": len(resultados), "datos": resultados}
-
 
 def buscar_global(texto: str, limite: int) -> dict:
     if not texto.strip():
@@ -229,20 +225,17 @@ def buscar_global(texto: str, limite: int) -> dict:
     resultados: list[dict] = []
     with conexion() as (_, sftp):
         for categoria in categorias:
-            resultados.extend(_buscar_en_sftp(sftp, categoria, texto,
-                                              limite - len(resultados), True))
+            resultados.extend(_buscar_en_sftp(sftp, categoria, texto, limite - len(resultados), True))
             if len(resultados) >= limite:
                 break
     return {"buscar": texto, "cantidad": len(resultados), "datos": resultados}
-
 
 def _rutas_locales() -> tuple[Path, Path, Path, Path]:
     raiz = Path(settings.topologias_local_dir).expanduser()
     if not raiz.is_absolute():
         raiz = _PROYECTO / raiz
     raiz = raiz.resolve()
-    return raiz, raiz / "imagenes", raiz / "temporales", raiz / "topologias.json"
-
+    return (raiz, raiz / "imagenes", raiz / "temporales", raiz / "topologias.json")
 
 def _directorios_locales() -> tuple[Path, Path, Path, Path]:
     rutas = _rutas_locales()
@@ -258,7 +251,6 @@ def _directorios_locales() -> tuple[Path, Path, Path, Path]:
         raise TopologiasError("Almacenamiento local de topologias no disponible", 503) from exc
     return rutas
 
-
 def cargar_indice() -> dict:
     with _INDICE_LOCK:
         indice = _directorios_locales()[3]
@@ -270,7 +262,6 @@ def cargar_indice() -> dict:
             return contenido
         except (OSError, ValueError) as exc:
             raise TopologiasError("Indice local de topologias no disponible", 503) from exc
-
 
 def guardar_indice(data: dict) -> None:
     with _INDICE_LOCK:
@@ -288,10 +279,8 @@ def guardar_indice(data: dict) -> None:
         finally:
             temporal.unlink(missing_ok=True)
 
-
 def ahora_utc() -> datetime:
     return datetime.now(timezone.utc)
-
 
 def limpiar_cache_expirada() -> None:
     with _INDICE_LOCK:
@@ -310,13 +299,9 @@ def limpiar_cache_expirada() -> None:
                 cambio = True
                 continue
             archivo_relativo = registro.get("archivo") or registro.get("imagen", "")
-            nombre = (archivo_relativo.removeprefix("imagenes/")
-                      if isinstance(archivo_relativo, str) and archivo_relativo.startswith("imagenes/") else "")
-            extension_origen = str(registro.get("extension_origen") or
-                                   posixpath.splitext(registro.get("ruta_remota", ""))[1]).lower()
-            if (not PATRON_CACHE.fullmatch(nombre) or extension_origen not in CACHEABLES
-                    or posixpath.splitext(nombre)[1] != extension_origen
-                    or not str(registro.get("enlace", "")).endswith("/" + nombre)):
+            nombre = archivo_relativo.removeprefix("imagenes/") if isinstance(archivo_relativo, str) and archivo_relativo.startswith("imagenes/") else ""
+            extension_origen = str(registro.get("extension_origen") or posixpath.splitext(registro.get("ruta_remota", ""))[1]).lower()
+            if not PATRON_CACHE.fullmatch(nombre) or extension_origen not in CACHEABLES or posixpath.splitext(nombre)[1] != extension_origen or (not str(registro.get("enlace", "")).endswith("/" + nombre)):
                 cambio = True
                 continue
             archivo = imagenes / nombre
@@ -337,7 +322,6 @@ def limpiar_cache_expirada() -> None:
                 except ValueError:
                     pass
             if fecha is None:
-                # Índices anteriores a este cambio usan la fecha del archivo local.
                 fecha = datetime.fromtimestamp(archivo.stat().st_mtime, timezone.utc)
                 registro["creado_en"] = fecha.isoformat().replace("+00:00", "Z")
                 cambio = True
@@ -350,9 +334,8 @@ def limpiar_cache_expirada() -> None:
                 continue
             vigentes.append(registro)
             referenciadas.add(nombre)
-
             if extension_origen in VISIO:
-                 referenciadas.add(f"{Path(nombre).stem}.jpg")
+                referenciadas.add(f"{Path(nombre).stem}.jpg")
         if cambio:
             indice["topologias"] = vigentes
             guardar_indice(indice)
@@ -364,13 +347,11 @@ def limpiar_cache_expirada() -> None:
         except OSError as exc:
             raise TopologiasError("No se pudo limpiar el cache de topologias", 503) from exc
 
-
 def extraer_nombre_olt(nombre_archivo: str) -> str:
     nombre = Path(nombre_archivo).stem
-    prefijos = "|".join(re.escape(prefijo) for prefijo in PREFIJOS_CATEGORIA)
-    coincidencia = re.search(rf"(?<![A-Z0-9])(?:{prefijos})-[A-Z0-9._-]+", nombre, re.IGNORECASE)
+    prefijos = "|".join((re.escape(prefijo) for prefijo in PREFIJOS_CATEGORIA))
+    coincidencia = re.search(f"(?<![A-Z0-9])(?:{prefijos})-[A-Z0-9._-]+", nombre, re.IGNORECASE)
     return coincidencia.group(0).rstrip("._-") if coincidencia else nombre
-
 
 def _descargar(sftp: paramiko.SFTPClient, remoto: str, local: Path) -> None:
     try:
@@ -378,7 +359,6 @@ def _descargar(sftp: paramiko.SFTPClient, remoto: str, local: Path) -> None:
             shutil.copyfileobj(origen, destino, length=1024 * 1024)
     except OSError as exc:
         raise TopologiasError("No se pudo descargar la topologia", 502) from exc
-
 
 def _respuesta_materializada(registro: dict, desde_cache: bool) -> dict:
     return {
@@ -390,6 +370,135 @@ def _respuesta_materializada(registro: dict, desde_cache: bool) -> dict:
         "desde_cache": desde_cache,
     }
 
+def procesar_mensajes(user32, segundos: float) -> None:
+    msg = wintypes.MSG()
+    fin = time.time() + segundos
+    while time.time() < fin:
+        while user32.PeekMessageW(ctypes.byref(msg), None, 0, 0, 1):
+            user32.TranslateMessage(ctypes.byref(msg))
+            user32.DispatchMessageW(ctypes.byref(msg))
+        time.sleep(0.01)
+
+def recortar_imagen(imagen, margen: int=MARGEN_RENDER):
+    fondo = Image.new("RGB", imagen.size, (255, 255, 255))
+    diferencia = ImageChops.difference(imagen, fondo)
+    bbox = diferencia.getbbox()
+    if not bbox:
+        return imagen
+    izquierda, arriba, derecha, abajo = bbox
+    izquierda = max(0, izquierda - margen)
+    arriba = max(0, arriba - margen)
+    derecha = min(imagen.width, derecha + margen)
+    abajo = min(imagen.height, abajo + margen)
+    return imagen.crop((izquierda, arriba, derecha, abajo))
+
+def convertir_visio_a_jpg(ruta_visio: Path) -> Path:
+    ruta_visio = Path(ruta_visio).resolve()
+    if not ruta_visio.exists():
+        raise FileNotFoundError(f"No existe el archivo: {ruta_visio}")
+    if ruta_visio.suffix.lower() not in VISIO:
+        raise ValueError(f"Extension no soportada: {ruta_visio.suffix}")
+    ruta_jpg = ruta_visio.with_suffix(".jpg")
+    user32 = ctypes.WinDLL("user32", use_last_error=True)
+    atl = ctypes.WinDLL("atl.dll")
+    atl.AtlAxWinInit.restype = wintypes.BOOL
+    WS_OVERLAPPEDWINDOW = 0x00CF0000
+    hwnd = None
+    viewer = None
+    hdc_pantalla = None
+    dc_pantalla = None
+    dc_memoria = None
+    bitmap = None
+    com_inicializado = False
+    try:
+        pythoncom.CoInitialize()
+        com_inicializado = True
+        if not atl.AtlAxWinInit():
+            raise RuntimeError("No fue posible inicializar ATL")
+        user32.CreateWindowExW.argtypes = [
+            wintypes.DWORD, wintypes.LPCWSTR, wintypes.LPCWSTR, wintypes.DWORD,
+            ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+            wintypes.HWND, wintypes.HMENU, wintypes.HINSTANCE, wintypes.LPVOID,
+        ]
+        user32.CreateWindowExW.restype = wintypes.HWND
+        hwnd = user32.CreateWindowExW(
+            0, "AtlAxWin", "VisioViewer.Viewer", WS_OVERLAPPEDWINDOW,
+            0, 0, ANCHO_RENDER, ALTO_RENDER, None, None, None, None,
+        )
+        if not hwnd:
+            raise ctypes.WinError(ctypes.get_last_error())
+        atl.AtlAxGetControl.argtypes = [wintypes.HWND, ctypes.POINTER(ctypes.c_void_p)]
+        atl.AtlAxGetControl.restype = ctypes.c_long
+        punk = ctypes.c_void_p()
+        hr = atl.AtlAxGetControl(hwnd, ctypes.byref(punk))
+        if hr != 0:
+            raise RuntimeError(f"AtlAxGetControl fallo. HRESULT: 0x{hr & 0xFFFFFFFF:08X}")
+        unknown = pythoncom.ObjectFromAddress(punk.value, pythoncom.IID_IUnknown)
+        dispatch = unknown.QueryInterface(pythoncom.IID_IDispatch)
+        viewer = win32com.client.Dispatch(dispatch)
+        resultado = viewer.Load(str(ruta_visio))
+        if not resultado or not viewer.DocumentLoaded:
+            raise RuntimeError(f"Visio Viewer no pudo cargar el archivo. LastErrorCode={viewer.LastErrorCode}")
+        procesar_mensajes(user32, 2)
+        viewer.ToolbarVisible = False
+        viewer.PageTabsVisible = False
+        viewer.ScrollbarsVisible = False
+        viewer.HighQualityRender = True
+        viewer.Zoom = -1
+        procesar_mensajes(user32, 2)
+        viewer.Render(ANCHO_RENDER, ALTO_RENDER)
+        procesar_mensajes(user32, 1)
+        if viewer.LastErrorCode != 0:
+            raise RuntimeError(f"Error durante Render(). LastErrorCode={viewer.LastErrorCode}")
+        hdc_pantalla = win32gui.GetDC(0)
+        dc_pantalla = win32ui.CreateDCFromHandle(hdc_pantalla)
+        dc_memoria = dc_pantalla.CreateCompatibleDC()
+        bitmap = win32ui.CreateBitmap()
+        bitmap.CreateCompatibleBitmap(dc_pantalla, ANCHO_RENDER, ALTO_RENDER)
+        dc_memoria.SelectObject(bitmap)
+        dc_memoria.FillSolidRect((0, 0, ANCHO_RENDER, ALTO_RENDER), 16777215)
+        viewer.Paint(dc_memoria.GetSafeHdc(), 0, 0, ANCHO_RENDER, ALTO_RENDER, 0, 0)
+        if viewer.LastErrorCode != 0:
+            raise RuntimeError(f"Error durante Paint(). LastErrorCode={viewer.LastErrorCode}")
+        info = bitmap.GetInfo()
+        bits = bitmap.GetBitmapBits(True)
+        imagen = Image.frombuffer("RGB", (info["bmWidth"], info["bmHeight"]), bits, "raw", "BGRX", 0, 1)
+        imagen = recortar_imagen(imagen)
+        imagen.save(ruta_jpg, "JPEG", quality=100, subsampling=0)
+        return ruta_jpg
+    finally:
+        if dc_memoria is not None:
+            try:
+                dc_memoria.DeleteDC()
+            except Exception:
+                pass
+        if dc_pantalla is not None:
+            try:
+                dc_pantalla.DeleteDC()
+            except Exception:
+                pass
+        if hdc_pantalla is not None:
+            try:
+                win32gui.ReleaseDC(0, hdc_pantalla)
+            except Exception:
+                pass
+        if bitmap is not None:
+            try:
+                win32gui.DeleteObject(bitmap.GetHandle())
+            except Exception:
+                pass
+        if viewer is not None:
+            try:
+                viewer.Unload()
+            except Exception:
+                pass
+        if hwnd:
+            try:
+                user32.DestroyWindow(hwnd)
+            except Exception:
+                pass
+        if com_inicializado:
+            pythoncom.CoUninitialize()
 
 def materializar_topologia(categoria: str, ruta: str) -> dict:
     _categoria(categoria)
@@ -405,16 +514,13 @@ def materializar_topologia(categoria: str, ruta: str) -> dict:
         archivo = imagenes / archivo_nombre
         indice = cargar_indice()
         registros = indice["topologias"]
-        anterior = next((r for r in registros if r.get("categoria") == categoria
-                         and r.get("ruta_remota") == relativa), None)
-        if (anterior and anterior.get("archivo") == f"imagenes/{archivo_nombre}"
-                and archivo.is_file() and not archivo.is_symlink()):
+        anterior = next((r for r in registros if r.get("categoria") == categoria and r.get("ruta_remota") == relativa), None)
+        if anterior and anterior.get("archivo") == f"imagenes/{archivo_nombre}" and archivo.is_file() and (not archivo.is_symlink()):
             return _respuesta_materializada(anterior, True)
         with conexion() as (_, sftp):
             remoto, datos, _ = archivo_validado(sftp, categoria, relativa)
             tamano = int(datos.st_size)
             mtime = int(datos.st_mtime)
-
             temporal = temporales / f"{clave}-{uuid.uuid4().hex}{extension}"
             try:
                 _descargar(sftp, remoto, temporal)
@@ -423,24 +529,27 @@ def materializar_topologia(categoria: str, ruta: str) -> dict:
                 raise TopologiasError("No se pudo guardar el archivo local", 503) from exc
             finally:
                 temporal.unlink(missing_ok=True)
-
+            if extension in VISIO:
+                try:
+                    convertir_visio_a_jpg(archivo)
+                except Exception as exc:
+                    raise TopologiasError(f"No se pudo convertir la topologia Visio a JPG: {exc}", 500) from exc
+            base_publica = settings.topologias_public_base.rstrip("/")
             registro = {
                 "olt": extraer_nombre_olt(posixpath.basename(relativa)),
                 "categoria": categoria,
                 "archivo_origen": posixpath.basename(relativa),
                 "ruta_remota": relativa,
                 "archivo": f"imagenes/{archivo_nombre}",
-                "enlace": f"{settings.topologias_public_base.rstrip('/')}/{archivo_nombre}",
+                "enlace": f"{base_publica}/{archivo_nombre}",
                 "extension_origen": extension,
                 "tamano_remoto": tamano,
                 "mtime_remoto": mtime,
                 "creado_en": ahora_utc().isoformat().replace("+00:00", "Z"),
             }
-            indice["topologias"] = [r for r in registros if not (
-                r.get("categoria") == categoria and r.get("ruta_remota") == relativa)] + [registro]
+            indice["topologias"] = [r for r in registros if not (r.get("categoria") == categoria and r.get("ruta_remota") == relativa)] + [registro]
             guardar_indice(indice)
             return _respuesta_materializada(registro, False)
-
 
 def archivo_local(nombre: str) -> Path:
     limpiar_cache_expirada()
@@ -448,40 +557,25 @@ def archivo_local(nombre: str) -> Path:
         raise TopologiasError("Archivo no encontrado", 404)
     raiz, imagenes, _, _ = _rutas_locales()
     destino = imagenes / nombre
-    if (imagenes.is_symlink() or imagenes.resolve().parent != raiz
-            or destino.is_symlink() or not destino.is_file()
-            or destino.resolve().parent != imagenes.resolve()):
+    if imagenes.is_symlink() or imagenes.resolve().parent != raiz or destino.is_symlink() or (not destino.is_file()) or (destino.resolve().parent != imagenes.resolve()):
         raise TopologiasError("Archivo no encontrado", 404)
-    if not any(r.get("archivo") == f"imagenes/{nombre}" for r in cargar_indice()["topologias"]):
+    if not any((r.get("archivo") == f"imagenes/{nombre}" for r in cargar_indice()["topologias"])):
         raise TopologiasError("Archivo no encontrado", 404)
     return destino
 
 def materializar_aleatoria() -> dict:
     prefijo = random.choice(("ZAC", "HAC"))
-
     resultado = buscar_global(prefijo, 200)
-
-    candidatos = [
-        item
-        for item in resultado["datos"]
-        if item["extension"] in VISIO
-    ]
-
+    candidatos = [item for item in resultado["datos"] if item["extension"] in VISIO]
     if not candidatos:
-        raise TopologiasError(
-            f"No se encontraron topologias Visio para {prefijo}",
-            404,
-        )
-
+        raise TopologiasError(f"No se encontraron topologias Visio para {prefijo}", 404)
     elegido = random.choice(candidatos)
-
-    materializada = materializar_topologia(
-        elegido["categoria"],
-        elegido["ruta"],
-    )
-
+    nombre = elegido["nombre"]
+    print(f"[TOPOLOGIAS AUTO] Prefijo: {prefijo} | Archivo: {nombre}")
+    materializada = materializar_topologia(elegido["categoria"], elegido["ruta"])
+    print("[TOPOLOGIAS JPG] Conversión completada | JPG generado correctamente")
     return {
         "prefijo": prefijo,
-        "seleccionada": elegido["nombre"],
+        "seleccionada": nombre,
         **materializada,
     }
