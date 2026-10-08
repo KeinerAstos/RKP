@@ -1,0 +1,9 @@
+{
+  "raiz": "C:\\Users\\UITMICRO\\Documents\\Ftth-Hfc\\RKP",
+  "archivos": {
+    "microservicios/olt/caidas/service.py": true,
+    "microservicios/olt/caidas/cache.py": false,
+    "microservicios/olt/caidas/README.md": false,
+    "tests/test_olt_caidas_historial.py": false
+  }
+}

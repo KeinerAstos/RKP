@@ -1,3 +1,4 @@
+# PARCHE_ORACLE_DESTINO_DIRECTO_V2
 from __future__ import annotations
 
 import shutil
@@ -16,6 +17,14 @@ MYSQL_LOCAL_HOST = "127.0.0.1"
 MYSQL_LOCAL_PORT = 3307
 MYSQL_REMOTO_HOST = "127.0.0.1"
 MYSQL_REMOTO_PORT = 3306
+
+# PARCHE_ORACLE_PUENTE_V1
+ORACLE_SSH_HOST = "172.31.33.23"
+ORACLE_SSH_USER = "noc_cable"
+ORACLE_LOCAL_HOST = "127.0.0.1"
+ORACLE_LOCAL_PORT = 12110
+ORACLE_PUENTE_HOST = "127.0.0.1"
+ORACLE_PUENTE_PORT = 12110
 
 API_HOST = "127.0.0.1"
 API_PORT = 8000
@@ -106,6 +115,63 @@ def iniciar_tunel() -> subprocess.Popen:
     return proceso
 
 
+def iniciar_tunel_oracle() -> subprocess.Popen | None:
+    if puerto_abierto(ORACLE_LOCAL_HOST, ORACLE_LOCAL_PORT):
+        print(
+            f"[ORACLE] Puerto {ORACLE_LOCAL_PORT} ya abierto; se reutiliza. "
+            "Esto no confirma una conexión a la DB."
+        )
+        return None
+
+    if shutil.which("ssh") is None:
+        raise RuntimeError("No se encontró 'ssh' en PATH.")
+
+    comando = [
+        "ssh", "-N",
+        "-o", "ExitOnForwardFailure=yes",
+        "-o", "ServerAliveInterval=30",
+        "-o", "ServerAliveCountMax=3",
+        "-L",
+        (
+            f"{ORACLE_LOCAL_HOST}:{ORACLE_LOCAL_PORT}:"
+            f"{ORACLE_PUENTE_HOST}:{ORACLE_PUENTE_PORT}"
+        ),
+        f"{ORACLE_SSH_USER}@{ORACLE_SSH_HOST}",
+    ]
+
+    print("[ORACLE] Abriendo túnel hacia Linux...")
+    print("[ORACLE] Ingresa la contraseña de noc_cable en la consola SSH.")
+    print("[ORACLE] El túnel inverso del Windows remoto debe estar activo.")
+    proceso = subprocess.Popen(comando, cwd=RAIZ, **nueva_consola_kwargs())
+    limite = time.monotonic() + 45
+
+    try:
+        while time.monotonic() < limite:
+            if proceso.poll() is not None:
+                raise RuntimeError(
+                    f"El túnel Oracle terminó con código {proceso.returncode}. "
+                    "Revisa la consola SSH."
+                )
+            if puerto_abierto(ORACLE_LOCAL_HOST, ORACLE_LOCAL_PORT):
+                print(
+                    f"[ORACLE] Puerto local listo: "
+                    f"{ORACLE_LOCAL_HOST}:{ORACLE_LOCAL_PORT}"
+                )
+                print("[ORACLE] Falta validar la conexión con Oracle.")
+                return proceso
+            time.sleep(0.5)
+
+        raise RuntimeError(
+            "El túnel Oracle no abrió el puerto 12110 en 45 segundos. "
+            "Revisa el acceso SSH."
+        )
+    except BaseException:
+        matar(proceso)
+        raise
+
+
+
+
 def iniciar_uvicorn(
     modulo: str,
     nombre: str,
@@ -149,6 +215,9 @@ def main() -> int:
     procesos: list[tuple[str, subprocess.Popen | None]] = []
 
     try:
+        tunel_oracle = iniciar_tunel_oracle()
+        procesos.append(("Túnel Oracle", tunel_oracle))
+
         tunel = iniciar_tunel()
         procesos.append(("Túnel MySQL", tunel))
 
@@ -177,18 +246,34 @@ def main() -> int:
         print(f"Grafana proxy:  http://{GRAFANA_HOST}:{GRAFANA_PORT}")
         print(f"Grafana health: http://{GRAFANA_HOST}:{GRAFANA_PORT}/__proxy_health")
         print(f"MySQL túnel:    {MYSQL_LOCAL_HOST}:{MYSQL_LOCAL_PORT}")
+        print(f"Oracle túnel:   {ORACLE_LOCAL_HOST}:{ORACLE_LOCAL_PORT}")
         print()
         print("XAMPP/frontend NO se inicia desde este script.")
         print("Presiona Ctrl+C aquí para cerrar los procesos iniciados.")
         print("=" * 64)
 
+        # ORACLE_REINTENTO_LOCAL_V2
+        avisados = set()
+        siguiente_oracle = 0.0
         while True:
-            for nombre, proceso in procesos:
-                if proceso is not None and proceso.poll() is not None:
-                    print(
-                        f"\n[AVISO] {nombre} terminó "
-                        f"con código {proceso.returncode}."
-                    )
+            for indice, (nombre, proceso) in enumerate(procesos):
+                caido = proceso is not None and proceso.poll() is not None
+                if nombre == "Túnel Oracle" and proceso is None:
+                    caido = not puerto_abierto(ORACLE_LOCAL_HOST, ORACLE_LOCAL_PORT)
+                if caido:
+                    if nombre not in avisados:
+                        codigo = proceso.returncode if proceso is not None else "puerto cerrado"
+                        print(f"[AVISO] {nombre} no está activo ({codigo}).")
+                        avisados.add(nombre)
+                    if nombre == "Túnel Oracle" and time.monotonic() >= siguiente_oracle:
+                        siguiente_oracle = time.monotonic() + 10
+                        try:
+                            print("[ORACLE] Intentando reabrir el túnel local...")
+                            nuevo_oracle = iniciar_tunel_oracle()
+                            procesos[indice] = (nombre, nuevo_oracle)
+                            avisados.discard(nombre)
+                        except Exception as exc:
+                            print(f"[ORACLE] Reintento pendiente: {exc}")
             time.sleep(2)
 
     except KeyboardInterrupt:

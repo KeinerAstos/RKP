@@ -1,13 +1,12 @@
 """Lógica de negocio para caídas de puertos OLT por tráfico."""
 
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from threading import Lock
 from time import monotonic
 from typing import Any
 
 from microservicios.influx import consultar_flux_temp
-from microservicios.olt.caidas.cache import CacheHistorial
 from microservicios.olt.caidas.queries import (
     obtener_caidas_flux,
     obtener_estado_actual_flux,
@@ -26,29 +25,6 @@ _cache_ultima_actividad: dict[
 ] = {}
 _cache_ultima_actividad_lock = Lock()
 _consulta_ultima_actividad_lock = Lock()
-_cache_historial_7d = CacheHistorial()
-
-
-def _cargar_historial_7d() -> dict[str, Any]:
-    """Descubrir también puertos sin muestras en los últimos cuatro días."""
-    ahora = datetime.now(timezone.utc)
-    ultimas = _indexar_ultima_muestra(consultar_flux_temp(
-        obtener_ultima_muestra_conocida_flux("-7d")
-    ))
-    candidatos = [
-        clave for clave, info in ultimas.items()
-        if info["trafico"] <= 0
-        or (ahora - info["fecha"]).total_seconds() >= MINUTOS_SIN_MUESTRAS * 60
-    ]
-    actividades = {}
-    # Limitar el tamaño del filtro Flux, con consultas secuenciales.
-    for inicio in range(0, len(candidatos), 100):
-        filas = consultar_flux_temp(obtener_ultima_actividad_flux(
-            candidatos[inicio:inicio + 100], "-7d"
-        ))
-        actividades.update(_indexar_ultima_muestra(filas))
-    return {"ultimas": ultimas, "actividades": actividades,
-            "verificados": frozenset(candidatos)}
 
 
 def _obtener_trafico(
@@ -716,13 +692,10 @@ def obtener_caidas_actuales() -> dict[
 
     3. CAIDO_SIN_FECHA:
        esta actualmente en 0 pero no encontramos
-       trafico positivo en los ultimos 4 dias ni en la caché de 7 días.
+       trafico positivo en los ultimos 4 dias.
     """
 
     ahora = datetime.now(timezone.utc)
-    limite_historial = ahora - timedelta(days=7)
-    historial_7d, estado_cache_7d = _cache_historial_7d.leer()
-    _cache_historial_7d.solicitar(_cargar_historial_7d)
 
     # --------------------------------------------------------
     # MUESTRAS DE LOS ULTIMOS 30 MINUTOS
@@ -741,21 +714,6 @@ def obtener_caidas_actuales() -> dict[
     )
 
     ultima_muestra_por_puerto = _indexar_ultima_muestra(ultima_muestra_datos)
-    if historial_7d is not None:
-        for clave, info in historial_7d["ultimas"].items():
-            if info["fecha"] < limite_historial:
-                continue
-            vigente = ultima_muestra_por_puerto.get(clave)
-            if vigente is None or info["fecha"] > vigente["fecha"]:
-                ultima_muestra_por_puerto[clave] = info
-    # Una recuperación reciente siempre prevalece sobre una caché antigua.
-    for clave, muestras in recientes_por_puerto.items():
-        actual = muestras[-1]
-        vigente = ultima_muestra_por_puerto.get(clave)
-        if vigente is None or actual["_time"] >= vigente["fecha"]:
-            ultima_muestra_por_puerto[clave] = {
-                "fecha": actual["_time"], "trafico": actual["TRAFICO"]
-            }
 
     candidatos: dict[
         tuple[str, str],
@@ -842,7 +800,6 @@ def obtener_caidas_actuales() -> dict[
             "cantidad_olts": 0,
             "cantidad_puertos": 0,
             "datos": [],
-            "verificacion_7_dias": estado_cache_7d,
         }
 
     # --------------------------------------------------------
@@ -871,23 +828,6 @@ def obtener_caidas_actuales() -> dict[
                 puerto,
             )
         )
-        origen_historial = "4_dias" if actividad is not None else None
-        verificado_7d = (historial_7d is not None
-                         and (olt, puerto) in historial_7d["verificados"])
-        if actividad is None and verificado_7d:
-            actividad = historial_7d["actividades"].get((olt, puerto))
-            if actividad is not None and actividad["fecha"] < limite_historial:
-                actividad = None
-            if actividad is not None:
-                origen_historial = "cache_7_dias"
-
-        clasificacion = (
-            "DOWN_CON_HISTORIAL" if actividad is not None
-            else "SIN_ACTIVIDAD_7_DIAS" if verificado_7d
-            else "PENDIENTE_VERIFICACION"
-        )
-        if info["estado_base"] == "SIN_MUESTRAS_RECIENTES":
-            clasificacion = "SIN_MUESTRAS_RECIENTES"
 
         estado = info["estado_base"]
 
@@ -990,9 +930,6 @@ def obtener_caidas_actuales() -> dict[
                     else None
                 ),
                 "historial_encontrado": actividad is not None,
-                "clasificacion": clasificacion,
-                "origen_historial": origen_historial,
-                "verificado_7_dias": verificado_7d,
                 "muestras_actuales": muestras_salida,
             }
         )
@@ -1032,10 +969,7 @@ def obtener_caidas_actuales() -> dict[
                 f"mas_de_" f"{MINUTOS_SIN_MUESTRAS}_" "minutos_sin_reportar"
             ),
             "busqueda_ultima_actividad": "ultimos_4_dias",
-            "verificacion_en_segundo_plano": "ultimos_7_dias",
-            "sin_actividad_7_dias": "no_confirma_apagado_administrativo",
         },
-        "verificacion_7_dias": estado_cache_7d,
         "cantidad_olts": len(datos),
         "cantidad_puertos": sum(item["cantidad_puertos"] for item in datos),
         "datos": datos,
