@@ -2,10 +2,9 @@
     'use strict';
 
     const endpoint = new URL('../backend/api/olt_casos_helix.php', window.location.href);
-    const cache = new Map();
-    const failures = new Map();
+    const known = new Map();
     let visible = new Map();
-    let running = false;
+    let inFlight = false;
 
     function normalizarPuerto(value) {
         const text = String(value ?? '').trim();
@@ -33,156 +32,201 @@
             .filter((cell) => cell.dataset.olt === olt && cell.dataset.puerto === port);
     }
 
-    function renderCell(cell, result, date) {
+    function paintCell(cell, state, port) {
+        const prior = state?.ports.get(port);
         cell.replaceChildren();
-        cell.title = date ? `Consultado: ${new Date(date).toLocaleString()}` : '';
         cell.classList.remove('gkp-helix-cases--error', 'gkp-helix-cases--empty');
-        if (!result || result.ok !== true || !Array.isArray(result.casos)) {
+
+        if (!state || state.estado === 'sin_solicitud' || state.estado === 'expirado') {
+            cell.textContent = 'Actualizando…';
+            cell.title = '';
+            return;
+        }
+        if (state.estado === 'actualizando') {
+            cell.textContent = 'Actualizando…';
+            cell.title = state.consultado_en
+                ? `Actualizando. Última consulta completa: ${new Date(state.consultado_en).toLocaleString()}`
+                : 'Consulta aceptada; Oracle aún no ha completado el resultado';
+            return;
+        }
+        if (state.estado === 'error') {
             cell.textContent = 'No se pudo consultar';
-            cell.title = 'La consulta de casos Helix no se completó';
+            cell.title = state.error?.mensaje || 'La consulta de casos Helix falló';
             cell.classList.add('gkp-helix-cases--error');
             return;
         }
+        if (state.estado !== 'listo' || !prior || !Array.isArray(prior.casos)) {
+            cell.textContent = 'No se pudo consultar';
+            cell.title = 'La respuesta Helix no cubre este puerto';
+            cell.classList.add('gkp-helix-cases--error');
+            return;
+        }
+
+        cell.title = prior.consultado_en
+            ? `Consulta completa: ${new Date(prior.consultado_en).toLocaleString()}` : '';
         const order = { INC: 0, WO: 1, TAS: 2 };
         const unique = new Map();
-        for (const item of result.casos) {
+        for (const item of prior.casos) {
             const type = String(item?.tipo ?? '').toUpperCase();
             const number = String(item?.numero ?? '').trim();
-            const state = String(item?.estado ?? '').trim();
-            if (!Object.hasOwn(order, type) || !number || !state) {
+            const status = String(item?.estado ?? '').trim();
+            if (!Object.hasOwn(order, type) || !number || !status) {
                 cell.textContent = 'No se pudo consultar';
                 cell.title = 'La respuesta Helix contiene un caso inválido';
                 cell.classList.add('gkp-helix-cases--error');
                 return;
             }
-            unique.set(number, { type, number, state });
+            unique.set(number, { type, number, status });
         }
         const cases = Array.from(unique.values()).sort((a, b) =>
             order[a.type] - order[b.type] || a.number.localeCompare(b.number, 'en', { numeric: true })
         );
         if (!cases.length) {
-            cell.textContent = 'Sin casos abiertos';
+            cell.textContent = 'No se encontró información';
             cell.classList.add('gkp-helix-cases--empty');
             return;
         }
         for (const item of cases) {
             const line = document.createElement('span');
             line.className = 'gkp-helix-case';
-            line.textContent = `${item.number} - ${item.state}`;
+            line.textContent = `${item.number} - ${item.status}`;
             cell.append(line);
         }
     }
 
-    function paint(olt, port) {
-        const item = cache.get(olt);
-        const entry = item?.ports.get(port);
-        const cells = currentCells(olt, port);
-        for (const cell of cells) {
-            if (failures.has(`${olt}|${port}`)) renderCell(cell, null, null);
-            else if (entry) renderCell(cell, entry.result, entry.date);
-            else {
-                cell.textContent = 'Consultando…';
-                cell.title = '';
-                cell.classList.remove('gkp-helix-cases--error', 'gkp-helix-cases--empty');
-            }
+    function paintCurrent(olt) {
+        const state = known.get(olt);
+        for (const port of visible.get(olt) || []) {
+            for (const cell of currentCells(olt, port)) paintCell(cell, state, port);
         }
     }
 
-    function chunk(values, size) {
-        const groups = [];
-        for (let index = 0; index < values.length; index += size) groups.push(values.slice(index, index + size));
-        return groups;
-    }
-
-    async function drain() {
-        if (running) return;
-        running = true;
-        const attempted = new Set();
-        try {
-            while (true) {
-                let next = null;
-                for (const [olt, ports] of visible) {
-                    const item = cache.get(olt);
-                    const missing = Array.from(ports).filter((port) =>
-                        (!item?.ports.has(port) || Date.now() - item.ports.get(port).receivedAt >= 120000)
-                        && !attempted.has(`${olt}|${port}`)
-                    );
-                    if (missing.length) { next = { olt, ports: missing }; break; }
-                }
-                if (!next) break;
-                for (const ports of chunk(next.ports, 100)) {
-                    for (const port of ports) attempted.add(`${next.olt}|${port}`);
-                    await consult(next.olt, ports);
-                }
+    function chunks(groups) {
+        const units = [];
+        for (const [olt, ports] of groups) {
+            for (let offset = 0; offset < ports.length; offset += 100) {
+                units.push({ olt, puertos: ports.slice(offset, offset + 100) });
             }
-        } finally {
-            running = false;
         }
+        const output = [];
+        let current = [];
+        let olts = new Set();
+        for (const unit of units) {
+            if (current.length >= 32 || olts.has(unit.olt)) {
+                output.push(current);
+                current = [];
+                olts = new Set();
+            }
+            current.push(unit);
+            olts.add(unit.olt);
+        }
+        if (current.length) output.push(current);
+        return output;
     }
 
-    async function consult(olt, ports) {
-        const controller = new AbortController();
-        const timer = window.setTimeout(() => controller.abort(), 70000);
-        try {
-            const query = new URLSearchParams({ olt, puertos: ports.join(',') });
-            const response = await fetch(`${endpoint.href}?${query.toString()}`, {
-                method: 'GET', cache: 'no-store', signal: controller.signal,
-                headers: { Accept: 'application/json' }
-            });
-            const payload = await response.json();
-            const data = payload?.data;
-            if (!response.ok || payload?.ok !== true || data?.olt !== olt || !data?.puertos || typeof data.puertos !== 'object') {
-                throw new Error('Respuesta Helix inválida');
-            }
-            if (!visible.has(olt)) return;
-            const date = data.consultado_en;
-            const validated = [];
-            for (const port of ports) {
-                const result = data.puertos[port];
-                if (!result || typeof result.ok !== 'boolean' || (result.ok && !Array.isArray(result.casos))) {
-                    throw new Error('Cobertura Helix incompleta');
+    function isNewer(previous, incoming) {
+        if (!previous) return true;
+        const oldGeneration = Number(previous.generacion || 0);
+        const newGeneration = Number(incoming.generacion || 0);
+        if (newGeneration && oldGeneration && newGeneration !== oldGeneration) {
+            return newGeneration > oldGeneration;
+        }
+        const oldRevision = Number(previous.revision || 0);
+        const newRevision = Number(incoming.revision || 0);
+        if (newRevision && oldRevision && newRevision !== oldRevision) return newRevision > oldRevision;
+        const oldDate = Date.parse(previous.finalizado_en || previous.consultado_en || '') || 0;
+        const newDate = Date.parse(incoming.finalizado_en || incoming.consultado_en || '') || 0;
+        return newDate >= oldDate;
+    }
+
+    function acceptResult(incoming) {
+        const olt = oltKey(incoming?.olt);
+        if (!olt || !visible.has(olt)) return;
+        const previous = known.get(olt);
+        if (!isNewer(previous, incoming)) return;
+        const next = {
+            estado: incoming.estado,
+            revision: incoming.revision,
+            generacion: incoming.generacion,
+            consultado_en: incoming.consultado_en,
+            finalizado_en: incoming.finalizado_en,
+            error: incoming.error,
+            ports: new Map(previous?.ports || [])
+        };
+        if (incoming.estado === 'listo') {
+            for (const [port, result] of Object.entries(incoming.puertos || {})) {
+                if (result?.estado === 'listo' && Array.isArray(result.casos)) {
+                    next.ports.set(port, {
+                        casos: result.casos,
+                        consultado_en: incoming.consultado_en || result.consultado_en || null
+                    });
                 }
-                for (const item of result.casos || []) {
-                    if (!['INC', 'WO', 'TAS'].includes(String(item?.tipo ?? '').toUpperCase())
-                        || !String(item?.numero ?? '').trim() || !String(item?.estado ?? '').trim()) {
-                        throw new Error('Caso Helix inválido');
-                    }
+            }
+        }
+        known.set(olt, next);
+        paintCurrent(olt);
+    }
+
+    async function consultarLotes(groups) {
+        for (const solicitudes of chunks(groups)) {
+            const controller = new AbortController();
+            const timer = window.setTimeout(() => controller.abort(), 20000);
+            try {
+                const response = await fetch(endpoint.href, {
+                    method: 'POST',
+                    cache: 'no-store',
+                    signal: controller.signal,
+                    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ solicitudes })
+                });
+                const payload = await response.json();
+                if (!response.ok || payload?.ok !== true || !Array.isArray(payload.data?.resultados)) {
+                    throw new Error('No se pudo consultar el estado de casos Helix');
                 }
-                validated.push([port, result]);
+                const results = new Map(payload.data.resultados.map((item) => [oltKey(item?.olt), item]));
+                for (const solicitud of solicitudes) {
+                    const olt = solicitud.olt;
+                    const result = results.get(olt);
+                    if (result) acceptResult(result);
+                    else acceptResult({
+                        olt,
+                        estado: 'error',
+                        revision: Number(known.get(olt)?.revision || 0) + 1,
+                        error: { codigo: 'INVALID_RESPONSE', mensaje: 'La respuesta no incluyó esta OLT' }
+                    });
+                }
+            } catch (_error) {
+                for (const solicitud of solicitudes) {
+                    const previous = known.get(solicitud.olt);
+                    acceptResult({
+                        olt: solicitud.olt,
+                        estado: 'error',
+                        revision: Number(previous?.revision || 0) + 1,
+                        error: { codigo: 'HTTP_ERROR', mensaje: 'No se pudo consultar el estado; se reintentará en la próxima actualización' }
+                    });
+                }
+            } finally {
+                window.clearTimeout(timer);
             }
-            const current = cache.get(olt) || { ports: new Map() };
-            for (const [port, result] of validated) {
-                if (result.ok) {
-                    current.ports.set(port, { result, date, receivedAt: Date.now() });
-                    failures.delete(`${olt}|${port}`);
-                } else failures.set(`${olt}|${port}`, true);
-            }
-            cache.set(olt, current);
-            for (const port of ports) paint(olt, port);
-        } catch (_error) {
-            for (const port of ports) {
-                failures.set(`${olt}|${port}`, true);
-                paint(olt, port);
-            }
-        } finally {
-            window.clearTimeout(timer);
         }
     }
 
     function actualizar(rows) {
-        const nextVisible = new Map();
+        const grouped = new Map();
         for (const row of Array.isArray(rows) ? rows : []) {
             const olt = oltKey(row?.equipo);
             const port = normalizarPuerto(row?.puerto);
             if (!olt || !port) continue;
-            if (!nextVisible.has(olt)) nextVisible.set(olt, new Set());
-            nextVisible.get(olt).add(port);
+            if (!grouped.has(olt)) grouped.set(olt, new Set());
+            grouped.get(olt).add(port);
         }
-        visible = nextVisible;
-        for (const olt of Array.from(cache.keys())) if (!visible.has(olt)) cache.delete(olt);
-        for (const key of Array.from(failures.keys())) if (!visible.has(key.split('|', 1)[0])) failures.delete(key);
-        for (const [olt, ports] of visible) for (const port of ports) paint(olt, port);
-        void drain();
+        visible = new Map(Array.from(grouped, ([olt, ports]) => [olt, Array.from(ports)]));
+        for (const olt of Array.from(known.keys())) if (!visible.has(olt)) known.delete(olt);
+        for (const olt of visible.keys()) paintCurrent(olt);
+        if (inFlight || visible.size === 0) return;
+
+        inFlight = true;
+        void consultarLotes(visible).finally(() => { inFlight = false; });
     }
 
     window.GKPCasosHelix = { actualizar, normalizarPuerto };

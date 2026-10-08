@@ -8,10 +8,6 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from microservicios.config import settings
-from microservicios.olt.casos_helix import service as casos_helix_service
-from microservicios.olt.casos_helix.worker import start_worker as start_helix_worker
-from microservicios.olt.casos_helix.worker import stop_worker as stop_helix_worker
 from microservicios.olt.topologias.router import router as topologias_router
 from microservicios.olt.topologias import service as topologias_service
 from microservicios.cmts.saturacion.router import router as cmts_saturacion_router
@@ -52,10 +48,6 @@ async def worker_topologias() -> None:
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     tarea = None
-    start_helix_worker(
-        casos_helix_service.consultar_olt,
-        ttl_seconds=settings.oracle_helix_cache_seconds,
-    )
 
     if os.environ.get("TOPOLOGIAS_AUTO") == "1":
         print("[TOPOLOGIAS AUTO] Worker habilitado")
@@ -66,7 +58,6 @@ async def lifespan(_app: FastAPI):
     try:
         yield
     finally:
-        stop_helix_worker()
         if tarea:
             tarea.cancel()
 

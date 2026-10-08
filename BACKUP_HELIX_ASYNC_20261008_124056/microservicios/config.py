@@ -2,7 +2,6 @@
 
 from functools import lru_cache
 
-from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -61,13 +60,7 @@ class Settings(BaseSettings):
     oracle_helix_password: str = ""
     oracle_helix_cache_seconds: int = 120
     oracle_helix_call_timeout_ms: int = 15000
-    oracle_helix_query_budget_seconds: int = Field(
-        default=45,
-        validation_alias=AliasChoices(
-            "ORACLE_HELIX_QUERY_BUDGET_SECONDS",
-            "ORACLE_HELIX_BUDGET_SECONDS",
-        ),
-    )
+    oracle_helix_budget_seconds: int = 45
 
     # ==========================================
     # Grafana proxy local

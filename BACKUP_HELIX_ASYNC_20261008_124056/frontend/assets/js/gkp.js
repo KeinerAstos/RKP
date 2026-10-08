@@ -332,7 +332,7 @@
             cases.dataset.olt = String(row.equipo ?? '').trim().toUpperCase();
             const normalizedPort = window.GKPCasosHelix?.normalizarPuerto(row.puerto);
             cases.dataset.puerto = normalizedPort || '';
-            cases.textContent = normalizedPort ? 'Actualizando…' : 'Puerto no identificable';
+            cases.textContent = normalizedPort ? 'Consultando…' : 'Puerto no identificable';
 
             const detail = document.createElement('td');
             detail.className = 'gkp-detail-cell';
