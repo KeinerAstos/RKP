@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/sidebar.css">
     <link rel="stylesheet" href="assets/css/gkp.css">
+    <link rel="stylesheet" href="assets/css/gkp-casos-helix.css?v=1">
 </head>
 <body class="gkp-page dashboard-page">
 <div class="app">
@@ -36,7 +37,7 @@
                 <p id="gkp-status" role="status" aria-live="polite">Cargando estado de la red…</p>
                 <div id="gkp-table-region" class="gkp-table-scroll" data-auto-scroll tabindex="0" role="region" aria-label="Estado actual de red; tabla desplazable">
                     <table class="gkp-table">
-                        <thead><tr><th scope="col">Equipo</th><th scope="col">Puerto o interfaz</th><th scope="col">Valor</th><th scope="col">Estado</th></tr></thead>
+                        <thead><tr><th scope="col">Equipo</th><th scope="col">Puerto o interfaz</th><th scope="col">Valor</th><th scope="col">Estado</th><th scope="col">Casos abiertos</th><th scope="col">Detalle</th></tr></thead>
                         <tbody id="gkp-rows"></tbody>
                     </table>
                 </div>
@@ -191,7 +192,8 @@
 </div>
 <script src="assets/js/sidebar.js" defer></script>
 <script src="assets/js/table-autoscroll.js" defer></script>
-<script src="assets/js/gkp.js" defer></script>
+<script src="assets/js/gkp-casos-helix.js?v=1" defer></script>
+<script src="assets/js/gkp.js?v=2" defer></script>
 <script src="assets/js/temperatura.js" defer></script>
 <script src="assets/js/perdida_latencia.js" defer></script>
 </body>

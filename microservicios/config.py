@@ -52,6 +52,16 @@ class Settings(BaseSettings):
     mysql_database: str = ""
     mysql_connect_timeout: int = 10
 
+    # Oracle Helix, conectado mediante el puente local existente.
+    oracle_helix_host: str = ""
+    oracle_helix_port: int = 12101
+    oracle_helix_service_name: str = ""
+    oracle_helix_user: str = ""
+    oracle_helix_password: str = ""
+    oracle_helix_cache_seconds: int = 120
+    oracle_helix_call_timeout_ms: int = 15000
+    oracle_helix_budget_seconds: int = 45
+
     # ==========================================
     # Grafana proxy local
     # ==========================================

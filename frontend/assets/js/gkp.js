@@ -324,20 +324,34 @@
             eyeButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>';
             eyeButton.addEventListener('click', () => openFtthModal(row, eyeButton));
 
-            stateActions.append(badge, eyeButton);
+            stateActions.append(badge);
             state.append(stateActions);
+
+            const cases = document.createElement('td');
+            cases.className = 'gkp-helix-cases';
+            cases.dataset.olt = String(row.equipo ?? '').trim().toUpperCase();
+            const normalizedPort = window.GKPCasosHelix?.normalizarPuerto(row.puerto);
+            cases.dataset.puerto = normalizedPort || '';
+            cases.textContent = normalizedPort ? 'Consultando…' : 'Puerto no identificable';
+
+            const detail = document.createElement('td');
+            detail.className = 'gkp-detail-cell';
+            detail.append(eyeButton);
 
             tr.append(
                 equipment,
                 port,
                 value,
-                state
+                state,
+                cases,
+                detail
             );
 
             fragment.append(tr);
         });
 
         body.replaceChildren(fragment);
+        window.GKPCasosHelix?.actualizar(rows);
     }
 
     function connection(text, detail) {

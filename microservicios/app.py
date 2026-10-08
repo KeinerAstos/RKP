@@ -21,6 +21,7 @@ from microservicios.cmts.puertos_duplicados.router import (
     router as cmts_puertos_duplicados_router,
 )
 from microservicios.olt.caidas.router import router as caidas_router
+from microservicios.olt.casos_helix.router import router as casos_helix_router
 from microservicios.olt.correlacion.router import router as correlacion_router
 from microservicios.olt.crc.router import router as crc_router
 from microservicios.olt.perdida_latencia.router import (
@@ -100,6 +101,7 @@ def health() -> dict[str, object]:
 
 app.include_router(saturacion_router, prefix="/api/olt")
 app.include_router(caidas_router, prefix="/api/olt")
+app.include_router(casos_helix_router, prefix="/api/olt")
 app.include_router(crc_router, prefix="/api/olt")
 app.include_router(correlacion_router, prefix="/api/olt")
 app.include_router(temperatura_router, prefix="/api/olt")
