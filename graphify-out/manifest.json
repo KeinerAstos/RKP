@@ -144,9 +144,9 @@
     "semantic_hash": ""
   },
   "backend/lib/MicroserviceClient.php": {
-    "mtime": 1791317432.0138514,
-    "seen": 1791478147.4897816,
-    "ast_hash": "ec1a38ca377c321ab34d9c32522d069a",
+    "mtime": 1791489250.1935923,
+    "seen": 1791490169.7127616,
+    "ast_hash": "f1136768d0f1f5be8a6410a573269034",
     "semantic_hash": ""
   },
   "backend/lib/bootstrap.php": {
@@ -168,9 +168,9 @@
     "semantic_hash": ""
   },
   "frontend/assets/js/gkp.js": {
-    "mtime": 1791475105.6203475,
-    "seen": 1791478147.4897916,
-    "ast_hash": "89a32adc65f6fae0cc7a740974ec01db",
+    "mtime": 1791481410.2915578,
+    "seen": 1791490169.7127697,
+    "ast_hash": "929c0a6334deb163730e762e1d6da8c5",
     "semantic_hash": ""
   },
   "frontend/assets/js/hfc.js": {
@@ -240,9 +240,9 @@
     "semantic_hash": ""
   },
   "frontend/components/sidebar.php": {
-    "mtime": 1791317432.07426,
-    "seen": 1791478147.48981,
-    "ast_hash": "0d99b655195451c565a5d96d3d7dc01d",
+    "mtime": 1791489009.371326,
+    "seen": 1791490169.7127857,
+    "ast_hash": "be700073af4473ad37e1d10f41b4073a",
     "semantic_hash": ""
   },
   "frontend/configuracion.php": {
@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "frontend/index.php": {
-    "mtime": 1791317432.0763698,
-    "seen": 1791478147.489814,
-    "ast_hash": "dc57e16f6d41a4d780a28bbb1c73c4d4",
+    "mtime": 1791478752.8495963,
+    "seen": 1791490169.7127888,
+    "ast_hash": "518732cac1e577554ad3151ea12a5169",
     "semantic_hash": ""
   },
   "frontend/intermitencias.php": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "microservicios/app.py": {
-    "mtime": 1791317432.2320526,
-    "seen": 1791478147.4898236,
-    "ast_hash": "8ed470bf6110b8615f968876ec47eb70",
+    "mtime": 1791488968.413898,
+    "seen": 1791490169.7127957,
+    "ast_hash": "8f86ecdad2d6c5c6e7a1b4a8412c54a4",
     "semantic_hash": ""
   },
   "microservicios/cmts/intermitencias/queries.py": {
@@ -390,9 +390,9 @@
     "semantic_hash": ""
   },
   "microservicios/config.py": {
-    "mtime": 1791317432.2443664,
-    "seen": 1791478147.4898455,
-    "ast_hash": "77e5efafb83e3c19a64a0a68ab94adf0",
+    "mtime": 1791489064.2358847,
+    "seen": 1791490169.7128143,
+    "ast_hash": "026aebe0e9962bce65fb3b6e51dc3329",
     "semantic_hash": ""
   },
   "microservicios/consultar_influx.py": {
@@ -828,9 +828,9 @@
     "semantic_hash": ""
   },
   "requirements.txt": {
-    "mtime": 1791317432.271657,
-    "seen": 1791478147.4899433,
-    "ast_hash": "83e23b0e364d550f586b5b3604559f3a",
+    "mtime": 1791478752.8545952,
+    "seen": 1791490169.7129056,
+    "ast_hash": "d7e4905de678354d4d6a820ad467ee5f",
     "semantic_hash": ""
   },
   "backend/api/recursos_zte.php": {
@@ -864,27 +864,15 @@
     "semantic_hash": ""
   },
   ".agents/skills/impeccable/scripts/data/font-index.json": {
-    "mtime": 1789570184.0707963,
-    "seen": 1790871961.2819355,
-    "ast_hash": "",
+    "mtime": 1791317431.9836943,
+    "seen": 1791490169.7127273,
+    "ast_hash": "4a4426c85ec12df1d9a487a39d656ff4",
     "semantic_hash": ""
   },
   "backend/lib/_backups/MicroserviceClient_20261001_152721.php": {
     "mtime": 1791317432.0158505,
     "seen": 1791478147.4897833,
     "ast_hash": "0b1d23924fb4485cfb11a6abc81c97bc",
-    "semantic_hash": ""
-  },
-  "backups/PUERTOS_DOWN_7D_20261008_091923_477059/manifest.json": {
-    "mtime": 1791469163.479628,
-    "seen": 1791478147.4897864,
-    "ast_hash": "6fb5261472a1294cf40872b18b2bcafa",
-    "semantic_hash": ""
-  },
-  "backups/PUERTOS_DOWN_7D_20261008_091923_477059/microservicios/olt/caidas/service.py": {
-    "mtime": 1791317432.2524726,
-    "seen": 1791478147.4897878,
-    "ast_hash": "fd3af9001de4c8a3f06c407add713834",
     "semantic_hash": ""
   },
   "microservicios/olt/caidas/cache.py": {
@@ -933,6 +921,90 @@
     "mtime": 1791475105.621774,
     "seen": 1791478147.4899487,
     "ast_hash": "b4a9472cbe7ed19702bd40e40efaf4fb",
+    "semantic_hash": ""
+  },
+  "backend/api/cmts_inits.php": {
+    "mtime": 1791489538.7949958,
+    "seen": 1791490169.7127423,
+    "ast_hash": "6be54379c9cba073d8c367a8f462267f",
+    "semantic_hash": ""
+  },
+  "backend/api/olt_casos_helix.php": {
+    "mtime": 1791481385.6807098,
+    "seen": 1791490169.712752,
+    "ast_hash": "6281da9e9636b31d9726fdada83cd9a5",
+    "semantic_hash": ""
+  },
+  "frontend/assets/js/cmts-inits.js": {
+    "mtime": 1791489551.235951,
+    "seen": 1791490169.7127676,
+    "ast_hash": "74405527d555175956c26df0d7dc145d",
+    "semantic_hash": ""
+  },
+  "frontend/assets/js/gkp-casos-helix.js": {
+    "mtime": 1791481703.3620353,
+    "seen": 1791490169.712769,
+    "ast_hash": "90478773b82a98d767baa8c30c19ffad",
+    "semantic_hash": ""
+  },
+  "frontend/cmts-inits.php": {
+    "mtime": 1791489328.5871916,
+    "seen": 1791490169.7127814,
+    "ast_hash": "becb23e7373af64cf12eeed9c71fb1fe",
+    "semantic_hash": ""
+  },
+  "microservicios/cmts/inits/__init__.py": {
+    "mtime": 1791488919.2548275,
+    "seen": 1791490169.7127964,
+    "ast_hash": "0c00c540dbc062e2e778ba2e9d44c98e",
+    "semantic_hash": ""
+  },
+  "microservicios/cmts/inits/inits_cmts.py": {
+    "mtime": 1791489661.2086596,
+    "seen": 1791490169.7127974,
+    "ast_hash": "6963c7222954ab8b829a93913361dc79",
+    "semantic_hash": ""
+  },
+  "microservicios/cmts/inits/router.py": {
+    "mtime": 1791489606.5236938,
+    "seen": 1791490169.7127984,
+    "ast_hash": "adb4e2827d4a531dce476a54f28973b8",
+    "semantic_hash": ""
+  },
+  "microservicios/olt/casos_helix/__init__.py": {
+    "mtime": 1791478752.8601477,
+    "seen": 1791490169.7128243,
+    "ast_hash": "9a4b988fa769f5f458631018b60a6a6b",
+    "semantic_hash": ""
+  },
+  "microservicios/olt/casos_helix/router.py": {
+    "mtime": 1791481363.5783613,
+    "seen": 1791490169.712825,
+    "ast_hash": "54c4d433e03a4e525ef6b6e1360bd810",
+    "semantic_hash": ""
+  },
+  "microservicios/olt/casos_helix/service.py": {
+    "mtime": 1791481734.9814162,
+    "seen": 1791490169.7128258,
+    "ast_hash": "0dcf03f4a621e933d9d2d07f75d0c148",
+    "semantic_hash": ""
+  },
+  "microservicios/olt/casos_helix/worker.py": {
+    "mtime": 1791481758.5214064,
+    "seen": 1791490169.7128267,
+    "ast_hash": "f533e7b7603803c934e7b4cf5195e987",
+    "semantic_hash": ""
+  },
+  "tests/test_casos_helix_async.py": {
+    "mtime": 1791481768.1127918,
+    "seen": 1791490169.7128522,
+    "ast_hash": "afc9bbce0382f5cdabfa0efab3abedbd",
+    "semantic_hash": ""
+  },
+  "tests/test_cmts_inits.py": {
+    "mtime": 1791489626.6452808,
+    "seen": 1791490169.712853,
+    "ast_hash": "b2191fcc0372067c327d9eb8139ed715",
     "semantic_hash": ""
   }
 }
