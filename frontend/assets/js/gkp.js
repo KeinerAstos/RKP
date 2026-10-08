@@ -18,6 +18,20 @@
     let ftthCrcVisible = false;
     let ftthReturnFocus = null;
     let currentAlertIds = null;
+
+    const audioAlarma = new Audio('assets/sounds/nueva_alarma.mp3');
+    audioAlarma.preload = 'auto';
+    audioAlarma.volume = 0.7;
+
+    function reproducirAlarma() {
+        audioAlarma.pause();
+        audioAlarma.currentTime = 0;
+
+        audioAlarma.play().catch((error) => {
+            console.warn('No se pudo reproducir la alarma:', error);
+        });
+    }
+
     let monitorMode = false;
 
     const app = document.querySelector('.app');
@@ -212,36 +226,6 @@
             .join('|');
     }
 
-    function speakText(text) {
-        if (
-            !('speechSynthesis' in window)
-            || typeof SpeechSynthesisUtterance === 'undefined'
-        ) {
-            return;
-        }
-
-        if (window.speechSynthesis.paused) {
-            window.speechSynthesis.resume();
-        }
-
-        const utterance = new SpeechSynthesisUtterance(text);
-
-        utterance.lang = 'es-CO';
-        utterance.rate = 1;
-        utterance.pitch = 1;
-        utterance.volume = 1;
-
-        utterance.onerror = (event) => {
-            if (event.error === 'not-allowed') {
-                console.warn(
-                    'Dictado de alertas bloqueado hasta que exista interacción del usuario.'
-                );
-            }
-        };
-
-        window.speechSynthesis.speak(utterance);
-    }
-
     function formatAlertTime(row) {
         if (!row.fecha_evento) {
             return 'hora no disponible';
@@ -263,14 +247,6 @@
             hour12: false,
             timeZone: 'America/Bogota'
         });
-    }
-
-    function speakAlert(row) {
-        speakText(
-            `OLT ${row.equipo}. `
-            + `Tiempo ${formatAlertTime(row)}. `
-            + `Estado ${row.estado}.`
-        );
     }
 
     function render(rows) {
@@ -492,13 +468,7 @@
             }
 
             if (newRows.length > 0) {
-                newRows.slice(0, 3).forEach(speakAlert);
-
-                if (newRows.length > 3) {
-                    speakText(
-                        `Y ${newRows.length - 3} alertas nuevas adicionales.`
-                    );
-                }
+             reproducirAlarma();
             }
 
             hasValidData = true;
