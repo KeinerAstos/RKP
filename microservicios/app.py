@@ -24,6 +24,11 @@ from microservicios.cmts.puertos_docsis.router import (
 from microservicios.cmts.puertos_duplicados.router import (
     router as cmts_puertos_duplicados_router,
 )
+from microservicios.cmts.inits.router import (
+    router as cmts_inits_router,
+    start_scheduler as start_cmts_inits_scheduler,
+    stop_scheduler as stop_cmts_inits_scheduler,
+)
 from microservicios.olt.caidas.router import router as caidas_router
 from microservicios.olt.casos_helix.router import router as casos_helix_router
 from microservicios.olt.correlacion.router import router as correlacion_router
@@ -56,6 +61,7 @@ async def lifespan(_app: FastAPI):
         casos_helix_service.consultar_olt,
         ttl_seconds=settings.oracle_helix_cache_seconds,
     )
+    await start_cmts_inits_scheduler()
 
     if os.environ.get("TOPOLOGIAS_AUTO") == "1":
         print("[TOPOLOGIAS AUTO] Worker habilitado")
@@ -66,6 +72,7 @@ async def lifespan(_app: FastAPI):
     try:
         yield
     finally:
+        await stop_cmts_inits_scheduler()
         stop_helix_worker()
         if tarea:
             tarea.cancel()
@@ -121,3 +128,4 @@ app.include_router(cmts_saturacion_router, prefix="/api/cmts")
 app.include_router(cmts_puertos_docsis_router, prefix="/api/cmts")
 app.include_router(cmts_intermitencias_router, prefix="/api/cmts")
 app.include_router(cmts_puertos_duplicados_router, prefix="/api/cmts")
+app.include_router(cmts_inits_router, prefix="/api/cmts")

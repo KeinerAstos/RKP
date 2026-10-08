@@ -24,6 +24,35 @@ final class MicroserviceClient
         return $this->request('POST', $this->buildUrl($path), $body);
     }
 
+    public function streamCsv(string $path, array $query = []): int
+    {
+        $handle = curl_init($this->buildUrl($path, $query));
+        if ($handle === false) {
+            throw new RuntimeException('No fue posible inicializar el cliente HTTP');
+        }
+        curl_setopt_array($handle, [
+            CURLOPT_RETURNTRANSFER => false,
+            CURLOPT_TIMEOUT => max(0, $this->timeout),
+            CURLOPT_CONNECTTIMEOUT => $this->connectTimeout,
+            CURLOPT_HTTPHEADER => ['Accept: text/csv'],
+            CURLOPT_WRITEFUNCTION => static function ($curl, string $chunk): int {
+                echo $chunk;
+                if (function_exists('ob_flush')) { @ob_flush(); }
+                flush();
+                return strlen($chunk);
+            },
+        ]);
+        $ok = curl_exec($handle);
+        $status = (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
+        if ($ok === false) {
+            $message = curl_error($handle);
+            curl_close($handle);
+            throw new RuntimeException('Servicio de monitoreo INIT no disponible: ' . $message);
+        }
+        curl_close($handle);
+        return $status;
+    }
+
     private function buildUrl(string $path, array $query = []): string
     {
         $url = rtrim($this->baseUrl, '/') . '/' . ltrim($path, '/');
