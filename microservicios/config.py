@@ -92,6 +92,28 @@ class Settings(BaseSettings):
     topologias_public_base: str = "/api/olt/topologias/media"
     topologias_cache_ttl_horas: int = 24
 
+    # Monitoreo CMTS INIT (CSV privado, fuera del document root de XAMPP).
+    cmts_init_enabled: bool = False
+    cmts_user: str = ""
+    cmts_password: str = ""
+    cmts_init_interval_seconds: int = 900
+    cmts_init_max_workers: int = 1
+    cmts_init_data_path: str = "data/cmts_inits"
+    cmts_known_hosts: str = ""
+    cmts_init_ssh_port: int = Field(default=22, ge=1, le=65535)
+    cmts_init_connect_timeout_seconds: int = Field(default=30, ge=1, le=300)
+    cmts_init_cli_timeout_seconds: int = Field(default=90, ge=1, le=600)
+    cmts_init_retention_days: int = 90
+    cmts_init_inventory_path: str = ""
+    # Salto SSH exclusivo de CMTS INIT; credenciales privadas en .env.
+    cmts_init_jump_enabled: bool = False
+    cmts_init_jump_host: str = ""
+    cmts_init_jump_port: int = Field(default=22, ge=1, le=65535)
+    cmts_init_jump_user: str = ""
+    cmts_init_jump_password: str = ""
+    cmts_init_threshold_attention_max: int = 9
+    cmts_init_threshold_risk_max: int = 49
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

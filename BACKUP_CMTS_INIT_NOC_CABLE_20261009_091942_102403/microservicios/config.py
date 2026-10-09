@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -60,7 +61,13 @@ class Settings(BaseSettings):
     oracle_helix_password: str = ""
     oracle_helix_cache_seconds: int = 120
     oracle_helix_call_timeout_ms: int = 15000
-    oracle_helix_budget_seconds: int = 45
+    oracle_helix_query_budget_seconds: int = Field(
+        default=45,
+        validation_alias=AliasChoices(
+            "ORACLE_HELIX_QUERY_BUDGET_SECONDS",
+            "ORACLE_HELIX_BUDGET_SECONDS",
+        ),
+    )
 
     # ==========================================
     # Grafana proxy local
@@ -84,6 +91,22 @@ class Settings(BaseSettings):
     topologias_local_dir: str = "data/topologias"
     topologias_public_base: str = "/api/olt/topologias/media"
     topologias_cache_ttl_horas: int = 24
+
+    # Monitoreo CMTS INIT (CSV privado, fuera del document root de XAMPP).
+    cmts_init_enabled: bool = False
+    cmts_user: str = ""
+    cmts_password: str = ""
+    cmts_init_interval_seconds: int = 900
+    cmts_init_max_workers: int = 1
+    cmts_init_data_path: str = "data/cmts_inits"
+    cmts_known_hosts: str = ""
+    cmts_init_ssh_port: int = Field(default=22, ge=1, le=65535)
+    cmts_init_connect_timeout_seconds: int = Field(default=30, ge=1, le=300)
+    cmts_init_cli_timeout_seconds: int = Field(default=90, ge=1, le=600)
+    cmts_init_retention_days: int = 90
+    cmts_init_inventory_path: str = ""
+    cmts_init_threshold_attention_max: int = 9
+    cmts_init_threshold_risk_max: int = 49
 
     model_config = SettingsConfigDict(
         env_file=".env",
