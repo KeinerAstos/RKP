@@ -953,16 +953,10 @@
     "ast_hash": "becb23e7373af64cf12eeed9c71fb1fe",
     "semantic_hash": ""
   },
-  "microservicios/cmts/inits/__init__.py": {
-    "mtime": 1791488919.2548275,
-    "seen": 1791490169.7127964,
-    "ast_hash": "0c00c540dbc062e2e778ba2e9d44c98e",
-    "semantic_hash": ""
-  },
   "microservicios/cmts/inits/inits_cmts.py": {
-    "mtime": 1791489661.2086596,
-    "seen": 1791490169.7127974,
-    "ast_hash": "6963c7222954ab8b829a93913361dc79",
+    "mtime": 1791495189.5040667,
+    "seen": 1791497789.952612,
+    "ast_hash": "17d192b7564b1fe45e7b03c2e84df4db",
     "semantic_hash": ""
   },
   "microservicios/cmts/inits/router.py": {

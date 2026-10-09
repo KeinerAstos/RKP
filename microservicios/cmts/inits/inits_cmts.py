@@ -12,7 +12,7 @@ import re
 import shutil
 import time
 import uuid
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from threading import Lock as ThreadLock
@@ -32,6 +32,7 @@ FIELDS = [
     "error",
 ]
 COMMAND = "show cable modem init"
+BOGOTA = timezone(timedelta(hours=-5))
 MAX_OUTPUT_BYTES = 4 * 1024 * 1024
 MAC = re.compile(
     r"(?<![\w])(?:[0-9a-f]{4}\.){2}[0-9a-f]{4}(?![\w])|(?<![\w])(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}(?![\w])",
@@ -362,8 +363,9 @@ def status() -> dict:
             .splitlines()
             if "=" in line
         )
-        active = values
-    except OSError:
+        if int(values.get("pid", "0")) > 0 and _pid_alive(int(values["pid"])):
+            active = values
+    except (OSError, ValueError):
         pass
     current = read_csv(path / "actual.csv")
     probe = read_csv(path / "prueba_equipo.csv")
@@ -394,11 +396,12 @@ def run_cycle(run_id: str | None = None, *, claimed: bool = False) -> dict:
         if not settings.cmts_user or not settings.cmts_password:
             raise RuntimeError("Configura CMTS_USER y CMTS_PASSWORD")
         items = inventory()
+        started = now()
         _write_progress(
             path,
             {
                 "run_id": run_id,
-                "started": now(),
+                "started": started,
                 "completed": 0,
                 "total": len(items),
                 "estado": "procesando",
@@ -409,12 +412,14 @@ def run_cycle(run_id: str | None = None, *, claimed: bool = False) -> dict:
         with ThreadPoolExecutor(
             max_workers=max(1, min(settings.cmts_init_max_workers, 20))
         ) as pool:
-            for item, row in zip(items, pool.map(query, items)):
+            futures = [pool.submit(query, item) for item in items]
+            for future in as_completed(futures):
+                row = future.result()
                 row.update(run_id=run_id, alcance="global")
                 rows.append(row)
                 progress = {
                     "run_id": run_id,
-                    "started": rows[0]["fecha"],
+                    "started": started,
                     "completed": len(rows),
                     "total": len(items),
                     "estado": "procesando",
@@ -429,7 +434,7 @@ def run_cycle(run_id: str | None = None, *, claimed: bool = False) -> dict:
             path,
             {
                 "run_id": run_id,
-                "started": rows[0]["fecha"],
+                "started": started,
                 "completed": len(rows),
                 "total": len(items),
                 "estado": "completo",
@@ -660,22 +665,22 @@ def _in_range(value: str, start: str, end: str) -> bool:
         timestamp = timestamp.astimezone(timezone.utc)
         if start:
             lower = datetime.fromisoformat(
-                start + "T00:00:00+00:00"
+                start + "T00:00:00-05:00"
                 if len(start) == 10
                 else start.replace("Z", "+00:00")
             )
             if lower.tzinfo is None:
-                lower = lower.replace(tzinfo=timezone.utc)
+                lower = lower.replace(tzinfo=BOGOTA)
             if timestamp < lower.astimezone(timezone.utc):
                 return False
         if end:
             upper = datetime.fromisoformat(
-                end + "T23:59:59.999999+00:00"
+                end + "T23:59:59.999999-05:00"
                 if len(end) == 10
                 else end.replace("Z", "+00:00")
             )
             if upper.tzinfo is None:
-                upper = upper.replace(tzinfo=timezone.utc)
+                upper = upper.replace(tzinfo=BOGOTA)
             if timestamp > upper.astimezone(timezone.utc):
                 return False
         return True
@@ -785,6 +790,7 @@ def query(item: dict[str, str]) -> dict:
         error="",
     )
     client = paramiko.SSHClient()
+    stage = "CONEXION_SSH"
     try:
         client.load_system_host_keys()
         if settings.cmts_known_hosts:
@@ -792,24 +798,30 @@ def query(item: dict[str, str]) -> dict:
         client.set_missing_host_key_policy(paramiko.RejectPolicy())
         client.connect(
             item["ip"],
+            port=settings.cmts_init_ssh_port,
             username=settings.cmts_user,
             password=settings.cmts_password,
-            timeout=30,
-            banner_timeout=30,
-            auth_timeout=30,
+            timeout=settings.cmts_init_connect_timeout_seconds,
+            banner_timeout=settings.cmts_init_connect_timeout_seconds,
+            auth_timeout=settings.cmts_init_connect_timeout_seconds,
             look_for_keys=False,
             allow_agent=False,
         )
+        stage = "APERTURA_CLI"
         channel = client.invoke_shell(width=240, height=1000)
-        channel.settimeout(90)
-        deadline = time.monotonic() + 90
+        channel.settimeout(settings.cmts_init_cli_timeout_seconds)
+        deadline = time.monotonic() + settings.cmts_init_cli_timeout_seconds
+        stage = "PROMPT_INICIAL"
         _, prompt = _read_cli_prompt(channel, deadline)
         if not prompt.endswith("#"):
             raise ValueError(
                 "Sesión sin prompt privilegiado #; revisar permisos del usuario"
             )
+        stage = "CONSULTA_INIT"
+        deadline = time.monotonic() + settings.cmts_init_cli_timeout_seconds
         channel.sendall(COMMAND + "\n")
         output, _ = _read_cli_prompt(channel, deadline, prompt)
+        stage = "VALIDACION_SALIDA"
         total = parse(output)
         result.update(total_init=total, ok=True, estado=severity(total))
     except Exception as exc:
@@ -818,9 +830,12 @@ def query(item: dict[str, str]) -> dict:
             if settings.cmts_password
             else str(exc)
         )
-        result["error"] = f"{type(exc).__name__}: {message}"[:400]
+        if isinstance(exc, (TimeoutError, paramiko.ssh_exception.NoValidConnectionsError)) and stage == "CONEXION_SSH":
+            message = f"Sin conexión SSH a {item['ip']}:{settings.cmts_init_ssh_port}; revisar ruta/VPN, ACL y puerto. {message}"
+        result["error"] = f"[{stage}] {type(exc).__name__}: {message}"[:400]
     finally:
         client.close()
+        result["fecha"] = now()
     return result
 
 

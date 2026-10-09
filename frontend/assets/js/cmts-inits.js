@@ -18,7 +18,7 @@
         Object.entries(params).forEach(([key, value]) => { if (value !== '' && value != null) url.searchParams.set(key, value); });
         const response = await fetch(url, { cache: 'no-store', signal: controller?.signal, ...options });
         const payload = options.method === 'POST' ? await response.json() : (action === 'exportar' ? response : await response.json());
-        if (!response.ok || (action !== 'exportar' && payload.ok !== true)) throw new Error(payload.error || 'Respuesta no disponible');
+        if (!response.ok || (action !== 'exportar' && payload.ok !== true)) throw new Error(payload.error || (typeof payload.detail === 'string' ? payload.detail : '') || 'Respuesta no disponible');
         return payload;
     };
     const notice = (text, state = '') => { nodes.notice.textContent = text; nodes.notice.dataset.state = state; };
@@ -47,7 +47,7 @@
         nodes.total.textContent = number.format(current.length); nodes.success.textContent = number.format(current.filter((x) => x.ok && x.total_init != null).length);
         nodes.failed.textContent = number.format(current.filter((x) => !x.ok || x.total_init == null).length);
         nodes.sum.textContent = number.format(current.filter((x) => x.ok && x.total_init != null).reduce((sum, row) => sum + row.total_init, 0));
-        nodes.last.textContent = current.length ? `Última lectura: ${date(current[0].fecha)}` : 'Sin mediciones';
+        nodes.last.textContent = current.length ? `Última lectura: ${date(current.reduce((latest, row) => row.fecha > latest ? row.fecha : latest, ''))}` : 'Sin mediciones';
         const top = [...current].filter((x) => x.ok && x.total_init != null).sort((a, b) => b.total_init - a.total_init).slice(0, 10);
         nodes.top.replaceChildren(...top.map((row) => { const li = document.createElement('li'); li.textContent = row.cmts; const value = document.createElement('span'); value.textContent = number.format(row.total_init); li.append(value); return li; }));
         const prior = nodes.select.value; nodes.select.replaceChildren(...current.map((row) => { const option = document.createElement('option'); option.value = row.cmts; option.textContent = row.cmts; return option; }));
@@ -59,8 +59,6 @@
             const payload = await api('actual'); const data = payload.data || {};
             if (!Array.isArray(data.items)) throw new Error('Formato de lectura inválido');
             current = data.items; render();
-            if (current.length) { nodes.run.textContent = 'Lectura publicada'; notice('Mostrando el último ciclo global terminado.'); }
-            else { nodes.run.textContent = 'Sin mediciones'; notice('El recolector aún no ha publicado un ciclo completo.'); }
         } catch (error) {
             if (!preserve) current = [];
             notice(error.message || 'No se pudo leer la última medición.', 'error');
@@ -70,11 +68,11 @@
         try {
             const payload = await api('estado'); const data = payload.data || {}; const progress = data.progreso || {};
             if (data.active) {
-                nodes.run.textContent = progress.alcance === 'equipo' ? `Probando ${progress.cmts || data.cmts_activo}` : (progress.total ? `Actualizando ${progress.completed || 0}/${progress.total}` : 'Actualizando…');
+                nodes.run.textContent = data.alcance_activo === 'equipo' ? `Probando ${data.cmts_activo}` : (progress.run_id === data.run_id && progress.total ? `Actualizando ${progress.completed || 0}/${progress.total}` : 'Actualizando…');
                 notice(`Consulta en curso. Último ciclo global terminado: ${date(data.last_completed_at)}.`, 'loading'); schedulePoll();
             } else if (progress.estado === 'error') { nodes.run.textContent = 'Último ciclo falló'; notice(progress.error || 'Falló la consulta; se conserva el ciclo publicado.', 'error'); }
-            else if (data.enabled !== true) { nodes.run.textContent = 'Recolector deshabilitado'; }
-            else { nodes.run.textContent = 'Disponible'; }
+            else if (data.enabled !== true) { nodes.run.textContent = 'Recolector deshabilitado'; notice('El recolector está deshabilitado.'); }
+            else { nodes.run.textContent = current.length ? 'Disponible' : 'Sin mediciones'; notice(current.length ? 'Mostrando el último ciclo global terminado.' : 'El recolector aún no ha publicado un ciclo completo.'); }
             return data;
         } catch (error) { notice(error.message || 'No se pudo leer el estado del recolector.', 'error'); return null; }
     }
@@ -82,12 +80,12 @@
     async function poll() {
         const data = await loadStatus();
         if (data && !data.active) {
-            await loadActual(); await loadHistory();
+            await loadActual(); await loadHistory(); await loadStatus();
             const progress = data.progreso || {}; const probe = data.last_probe;
             if (progress.alcance === 'equipo' && progress.estado === 'completo' && probe?.run_id === progress.run_id) {
-                notice(`Prueba individual completada: ${probe.cmts} · ${probe.estado}. El ciclo global se conserva.`);
+                notice(`Prueba individual completada: ${probe.cmts} · ${probe.estado}${probe.error ? ' · ' + probe.error : ''}.`, probe.ok ? '' : 'error');
             }
-        } else if (data) schedulePoll();
+        } else schedulePoll();
     }
     async function start() {
         if (busy) return; busy = true; nodes.refresh.disabled = true; controller?.abort(); controller = new AbortController();
@@ -127,7 +125,7 @@
         data.forEach((point, index) => { const x = pad.left + w * (data.length === 1 ? .5 : index / (data.length - 1)); const y = pad.top + h * (1 - point.total_init / max); if (index === 0) context.moveTo(x, y); else context.lineTo(x, y); }); context.stroke();
     }
     async function exportCsv() {
-        try { const response = await api('exportar'); const blob = await response.blob(); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'cmts-init-historico.csv'; link.click(); URL.revokeObjectURL(link.href); }
+        try { const response = await api('exportar', { cmts: nodes.historyCmts.value, desde: nodes.historyFrom.value, hasta: nodes.historyTo.value }); const blob = await response.blob(); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'cmts-init-historico.csv'; link.click(); URL.revokeObjectURL(link.href); }
         catch (error) { notice(error.message || 'No se pudo exportar el histórico.', 'error'); }
     }
     const handlers = [
@@ -141,9 +139,9 @@
     handlers.push([nodes.rows, 'click', probeClick]);
     document.querySelectorAll('[data-sort]').forEach((button) => handlers.push([button, 'click', () => { const next = button.dataset.sort; sortDirection = sortKey === next ? -sortDirection : (next === 'total_init' || next === 'variacion' ? -1 : 1); sortKey = next; render(); }]));
     handlers.forEach(([node, event, fn]) => node.addEventListener(event, fn));
-    const visibility = () => { active = !document.hidden; if (active) { loadStatus().then((data) => { if (data?.active) schedulePoll(); }); } else clearTimeout(pollTimer); };
+    const visibility = () => { active = !document.hidden; if (active) { poll(); } else clearTimeout(pollTimer); };
     const resize = () => { if (nodes.select.value) loadTrend(nodes.select.value); };
     const cleanup = () => { destroyed = true; clearTimeout(pollTimer); controller?.abort(); handlers.forEach(([node, event, fn]) => node.removeEventListener(event, fn)); document.removeEventListener('visibilitychange', visibility); window.removeEventListener('resize', resize); window.removeEventListener('pagehide', cleanup); };
     document.addEventListener('visibilitychange', visibility); window.addEventListener('resize', resize); window.addEventListener('pagehide', cleanup, { once: true });
-    Promise.all([loadActual(), loadStatus(), loadHistory()]);
+    Promise.all([loadActual(), loadHistory()]).then(() => loadStatus());
 })();

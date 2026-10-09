@@ -68,7 +68,12 @@ async def _scheduled_cycles() -> None:
     while True:
         global _cycle_task
         if _cycle_task is None or _cycle_task.done():
-            claim = service.claim_cycle()
+            try:
+                claim = service.claim_cycle()
+            except (RuntimeError, OSError) as exc:
+                print(f"[CMTS INIT] No se pudo reservar ciclo: {type(exc).__name__}")
+                await asyncio.sleep(5)
+                continue
             if not claim["created"]:
                 await asyncio.sleep(5)
                 continue
@@ -147,6 +152,12 @@ async def probar(response: Response, cmts: str = Query(..., min_length=1, max_le
         raise HTTPException(503, "Monitoreo INIT deshabilitado")
     if not settings.cmts_user or not settings.cmts_password:
         raise HTTPException(503, "Configura CMTS_USER y CMTS_PASSWORD")
+    try:
+        items = service.inventory()
+    except (OSError, ValueError) as exc:
+        raise HTTPException(503, str(exc)) from exc
+    if not any(item["cmts"].casefold() == cmts.casefold() or item["ip"] == cmts for item in items):
+        raise HTTPException(404, "CMTS no encontrado en el inventario")
     run_id = None
     reused = False
     if _cycle_task is None or _cycle_task.done():

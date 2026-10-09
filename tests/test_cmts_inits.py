@@ -126,7 +126,9 @@ def test_probe_writes_only_probe_csv_and_preserves_published_cycle(monkeypatch, 
 
 def test_date_range_end_day_is_inclusive():
     assert service._in_range("2026-10-08T22:00:00+00:00", "2026-10-08", "2026-10-08")
-    assert not service._in_range("2026-10-09T00:00:00+00:00", "2026-10-08", "2026-10-08")
+    assert service._in_range("2026-10-09T00:00:00+00:00", "2026-10-08", "2026-10-08")
+    assert not service._in_range("2026-10-08T04:59:59+00:00", "2026-10-08", "2026-10-08")
+    assert not service._in_range("2026-10-09T05:00:00+00:00", "2026-10-08", "2026-10-08")
 
 
 def test_excel_csv_text_prefixes_are_neutralized_only_on_text_columns():
@@ -175,3 +177,73 @@ def test_post_returns_while_cycle_runs_in_background(monkeypatch):
         deadline = time.monotonic() + 2
         while routes._cycle_task is not None and time.monotonic() < deadline:
             time.sleep(.01)
+
+
+def test_progress_tracks_completed_queries_without_waiting_for_inventory_order(monkeypatch, tmp_path):
+    monkeypatch.setattr(service, 'data_dir', lambda: tmp_path)
+    monkeypatch.setattr(service, 'inventory', lambda: [{'cmts': name, 'ip': '192.0.2.1'} for name in ('slow', 'fast')])
+    monkeypatch.setattr(service.settings, 'cmts_user', 'test')
+    monkeypatch.setattr(service.settings, 'cmts_password', 'test')
+    monkeypatch.setattr(service.settings, 'cmts_init_max_workers', 2)
+    release = threading.Event()
+    progress = []
+    def query(item):
+        if item['cmts'] == 'slow':
+            assert release.wait(3)
+        return dict(item, fecha=service.now(), total_init=1, ok=True, estado='ATENCION', error='')
+    def write_progress(_path, values):
+        progress.append(dict(values))
+        if values['completed'] == 1:
+            release.set()
+    monkeypatch.setattr(service, 'query', query)
+    monkeypatch.setattr(service, '_write_progress', write_progress)
+    try:
+        result = service.run_cycle()
+    finally:
+        release.set()
+    assert len(result['rows']) == 2
+    assert [p['completed'] for p in progress] == [0, 1, 2, 2]
+    assert len({p['started'] for p in progress}) == 1
+
+
+def test_status_ignores_lock_from_dead_process_even_without_published_csv(monkeypatch, tmp_path):
+    monkeypatch.setattr(service, 'data_dir', lambda: tmp_path)
+    monkeypatch.setattr(service, '_pid_alive', lambda _pid: False)
+    (tmp_path / 'consulta.lock').write_text('pid=999999\nrun_id=old\n', encoding='utf-8')
+    assert service.status()['active'] is False
+
+
+def test_query_connection_error_has_stage_and_redacts_password(monkeypatch):
+    import paramiko
+    class Client:
+        def load_system_host_keys(self): pass
+        def set_missing_host_key_policy(self, policy): pass
+        def connect(self, *args, **kwargs):
+            assert kwargs['port'] == 2222
+            raise TimeoutError('password-secret')
+        def close(self): pass
+    monkeypatch.setattr(paramiko, 'SSHClient', Client)
+    monkeypatch.setattr(service.settings, 'cmts_known_hosts', '')
+    monkeypatch.setattr(service.settings, 'cmts_password', 'password-secret')
+    monkeypatch.setattr(service.settings, 'cmts_init_ssh_port', 2222)
+    result = service.query({'cmts': 'test', 'ip': '192.0.2.1'})
+    assert not result['ok']
+    assert result['total_init'] is None
+    assert '[CONEXION_SSH]' in result['error']
+    assert '192.0.2.1:2222' in result['error']
+    assert 'password-secret' not in result['error']
+
+
+def test_probe_unknown_target_does_not_claim_cycle(monkeypatch):
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from microservicios.cmts.inits import router as routes
+    monkeypatch.setattr(routes.settings, 'cmts_init_enabled', True)
+    monkeypatch.setattr(routes.settings, 'cmts_user', 'test')
+    monkeypatch.setattr(routes.settings, 'cmts_password', 'test')
+    monkeypatch.setattr(service, 'inventory', lambda: [{'cmts': 'known', 'ip': '192.0.2.1'}])
+    monkeypatch.setattr(service, 'claim_cycle', lambda *args: (_ for _ in ()).throw(AssertionError('No debe reservar ciclo')))
+    app = FastAPI()
+    app.include_router(routes.router, prefix='/api/cmts')
+    response = TestClient(app).post('/api/cmts/inits/probar?cmts=unknown')
+    assert response.status_code == 404

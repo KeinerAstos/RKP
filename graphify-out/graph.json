@@ -56,19 +56,6 @@
       "source_location": "L12"
     },
     {
-      "id": "microservicios_grafana_proxy_app_proxyunavailable",
-      "label": "ProxyUnavailable",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "proxyunavailable",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L46"
-    },
-    {
       "id": "microservicios_olt_topologias_service_topologiaserror",
       "label": "TopologiasError",
       "_callable": true,
@@ -106,6 +93,19 @@
       "norm_label": "microserviceclient",
       "source_file": "backend/lib/_backups/MicroserviceClient_20261001_152721.php",
       "source_location": "L4"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_proxyunavailable",
+      "label": "ProxyUnavailable",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "proxyunavailable",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L46"
     },
     {
       "id": "agents_skills_impeccable_scripts_live_browser_buildcollapsible",
@@ -672,6 +672,42 @@
       "source_location": "L4493"
     },
     {
+      "id": "microservicios_app_error_http",
+      "label": "error_http()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "code",
+      "norm_label": "error_http()",
+      "source_file": "microservicios/app.py",
+      "source_location": "L96"
+    },
+    {
+      "id": "microservicios_app_error_no_controlado",
+      "label": "error_no_controlado()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "code",
+      "norm_label": "error_no_controlado()",
+      "source_file": "microservicios/app.py",
+      "source_location": "L88"
+    },
+    {
+      "id": "microservicios_app_error_validacion",
+      "label": "error_validacion()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "code",
+      "norm_label": "error_validacion()",
+      "source_file": "microservicios/app.py",
+      "source_location": "L104"
+    },
+    {
       "id": "microservicios_app_health",
       "label": "health()",
       "_callable": true,
@@ -708,40 +744,40 @@
       "source_location": "L44"
     },
     {
-      "id": "microservicios_cmts_inits_router_stop_scheduler",
-      "label": "stop_scheduler()",
+      "id": "microservicios_cmts_puertos_docsis_router_puertos_docsis_actual",
+      "label": "puertos_docsis_actual()",
       "_callable": true,
       "_origin": "ast",
       "community": 103,
       "community_name": "microservicios/app.py",
       "file_type": "code",
-      "norm_label": "stop_scheduler()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L80"
-    },
-    {
-      "id": "microservicios_cmts_puertos_duplicados_router_puertos_duplicados_actual",
-      "label": "puertos_duplicados_actual()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 103,
-      "community_name": "microservicios/app.py",
-      "file_type": "code",
-      "norm_label": "puertos_duplicados_actual()",
-      "source_file": "microservicios/cmts/puertos_duplicados/router.py",
+      "norm_label": "puertos_docsis_actual()",
+      "source_file": "microservicios/cmts/puertos_docsis/router.py",
       "source_location": "L13"
     },
     {
-      "id": "tests_test_cmts_inits_test_get_actual_reads_csv_without_ssh",
-      "label": "test_get_actual_reads_csv_without_ssh()",
+      "id": "microservicios_cmts_puertos_docsis_service_obtener_puertos_docsis_actuales",
+      "label": "obtener_puertos_docsis_actuales()",
       "_callable": true,
       "_origin": "ast",
       "community": 103,
       "community_name": "microservicios/app.py",
       "file_type": "code",
-      "norm_label": "test_get_actual_reads_csv_without_ssh()",
-      "source_file": "tests/test_cmts_inits.py",
-      "source_location": "L139"
+      "norm_label": "obtener_puertos_docsis_actuales()",
+      "source_file": "microservicios/cmts/puertos_docsis/service.py",
+      "source_location": "L6"
+    },
+    {
+      "id": "microservicios_olt_correlacion_router_correlacion",
+      "label": "correlacion()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "code",
+      "norm_label": "correlacion()",
+      "source_file": "microservicios/olt/correlacion/router.py",
+      "source_location": "L11"
     },
     {
       "id": "tests_test_cmts_inits_test_post_returns_while_cycle_runs_in_background",
@@ -1140,198 +1176,6 @@
       "source_location": "L159"
     },
     {
-      "id": "microservicios_cmts_inits_inits_cmts_actual",
-      "label": "actual()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "actual()",
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L388"
-    },
-    {
-      "id": "microservicios_cmts_inits_inits_cmts_get_progress",
-      "label": "get_progress()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "get_progress()",
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L381"
-    },
-    {
-      "id": "microservicios_cmts_inits_inits_cmts_status",
-      "label": "status()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "status()",
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L299"
-    },
-    {
-      "id": "microservicios_cmts_inits_inits_cmts_trend",
-      "label": "trend()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "trend()",
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L407"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_actual",
-      "label": "actual()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "actual()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L94"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_actualizar",
-      "label": "actualizar()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "actualizar()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L110"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_estado",
-      "label": "estado()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "estado()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L104"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_exportar",
-      "label": "exportar()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "exportar()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L193"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_historico",
-      "label": "historico()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "historico()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L174"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_probar",
-      "label": "probar()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "probar()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L144"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_run_cycle",
-      "label": "_run_cycle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "_run_cycle()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L41"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_run_probe",
-      "label": "_run_probe()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "_run_probe()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L51"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_scheduled_cycles",
-      "label": "_scheduled_cycles()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "_scheduled_cycles()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L67"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_start_scheduler",
-      "label": "start_scheduler()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "start_scheduler()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L61"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_summary",
-      "label": "_summary()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "_summary()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L18"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_tendencia",
-      "label": "tendencia()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "tendencia()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L181"
-    },
-    {
       "id": "microservicios_olt_caidas_queries_escapar_flux",
       "label": "_escapar_flux()",
       "_callable": true,
@@ -1392,6 +1236,42 @@
       "source_location": "L213"
     },
     {
+      "id": "microservicios_olt_caidas_router_caidas",
+      "label": "caidas()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "caidas/service.py",
+      "file_type": "code",
+      "norm_label": "caidas()",
+      "source_file": "microservicios/olt/caidas/router.py",
+      "source_location": "L17"
+    },
+    {
+      "id": "microservicios_olt_caidas_router_caidas_actuales",
+      "label": "caidas_actuales()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "caidas/service.py",
+      "file_type": "code",
+      "norm_label": "caidas_actuales()",
+      "source_file": "microservicios/olt/caidas/router.py",
+      "source_location": "L45"
+    },
+    {
+      "id": "microservicios_olt_caidas_router_intermitencias",
+      "label": "intermitencias()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "caidas/service.py",
+      "file_type": "code",
+      "norm_label": "intermitencias()",
+      "source_file": "microservicios/olt/caidas/router.py",
+      "source_location": "L54"
+    },
+    {
       "id": "microservicios_olt_caidas_service_agregar_caida",
       "label": "_agregar_caida()",
       "_callable": true,
@@ -1414,6 +1294,18 @@
       "norm_label": "_agrupar_muestras_recientes()",
       "source_file": "microservicios/olt/caidas/service.py",
       "source_location": "L533"
+    },
+    {
+      "id": "microservicios_olt_caidas_service_analizar_caidas",
+      "label": "analizar_caidas()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "caidas/service.py",
+      "file_type": "code",
+      "norm_label": "analizar_caidas()",
+      "source_file": "microservicios/olt/caidas/service.py",
+      "source_location": "L247"
     },
     {
       "id": "microservicios_olt_caidas_service_buscar_ultima_actividad",
@@ -1476,6 +1368,18 @@
       "source_location": "L693"
     },
     {
+      "id": "microservicios_olt_caidas_service_obtener_caidas",
+      "label": "obtener_caidas()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "caidas/service.py",
+      "file_type": "code",
+      "norm_label": "obtener_caidas()",
+      "source_file": "microservicios/olt/caidas/service.py",
+      "source_location": "L330"
+    },
+    {
       "id": "microservicios_olt_caidas_service_obtener_caidas_actuales",
       "label": "obtener_caidas_actuales()",
       "_callable": true,
@@ -1498,6 +1402,18 @@
       "norm_label": "obtener_caidas_por_puerto()",
       "source_file": "microservicios/olt/caidas/service.py",
       "source_location": "L235"
+    },
+    {
+      "id": "microservicios_olt_caidas_service_obtener_intermitencias",
+      "label": "obtener_intermitencias()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "caidas/service.py",
+      "file_type": "code",
+      "norm_label": "obtener_intermitencias()",
+      "source_file": "microservicios/olt/caidas/service.py",
+      "source_location": "L362"
     },
     {
       "id": "microservicios_olt_caidas_service_obtener_trafico",
@@ -1690,126 +1606,6 @@
       "norm_label": "startprobe()",
       "source_file": "frontend/assets/js/cmts-inits.js",
       "source_location": "L99"
-    },
-    {
-      "id": "microservicios_olt_caidas_router_caidas",
-      "label": "caidas()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 128,
-      "community_name": "caidas/router.py",
-      "file_type": "code",
-      "norm_label": "caidas()",
-      "source_file": "microservicios/olt/caidas/router.py",
-      "source_location": "L17"
-    },
-    {
-      "id": "microservicios_olt_caidas_router_caidas_actuales",
-      "label": "caidas_actuales()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 128,
-      "community_name": "caidas/router.py",
-      "file_type": "code",
-      "norm_label": "caidas_actuales()",
-      "source_file": "microservicios/olt/caidas/router.py",
-      "source_location": "L45"
-    },
-    {
-      "id": "microservicios_olt_caidas_router_intermitencias",
-      "label": "intermitencias()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 128,
-      "community_name": "caidas/router.py",
-      "file_type": "code",
-      "norm_label": "intermitencias()",
-      "source_file": "microservicios/olt/caidas/router.py",
-      "source_location": "L54"
-    },
-    {
-      "id": "microservicios_olt_caidas_service_analizar_caidas",
-      "label": "analizar_caidas()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 128,
-      "community_name": "caidas/router.py",
-      "file_type": "code",
-      "norm_label": "analizar_caidas()",
-      "source_file": "microservicios/olt/caidas/service.py",
-      "source_location": "L247"
-    },
-    {
-      "id": "microservicios_olt_caidas_service_obtener_caidas",
-      "label": "obtener_caidas()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 128,
-      "community_name": "caidas/router.py",
-      "file_type": "code",
-      "norm_label": "obtener_caidas()",
-      "source_file": "microservicios/olt/caidas/service.py",
-      "source_location": "L330"
-    },
-    {
-      "id": "microservicios_olt_caidas_service_obtener_intermitencias",
-      "label": "obtener_intermitencias()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 128,
-      "community_name": "caidas/router.py",
-      "file_type": "code",
-      "norm_label": "obtener_intermitencias()",
-      "source_file": "microservicios/olt/caidas/service.py",
-      "source_location": "L362"
-    },
-    {
-      "id": "microservicios_olt_temperatura_queries_obtener_temperatura_actual_flux",
-      "label": "obtener_temperatura_actual_flux()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 129,
-      "community_name": "temperatura/service.py",
-      "file_type": "code",
-      "norm_label": "obtener_temperatura_actual_flux()",
-      "source_file": "microservicios/olt/temperatura/queries.py",
-      "source_location": "L6"
-    },
-    {
-      "id": "microservicios_olt_temperatura_router_temperatura_actual",
-      "label": "temperatura_actual()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 129,
-      "community_name": "temperatura/service.py",
-      "file_type": "code",
-      "norm_label": "temperatura_actual()",
-      "source_file": "microservicios/olt/temperatura/router.py",
-      "source_location": "L11"
-    },
-    {
-      "id": "microservicios_olt_temperatura_service_clasificar_temperatura",
-      "label": "clasificar_temperatura()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 129,
-      "community_name": "temperatura/service.py",
-      "file_type": "code",
-      "norm_label": "clasificar_temperatura()",
-      "source_file": "microservicios/olt/temperatura/service.py",
-      "source_location": "L16"
-    },
-    {
-      "id": "microservicios_olt_temperatura_service_obtener_temperatura_actual",
-      "label": "obtener_temperatura_actual()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 129,
-      "community_name": "temperatura/service.py",
-      "file_type": "code",
-      "norm_label": "obtener_temperatura_actual()",
-      "source_file": "microservicios/olt/temperatura/service.py",
-      "source_location": "L28"
     },
     {
       "id": "agents_skills_impeccable_scripts_live_browser_applyplaceholderdimensions",
@@ -2254,258 +2050,6 @@
       "norm_label": "updateselectedelement()",
       "source_file": ".agents/skills/impeccable/scripts/live-browser.js",
       "source_location": "L6587"
-    },
-    {
-      "id": "microservicios_cmts_puertos_docsis_router_puertos_docsis_actual",
-      "label": "puertos_docsis_actual()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 130,
-      "community_name": "puertos_docsis/router.py",
-      "file_type": "code",
-      "norm_label": "puertos_docsis_actual()",
-      "source_file": "microservicios/cmts/puertos_docsis/router.py",
-      "source_location": "L13"
-    },
-    {
-      "id": "microservicios_cmts_puertos_docsis_service_obtener_puertos_docsis_actuales",
-      "label": "obtener_puertos_docsis_actuales()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 130,
-      "community_name": "puertos_docsis/router.py",
-      "file_type": "code",
-      "norm_label": "obtener_puertos_docsis_actuales()",
-      "source_file": "microservicios/cmts/puertos_docsis/service.py",
-      "source_location": "L6"
-    },
-    {
-      "id": "microservicios_app_error_http",
-      "label": "error_http()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 131,
-      "community_name": "error_http",
-      "file_type": "code",
-      "norm_label": "error_http()",
-      "source_file": "microservicios/app.py",
-      "source_location": "L96"
-    },
-    {
-      "id": "microservicios_app_error_no_controlado",
-      "label": "error_no_controlado()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 131,
-      "community_name": "error_http",
-      "file_type": "code",
-      "norm_label": "error_no_controlado()",
-      "source_file": "microservicios/app.py",
-      "source_location": "L88"
-    },
-    {
-      "id": "microservicios_app_error_validacion",
-      "label": "error_validacion()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 131,
-      "community_name": "error_http",
-      "file_type": "code",
-      "norm_label": "error_validacion()",
-      "source_file": "microservicios/app.py",
-      "source_location": "L104"
-    },
-    {
-      "id": "probar_topologias_consultar",
-      "label": "consultar()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 132,
-      "community_name": "probar_topologias.py",
-      "file_type": "code",
-      "norm_label": "consultar()",
-      "source_file": "probar_topologias.py",
-      "source_location": "L40"
-    },
-    {
-      "id": "probar_topologias_convertir_visio_a_jpg",
-      "label": "convertir_visio_a_jpg()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 132,
-      "community_name": "probar_topologias.py",
-      "file_type": "code",
-      "norm_label": "convertir_visio_a_jpg()",
-      "source_file": "probar_topologias.py",
-      "source_location": "L78"
-    },
-    {
-      "id": "probar_topologias_main",
-      "label": "main()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 132,
-      "community_name": "probar_topologias.py",
-      "file_type": "code",
-      "norm_label": "main()",
-      "source_file": "probar_topologias.py",
-      "source_location": "L211"
-    },
-    {
-      "id": "probar_topologias_obtener_ruta_local",
-      "label": "obtener_ruta_local()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 132,
-      "community_name": "probar_topologias.py",
-      "file_type": "code",
-      "norm_label": "obtener_ruta_local()",
-      "source_file": "probar_topologias.py",
-      "source_location": "L206"
-    },
-    {
-      "id": "probar_topologias_procesar_mensajes",
-      "label": "procesar_mensajes()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 132,
-      "community_name": "probar_topologias.py",
-      "file_type": "code",
-      "norm_label": "procesar_mensajes()",
-      "source_file": "probar_topologias.py",
-      "source_location": "L53"
-    },
-    {
-      "id": "probar_topologias_recortar_imagen",
-      "label": "recortar_imagen()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 132,
-      "community_name": "probar_topologias.py",
-      "file_type": "code",
-      "norm_label": "recortar_imagen()",
-      "source_file": "probar_topologias.py",
-      "source_location": "L63"
-    },
-    {
-      "id": "probar_vsd_jpg_convertir_individual",
-      "label": "convertir_individual()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 133,
-      "community_name": "probar_vsd_jpg.py",
-      "file_type": "code",
-      "norm_label": "convertir_individual()",
-      "source_file": "probar_vsd_jpg.py",
-      "source_location": "L497"
-    },
-    {
-      "id": "probar_vsd_jpg_convertir_masivo",
-      "label": "convertir_masivo()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 133,
-      "community_name": "probar_vsd_jpg.py",
-      "file_type": "code",
-      "norm_label": "convertir_masivo()",
-      "source_file": "probar_vsd_jpg.py",
-      "source_location": "L629"
-    },
-    {
-      "id": "probar_vsd_jpg_convertir_visio_a_jpg",
-      "label": "convertir_visio_a_jpg()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 133,
-      "community_name": "probar_vsd_jpg.py",
-      "file_type": "code",
-      "norm_label": "convertir_visio_a_jpg()",
-      "source_file": "probar_vsd_jpg.py",
-      "source_location": "L113"
-    },
-    {
-      "id": "probar_vsd_jpg_main",
-      "label": "main()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 133,
-      "community_name": "probar_vsd_jpg.py",
-      "file_type": "code",
-      "norm_label": "main()",
-      "source_file": "probar_vsd_jpg.py",
-      "source_location": "L736"
-    },
-    {
-      "id": "probar_vsd_jpg_obtener_archivos_visio",
-      "label": "obtener_archivos_visio()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 133,
-      "community_name": "probar_vsd_jpg.py",
-      "file_type": "code",
-      "norm_label": "obtener_archivos_visio()",
-      "source_file": "probar_vsd_jpg.py",
-      "source_location": "L484"
-    },
-    {
-      "id": "probar_vsd_jpg_procesar_mensajes",
-      "label": "procesar_mensajes()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 133,
-      "community_name": "probar_vsd_jpg.py",
-      "file_type": "code",
-      "norm_label": "procesar_mensajes()",
-      "source_file": "probar_vsd_jpg.py",
-      "source_location": "L33"
-    },
-    {
-      "id": "probar_vsd_jpg_recortar_imagen",
-      "label": "recortar_imagen()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 133,
-      "community_name": "probar_vsd_jpg.py",
-      "file_type": "code",
-      "norm_label": "recortar_imagen()",
-      "source_file": "probar_vsd_jpg.py",
-      "source_location": "L60"
-    },
-    {
-      "id": "microservicios_olt_correlacion_router_correlacion",
-      "label": "correlacion()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 134,
-      "community_name": "obtener_correlacion",
-      "file_type": "code",
-      "norm_label": "correlacion()",
-      "source_file": "microservicios/olt/correlacion/router.py",
-      "source_location": "L11"
-    },
-    {
-      "id": "microservicios_olt_correlacion_service_eventos_se_relacionan",
-      "label": "eventos_se_relacionan()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 134,
-      "community_name": "obtener_correlacion",
-      "file_type": "code",
-      "norm_label": "eventos_se_relacionan()",
-      "source_file": "microservicios/olt/correlacion/service.py",
-      "source_location": "L14"
-    },
-    {
-      "id": "microservicios_olt_correlacion_service_obtener_correlacion",
-      "label": "obtener_correlacion()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 134,
-      "community_name": "obtener_correlacion",
-      "file_type": "code",
-      "norm_label": "obtener_correlacion()",
-      "source_file": "microservicios/olt/correlacion/service.py",
-      "source_location": "L29"
     },
     {
       "id": "agents_skills_impeccable_scripts_live_browser_findmatchingcssbrace",
@@ -3970,150 +3514,6 @@
       "norm_label": "uigetbyid()",
       "source_file": ".agents/skills/impeccable/scripts/live-browser-dom.js",
       "source_location": "L115"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_configuration_ready",
-      "label": "_configuration_ready()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "_configuration_ready()",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L50"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_ensure_authenticated_locked",
-      "label": "_ensure_authenticated_locked()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "_ensure_authenticated_locked()",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L101"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_is_login_redirect",
-      "label": "_is_login_redirect()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "_is_login_redirect()",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L131"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_login_locked",
-      "label": "_login_locked()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "_login_locked()",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L68"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_proxy",
-      "label": "proxy()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "proxy()",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L224"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_proxy_health",
-      "label": "proxy_health()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "proxy_health()",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L212"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_proxy_locked",
-      "label": "_proxy_locked()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "_proxy_locked()",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L171"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_request_headers",
-      "label": "_request_headers()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "_request_headers()",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L106"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_rewrite_location",
-      "label": "_rewrite_location()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "_rewrite_location()",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L138"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_send_upstream",
-      "label": "_send_upstream()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "_send_upstream()",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L151"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_upstream_base",
-      "label": "_upstream_base()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "_upstream_base()",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L59"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_upstream_origin",
-      "label": "_upstream_origin()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "_upstream_origin()",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L63"
     },
     {
       "id": "microservicios_olt_topologias_router_archivo",
@@ -6228,6 +5628,18 @@
       "source_location": "L6"
     },
     {
+      "id": "microservicios_cmts_puertos_duplicados_router_puertos_duplicados_actual",
+      "label": "puertos_duplicados_actual()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 27,
+      "community_name": "puertos_duplicados/service.py",
+      "file_type": "code",
+      "norm_label": "puertos_duplicados_actual()",
+      "source_file": "microservicios/cmts/puertos_duplicados/router.py",
+      "source_location": "L13"
+    },
+    {
       "id": "microservicios_cmts_puertos_duplicados_service_normalizar_descripcion",
       "label": "normalizar_descripcion()",
       "_callable": true,
@@ -7440,6 +6852,54 @@
       "source_location": "L34"
     },
     {
+      "id": "microservicios_olt_temperatura_queries_obtener_temperatura_actual_flux",
+      "label": "obtener_temperatura_actual_flux()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "consultar_flux_temp",
+      "file_type": "code",
+      "norm_label": "obtener_temperatura_actual_flux()",
+      "source_file": "microservicios/olt/temperatura/queries.py",
+      "source_location": "L6"
+    },
+    {
+      "id": "microservicios_olt_temperatura_router_temperatura_actual",
+      "label": "temperatura_actual()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "consultar_flux_temp",
+      "file_type": "code",
+      "norm_label": "temperatura_actual()",
+      "source_file": "microservicios/olt/temperatura/router.py",
+      "source_location": "L11"
+    },
+    {
+      "id": "microservicios_olt_temperatura_service_clasificar_temperatura",
+      "label": "clasificar_temperatura()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "consultar_flux_temp",
+      "file_type": "code",
+      "norm_label": "clasificar_temperatura()",
+      "source_file": "microservicios/olt/temperatura/service.py",
+      "source_location": "L16"
+    },
+    {
+      "id": "microservicios_olt_temperatura_service_obtener_temperatura_actual",
+      "label": "obtener_temperatura_actual()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "consultar_flux_temp",
+      "file_type": "code",
+      "norm_label": "obtener_temperatura_actual()",
+      "source_file": "microservicios/olt/temperatura/service.py",
+      "source_location": "L28"
+    },
+    {
       "id": "backend_lib_microserviceclient_microserviceclient_buildurl",
       "label": ".buildUrl()",
       "_callable": true,
@@ -7517,7 +6977,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 34,
-      "community_name": "iniciar_microserviciosypuente.py",
+      "community_name": "RuntimeError",
       "file_type": "code",
       "norm_label": "esperar_puerto()",
       "source_file": "iniciar_microserviciosypuente.py",
@@ -7529,7 +6989,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 34,
-      "community_name": "iniciar_microserviciosypuente.py",
+      "community_name": "RuntimeError",
       "file_type": "code",
       "norm_label": "iniciar_tunel()",
       "source_file": "iniciar_microserviciosypuente.py",
@@ -7541,7 +7001,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 34,
-      "community_name": "iniciar_microserviciosypuente.py",
+      "community_name": "RuntimeError",
       "file_type": "code",
       "norm_label": "iniciar_tunel_oracle()",
       "source_file": "iniciar_microserviciosypuente.py",
@@ -7553,7 +7013,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 34,
-      "community_name": "iniciar_microserviciosypuente.py",
+      "community_name": "RuntimeError",
       "file_type": "code",
       "norm_label": "iniciar_uvicorn()",
       "source_file": "iniciar_microserviciosypuente.py",
@@ -7565,7 +7025,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 34,
-      "community_name": "iniciar_microserviciosypuente.py",
+      "community_name": "RuntimeError",
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "iniciar_microserviciosypuente.py",
@@ -7577,7 +7037,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 34,
-      "community_name": "iniciar_microserviciosypuente.py",
+      "community_name": "RuntimeError",
       "file_type": "code",
       "norm_label": "matar()",
       "source_file": "iniciar_microserviciosypuente.py",
@@ -7589,7 +7049,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 34,
-      "community_name": "iniciar_microserviciosypuente.py",
+      "community_name": "RuntimeError",
       "file_type": "code",
       "norm_label": "nueva_consola_kwargs()",
       "source_file": "iniciar_microserviciosypuente.py",
@@ -7601,11 +7061,167 @@
       "_callable": true,
       "_origin": "ast",
       "community": 34,
-      "community_name": "iniciar_microserviciosypuente.py",
+      "community_name": "RuntimeError",
       "file_type": "code",
       "norm_label": "puerto_abierto()",
       "source_file": "iniciar_microserviciosypuente.py",
       "source_location": "L36"
+    },
+    {
+      "id": "probar_topologias_consultar",
+      "label": "consultar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "consultar()",
+      "source_file": "probar_topologias.py",
+      "source_location": "L40"
+    },
+    {
+      "id": "probar_topologias_convertir_visio_a_jpg",
+      "label": "convertir_visio_a_jpg()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "convertir_visio_a_jpg()",
+      "source_file": "probar_topologias.py",
+      "source_location": "L78"
+    },
+    {
+      "id": "probar_topologias_main",
+      "label": "main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "main()",
+      "source_file": "probar_topologias.py",
+      "source_location": "L211"
+    },
+    {
+      "id": "probar_topologias_obtener_ruta_local",
+      "label": "obtener_ruta_local()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "obtener_ruta_local()",
+      "source_file": "probar_topologias.py",
+      "source_location": "L206"
+    },
+    {
+      "id": "probar_topologias_procesar_mensajes",
+      "label": "procesar_mensajes()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "procesar_mensajes()",
+      "source_file": "probar_topologias.py",
+      "source_location": "L53"
+    },
+    {
+      "id": "probar_topologias_recortar_imagen",
+      "label": "recortar_imagen()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "recortar_imagen()",
+      "source_file": "probar_topologias.py",
+      "source_location": "L63"
+    },
+    {
+      "id": "probar_vsd_jpg_convertir_individual",
+      "label": "convertir_individual()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "convertir_individual()",
+      "source_file": "probar_vsd_jpg.py",
+      "source_location": "L497"
+    },
+    {
+      "id": "probar_vsd_jpg_convertir_masivo",
+      "label": "convertir_masivo()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "convertir_masivo()",
+      "source_file": "probar_vsd_jpg.py",
+      "source_location": "L629"
+    },
+    {
+      "id": "probar_vsd_jpg_convertir_visio_a_jpg",
+      "label": "convertir_visio_a_jpg()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "convertir_visio_a_jpg()",
+      "source_file": "probar_vsd_jpg.py",
+      "source_location": "L113"
+    },
+    {
+      "id": "probar_vsd_jpg_main",
+      "label": "main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "main()",
+      "source_file": "probar_vsd_jpg.py",
+      "source_location": "L736"
+    },
+    {
+      "id": "probar_vsd_jpg_obtener_archivos_visio",
+      "label": "obtener_archivos_visio()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "obtener_archivos_visio()",
+      "source_file": "probar_vsd_jpg.py",
+      "source_location": "L484"
+    },
+    {
+      "id": "probar_vsd_jpg_procesar_mensajes",
+      "label": "procesar_mensajes()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "procesar_mensajes()",
+      "source_file": "probar_vsd_jpg.py",
+      "source_location": "L33"
+    },
+    {
+      "id": "probar_vsd_jpg_recortar_imagen",
+      "label": "recortar_imagen()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "recortar_imagen()",
+      "source_file": "probar_vsd_jpg.py",
+      "source_location": "L60"
     },
     {
       "id": "agents_skills_impeccable_scripts_live_browser_accepteddomalreadyclean",
@@ -7834,6 +7450,30 @@
       "norm_label": "serializar()",
       "source_file": "microservicios/consultar_influx.py",
       "source_location": "L60"
+    },
+    {
+      "id": "microservicios_olt_correlacion_service_eventos_se_relacionan",
+      "label": "eventos_se_relacionan()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 38,
+      "community_name": "consultar_influx.py",
+      "file_type": "code",
+      "norm_label": "eventos_se_relacionan()",
+      "source_file": "microservicios/olt/correlacion/service.py",
+      "source_location": "L14"
+    },
+    {
+      "id": "microservicios_olt_correlacion_service_obtener_correlacion",
+      "label": "obtener_correlacion()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 38,
+      "community_name": "consultar_influx.py",
+      "file_type": "code",
+      "norm_label": "obtener_correlacion()",
+      "source_file": "microservicios/olt/correlacion/service.py",
+      "source_location": "L29"
     },
     {
       "id": "agents_skills_impeccable_scripts_live_browser_agenthasworkinflight",
@@ -8590,234 +8230,6 @@
       "norm_label": ".request()",
       "source_file": "backend/lib/_backups/MicroserviceClient_20261001_152721.php",
       "source_location": "L34"
-    },
-    {
-      "id": "microservicios_cmts_inits_inits_cmts_atomic_csv",
-      "label": "_atomic_csv()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "_atomic_csv()",
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L134"
-    },
-    {
-      "id": "microservicios_cmts_inits_inits_cmts_now",
-      "label": "now()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "now()",
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L31"
-    },
-    {
-      "id": "microservicios_cmts_inits_inits_cmts_parse",
-      "label": "parse()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "parse()",
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L70"
-    },
-    {
-      "id": "microservicios_cmts_inits_inits_cmts_read_csv",
-      "label": "read_csv()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "read_csv()",
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L202"
-    },
-    {
-      "id": "microservicios_cmts_inits_inits_cmts_validate_output",
-      "label": "validate_output()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "validate_output()",
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L94"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_exportar_stream",
-      "label": "stream()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "stream()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L194"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_safe_cell",
-      "label": "_safe_cell()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "_safe_cell()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L187"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_with_delta",
-      "label": "_with_delta()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "_with_delta()",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L24"
-    },
-    {
-      "id": "tests_test_cmts_inits_test_csv_normalizes_boolean_and_blank_total",
-      "label": "test_csv_normalizes_boolean_and_blank_total()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "test_csv_normalizes_boolean_and_blank_total()",
-      "source_file": "tests/test_cmts_inits.py",
-      "source_location": "L33"
-    },
-    {
-      "id": "tests_test_cmts_inits_test_delta_compares_against_valid_zero",
-      "label": "test_delta_compares_against_valid_zero()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "test_delta_compares_against_valid_zero()",
-      "source_file": "tests/test_cmts_inits.py",
-      "source_location": "L68"
-    },
-    {
-      "id": "tests_test_cmts_inits_test_delta_ignores_errors_and_never_compares_current_run",
-      "label": "test_delta_ignores_errors_and_never_compares_current_run()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "test_delta_ignores_errors_and_never_compares_current_run()",
-      "source_file": "tests/test_cmts_inits.py",
-      "source_location": "L56"
-    },
-    {
-      "id": "tests_test_cmts_inits_test_excel_csv_text_prefixes_are_neutralized_only_on_text_columns",
-      "label": "test_excel_csv_text_prefixes_are_neutralized_only_on_text_columns()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "test_excel_csv_text_prefixes_are_neutralized_only_on_text_columns()",
-      "source_file": "tests/test_cmts_inits.py",
-      "source_location": "L132"
-    },
-    {
-      "id": "tests_test_cmts_inits_test_output_rejects_ssh_error_instead_of_publishing_zero",
-      "label": "test_output_rejects_ssh_error_instead_of_publishing_zero()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "test_output_rejects_ssh_error_instead_of_publishing_zero()",
-      "source_file": "tests/test_cmts_inits.py",
-      "source_location": "L28"
-    },
-    {
-      "id": "tests_test_cmts_inits_test_output_rejects_truncated_ssh_result",
-      "label": "test_output_rejects_truncated_ssh_result()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "test_output_rejects_truncated_ssh_result()",
-      "source_file": "tests/test_cmts_inits.py",
-      "source_location": "L23"
-    },
-    {
-      "id": "tests_test_cmts_inits_test_parser_counts_unique_init_rows_and_zero",
-      "label": "test_parser_counts_unique_init_rows_and_zero()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "test_parser_counts_unique_init_rows_and_zero()",
-      "source_file": "tests/test_cmts_inits.py",
-      "source_location": "L12"
-    },
-    {
-      "id": "tests_test_cmts_inits_test_parser_rejects_unknown_or_incomplete_output",
-      "label": "test_parser_rejects_unknown_or_incomplete_output()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "test_parser_rejects_unknown_or_incomplete_output()",
-      "source_file": "tests/test_cmts_inits.py",
-      "source_location": "L18"
-    },
-    {
-      "id": "tests_test_cmts_inits_test_probe_writes_only_probe_csv_and_preserves_published_cycle",
-      "label": "test_probe_writes_only_probe_csv_and_preserves_published_cycle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "test_probe_writes_only_probe_csv_and_preserves_published_cycle()",
-      "source_file": "tests/test_cmts_inits.py",
-      "source_location": "L111"
-    },
-    {
-      "id": "tests_test_cmts_inits_test_published_cycle_is_reconciled_after_interrupted_history_write",
-      "label": "test_published_cycle_is_reconciled_after_interrupted_history_write()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "test_published_cycle_is_reconciled_after_interrupted_history_write()",
-      "source_file": "tests/test_cmts_inits.py",
-      "source_location": "L77"
-    },
-    {
-      "id": "tests_test_cmts_inits_test_retention_streams_csv_and_saves_backup",
-      "label": "test_retention_streams_csv_and_saves_backup()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "test_retention_streams_csv_and_saves_backup()",
-      "source_file": "tests/test_cmts_inits.py",
-      "source_location": "L100"
     },
     {
       "id": "agents_skills_impeccable_scripts_live_browser_ignores_globtoregex",
@@ -10389,7 +9801,19 @@
       "file_type": "code",
       "norm_label": "_acquire_lock()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L160"
+      "source_location": "L142"
+    },
+    {
+      "id": "microservicios_cmts_inits_inits_cmts_actual",
+      "label": "actual()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "actual()",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L584"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_append_history",
@@ -10401,7 +9825,7 @@
       "file_type": "code",
       "norm_label": "_append_history()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L217"
+      "source_location": "L237"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_apply_retention",
@@ -10413,7 +9837,19 @@
       "file_type": "code",
       "norm_label": "apply_retention()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L279"
+      "source_location": "L313"
+    },
+    {
+      "id": "microservicios_cmts_inits_inits_cmts_atomic_csv",
+      "label": "_atomic_csv()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_atomic_csv()",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L110"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_claim_cycle",
@@ -10425,7 +9861,7 @@
       "file_type": "code",
       "norm_label": "claim_cycle()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L185"
+      "source_location": "L177"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_data_dir",
@@ -10437,7 +9873,7 @@
       "file_type": "code",
       "norm_label": "data_dir()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L35"
+      "source_location": "L52"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_export_rows",
@@ -10449,7 +9885,19 @@
       "file_type": "code",
       "norm_label": "export_rows()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L420"
+      "source_location": "L641"
+    },
+    {
+      "id": "microservicios_cmts_inits_inits_cmts_get_progress",
+      "label": "get_progress()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "get_progress()",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L575"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_history",
@@ -10461,7 +9909,7 @@
       "file_type": "code",
       "norm_label": "history()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L391"
+      "source_location": "L588"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_in_range",
@@ -10473,7 +9921,7 @@
       "file_type": "code",
       "norm_label": "_in_range()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L431"
+      "source_location": "L655"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_inventory",
@@ -10485,7 +9933,7 @@
       "file_type": "code",
       "norm_label": "inventory()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L54"
+      "source_location": "L73"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_inventory_path",
@@ -10497,7 +9945,7 @@
       "file_type": "code",
       "norm_label": "inventory_path()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L48"
+      "source_location": "L67"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_main",
@@ -10509,7 +9957,7 @@
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L449"
+      "source_location": "L686"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_normalize",
@@ -10521,7 +9969,31 @@
       "file_type": "code",
       "norm_label": "normalize()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L210"
+      "source_location": "L228"
+    },
+    {
+      "id": "microservicios_cmts_inits_inits_cmts_now",
+      "label": "now()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "now()",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L48"
+    },
+    {
+      "id": "microservicios_cmts_inits_inits_cmts_parse",
+      "label": "parse()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "parse()",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L711"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_pid_alive",
@@ -10533,7 +10005,7 @@
       "file_type": "code",
       "norm_label": "_pid_alive()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L144"
+      "source_location": "L122"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_query",
@@ -10545,7 +10017,31 @@
       "file_type": "code",
       "norm_label": "query()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L102"
+      "source_location": "L776"
+    },
+    {
+      "id": "microservicios_cmts_inits_inits_cmts_read_cli_prompt",
+      "label": "_read_cli_prompt()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_read_cli_prompt()",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L741"
+    },
+    {
+      "id": "microservicios_cmts_inits_inits_cmts_read_csv",
+      "label": "read_csv()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "read_csv()",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L218"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_reconcile_published_cycle",
@@ -10557,7 +10053,7 @@
       "file_type": "code",
       "norm_label": "reconcile_published_cycle()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L232"
+      "source_location": "L256"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_reconcile_published_cycle_locked",
@@ -10569,7 +10065,7 @@
       "file_type": "code",
       "norm_label": "_reconcile_published_cycle_locked()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L266"
+      "source_location": "L297"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_reconcile_published_cycle_stamp",
@@ -10581,7 +10077,7 @@
       "file_type": "code",
       "norm_label": "stamp()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L236"
+      "source_location": "L261"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_run_cycle",
@@ -10593,7 +10089,7 @@
       "file_type": "code",
       "norm_label": "run_cycle()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L319"
+      "source_location": "L387"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_run_probe",
@@ -10605,7 +10101,7 @@
       "file_type": "code",
       "norm_label": "run_probe()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L350"
+      "source_location": "L461"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_severity",
@@ -10617,7 +10113,43 @@
       "file_type": "code",
       "norm_label": "severity()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L87"
+      "source_location": "L92"
+    },
+    {
+      "id": "microservicios_cmts_inits_inits_cmts_status",
+      "label": "status()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "status()",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L353"
+    },
+    {
+      "id": "microservicios_cmts_inits_inits_cmts_trend",
+      "label": "trend()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "trend()",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L621"
+    },
+    {
+      "id": "microservicios_cmts_inits_inits_cmts_validate_output",
+      "label": "validate_output()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "validate_output()",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L102"
     },
     {
       "id": "microservicios_cmts_inits_inits_cmts_write_progress",
@@ -10629,7 +10161,355 @@
       "file_type": "code",
       "norm_label": "_write_progress()",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L370"
+      "source_location": "L529"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_actual",
+      "label": "actual()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "actual()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L94"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_actualizar",
+      "label": "actualizar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "actualizar()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L110"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_estado",
+      "label": "estado()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "estado()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L104"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_exportar",
+      "label": "exportar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "exportar()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L193"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_exportar_stream",
+      "label": "stream()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "stream()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L194"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_historico",
+      "label": "historico()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "historico()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L174"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_probar",
+      "label": "probar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "probar()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L144"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_run_cycle",
+      "label": "_run_cycle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_run_cycle()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L41"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_run_probe",
+      "label": "_run_probe()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_run_probe()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L51"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_safe_cell",
+      "label": "_safe_cell()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_safe_cell()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L187"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_scheduled_cycles",
+      "label": "_scheduled_cycles()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_scheduled_cycles()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L67"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_start_scheduler",
+      "label": "start_scheduler()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "start_scheduler()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L61"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_stop_scheduler",
+      "label": "stop_scheduler()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "stop_scheduler()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L80"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_summary",
+      "label": "_summary()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_summary()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L18"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_tendencia",
+      "label": "tendencia()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "tendencia()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L181"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_with_delta",
+      "label": "_with_delta()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_with_delta()",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L24"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_configuration_ready",
+      "label": "_configuration_ready()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_configuration_ready()",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L50"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_ensure_authenticated_locked",
+      "label": "_ensure_authenticated_locked()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_ensure_authenticated_locked()",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L101"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_is_login_redirect",
+      "label": "_is_login_redirect()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_is_login_redirect()",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L131"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_login_locked",
+      "label": "_login_locked()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_login_locked()",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L68"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_proxy",
+      "label": "proxy()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "proxy()",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L224"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_proxy_health",
+      "label": "proxy_health()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "proxy_health()",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L212"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_proxy_locked",
+      "label": "_proxy_locked()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_proxy_locked()",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L171"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_request_headers",
+      "label": "_request_headers()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_request_headers()",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L106"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_rewrite_location",
+      "label": "_rewrite_location()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_rewrite_location()",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L138"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_send_upstream",
+      "label": "_send_upstream()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_send_upstream()",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L151"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_upstream_base",
+      "label": "_upstream_base()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_upstream_base()",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L59"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_upstream_origin",
+      "label": "_upstream_origin()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "_upstream_origin()",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L63"
+    },
+    {
+      "id": "tests_test_cmts_inits_test_csv_normalizes_boolean_and_blank_total",
+      "label": "test_csv_normalizes_boolean_and_blank_total()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "test_csv_normalizes_boolean_and_blank_total()",
+      "source_file": "tests/test_cmts_inits.py",
+      "source_location": "L33"
     },
     {
       "id": "tests_test_cmts_inits_test_cycle_claim_is_global_and_recovers_dead_process_lock",
@@ -10656,6 +10536,54 @@
       "source_location": "L127"
     },
     {
+      "id": "tests_test_cmts_inits_test_delta_compares_against_valid_zero",
+      "label": "test_delta_compares_against_valid_zero()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "test_delta_compares_against_valid_zero()",
+      "source_file": "tests/test_cmts_inits.py",
+      "source_location": "L68"
+    },
+    {
+      "id": "tests_test_cmts_inits_test_delta_ignores_errors_and_never_compares_current_run",
+      "label": "test_delta_ignores_errors_and_never_compares_current_run()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "test_delta_ignores_errors_and_never_compares_current_run()",
+      "source_file": "tests/test_cmts_inits.py",
+      "source_location": "L56"
+    },
+    {
+      "id": "tests_test_cmts_inits_test_excel_csv_text_prefixes_are_neutralized_only_on_text_columns",
+      "label": "test_excel_csv_text_prefixes_are_neutralized_only_on_text_columns()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "test_excel_csv_text_prefixes_are_neutralized_only_on_text_columns()",
+      "source_file": "tests/test_cmts_inits.py",
+      "source_location": "L132"
+    },
+    {
+      "id": "tests_test_cmts_inits_test_get_actual_reads_csv_without_ssh",
+      "label": "test_get_actual_reads_csv_without_ssh()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "test_get_actual_reads_csv_without_ssh()",
+      "source_file": "tests/test_cmts_inits.py",
+      "source_location": "L139"
+    },
+    {
       "id": "tests_test_cmts_inits_test_history_paginates_without_loading_entire_file",
       "label": "test_history_paginates_without_loading_entire_file()",
       "_callable": true,
@@ -10666,6 +10594,90 @@
       "norm_label": "test_history_paginates_without_loading_entire_file()",
       "source_file": "tests/test_cmts_inits.py",
       "source_location": "L44"
+    },
+    {
+      "id": "tests_test_cmts_inits_test_output_rejects_ssh_error_instead_of_publishing_zero",
+      "label": "test_output_rejects_ssh_error_instead_of_publishing_zero()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "test_output_rejects_ssh_error_instead_of_publishing_zero()",
+      "source_file": "tests/test_cmts_inits.py",
+      "source_location": "L28"
+    },
+    {
+      "id": "tests_test_cmts_inits_test_output_rejects_truncated_ssh_result",
+      "label": "test_output_rejects_truncated_ssh_result()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "test_output_rejects_truncated_ssh_result()",
+      "source_file": "tests/test_cmts_inits.py",
+      "source_location": "L23"
+    },
+    {
+      "id": "tests_test_cmts_inits_test_parser_counts_unique_init_rows_and_zero",
+      "label": "test_parser_counts_unique_init_rows_and_zero()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "test_parser_counts_unique_init_rows_and_zero()",
+      "source_file": "tests/test_cmts_inits.py",
+      "source_location": "L12"
+    },
+    {
+      "id": "tests_test_cmts_inits_test_parser_rejects_unknown_or_incomplete_output",
+      "label": "test_parser_rejects_unknown_or_incomplete_output()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "test_parser_rejects_unknown_or_incomplete_output()",
+      "source_file": "tests/test_cmts_inits.py",
+      "source_location": "L18"
+    },
+    {
+      "id": "tests_test_cmts_inits_test_probe_writes_only_probe_csv_and_preserves_published_cycle",
+      "label": "test_probe_writes_only_probe_csv_and_preserves_published_cycle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "test_probe_writes_only_probe_csv_and_preserves_published_cycle()",
+      "source_file": "tests/test_cmts_inits.py",
+      "source_location": "L111"
+    },
+    {
+      "id": "tests_test_cmts_inits_test_published_cycle_is_reconciled_after_interrupted_history_write",
+      "label": "test_published_cycle_is_reconciled_after_interrupted_history_write()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "test_published_cycle_is_reconciled_after_interrupted_history_write()",
+      "source_file": "tests/test_cmts_inits.py",
+      "source_location": "L77"
+    },
+    {
+      "id": "tests_test_cmts_inits_test_retention_streams_csv_and_saves_backup",
+      "label": "test_retention_streams_csv_and_saves_backup()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "test_retention_streams_csv_and_saves_backup()",
+      "source_file": "tests/test_cmts_inits.py",
+      "source_location": "L100"
     },
     {
       "id": "agents_skills_impeccable_scripts_live_browser_buildinsertplaceholdersnapshotfromdom",
@@ -12623,6 +12635,28 @@
       "source_location": "L1"
     },
     {
+      "id": "exception",
+      "label": "Exception",
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "code",
+      "norm_label": "exception",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "exception_handler",
+      "label": "exception_handler",
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "code",
+      "norm_label": "exception_handler",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
       "id": "fastapi",
       "label": "FastAPI",
       "_origin": "ast",
@@ -12630,6 +12664,17 @@
       "community_name": "microservicios/app.py",
       "file_type": "code",
       "norm_label": "fastapi",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "jsonresponse",
+      "label": "JSONResponse",
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "code",
+      "norm_label": "jsonresponse",
       "source_file": "",
       "source_location": ""
     },
@@ -12656,24 +12701,57 @@
       "source_location": ""
     },
     {
-      "id": "microservicios_cmts_puertos_duplicados_router",
-      "label": "puertos_duplicados/router.py",
+      "id": "microservicios_cmts_intermitencias_router",
+      "label": "intermitencias/router.py",
       "_origin": "ast",
       "community": 103,
       "community_name": "microservicios/app.py",
       "file_type": "code",
-      "norm_label": "puertos_duplicados/router.py",
-      "source_file": "microservicios/cmts/puertos_duplicados/router.py",
+      "norm_label": "intermitencias/router.py",
+      "source_file": "microservicios/cmts/intermitencias/router.py",
       "source_location": "L1"
     },
     {
-      "id": "microservicios_cmts_puertos_duplicados_router_py_get",
+      "id": "microservicios_cmts_puertos_docsis_router",
+      "label": "puertos_docsis/router.py",
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "code",
+      "norm_label": "puertos_docsis/router.py",
+      "source_file": "microservicios/cmts/puertos_docsis/router.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_cmts_puertos_docsis_router_py_get",
       "label": "get",
       "_origin": "ast",
       "community": 103,
       "community_name": "microservicios/app.py",
       "file_type": "code",
       "norm_label": "get",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "microservicios_cmts_puertos_docsis_service",
+      "label": "puertos_docsis/service.py",
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "code",
+      "norm_label": "puertos_docsis/service.py",
+      "source_file": "microservicios/cmts/puertos_docsis/service.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_cmts_puertos_docsis_service_py_any",
+      "label": "Any",
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "code",
+      "norm_label": "any",
       "source_file": "",
       "source_location": ""
     },
@@ -12689,6 +12767,17 @@
       "source_location": "L1"
     },
     {
+      "id": "microservicios_olt_correlacion_router_py_get",
+      "label": "get",
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "code",
+      "norm_label": "get",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
       "id": "microservicios_olt_temperatura_router",
       "label": "temperatura/router.py",
       "_origin": "ast",
@@ -12698,6 +12787,28 @@
       "norm_label": "temperatura/router.py",
       "source_file": "microservicios/olt/temperatura/router.py",
       "source_location": "L1"
+    },
+    {
+      "id": "request",
+      "label": "Request",
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "code",
+      "norm_label": "request",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "requestvalidationerror",
+      "label": "RequestValidationError",
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "code",
+      "norm_label": "requestvalidationerror",
+      "source_file": "",
+      "source_location": ""
     },
     {
       "id": "microservicios_app_rationale_1",
@@ -12711,15 +12822,48 @@
       "source_location": "L1"
     },
     {
-      "id": "microservicios_cmts_puertos_duplicados_router_rationale_1",
-      "label": "Rutas HTTP de nodos asociados a multiples puertos CMTS.",
+      "id": "microservicios_cmts_intermitencias_router_rationale_1",
+      "label": "Rutas HTTP de intermitencias HFC.",
       "_origin": "ast",
       "community": 103,
       "community_name": "microservicios/app.py",
       "file_type": "rationale",
-      "norm_label": "rutas http de nodos asociados a multiples puertos cmts.",
-      "source_file": "microservicios/cmts/puertos_duplicados/router.py",
+      "norm_label": "rutas http de intermitencias hfc.",
+      "source_file": "microservicios/cmts/intermitencias/router.py",
       "source_location": "L1"
+    },
+    {
+      "id": "microservicios_cmts_puertos_docsis_router_rationale_1",
+      "label": "Rutas HTTP de puertos DOCSIS.",
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "rationale",
+      "norm_label": "rutas http de puertos docsis.",
+      "source_file": "microservicios/cmts/puertos_docsis/router.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_cmts_puertos_docsis_service_rationale_1",
+      "label": "Logica de negocio para la consulta de puertos DOCSIS.",
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "rationale",
+      "norm_label": "logica de negocio para la consulta de puertos docsis.",
+      "source_file": "microservicios/cmts/puertos_docsis/service.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_cmts_puertos_docsis_service_rationale_7",
+      "label": "Devuelve un resultado vacio hasta disponer de la fuente real.",
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "microservicios/app.py",
+      "file_type": "rationale",
+      "norm_label": "devuelve un resultado vacio hasta disponer de la fuente real.",
+      "source_file": "microservicios/cmts/puertos_docsis/service.py",
+      "source_location": "L7"
     },
     {
       "id": "microservicios_olt_correlacion_router_rationale_1",
@@ -13845,50 +13989,6 @@
       "source_location": "L5"
     },
     {
-      "id": "httpexception",
-      "label": "HTTPException",
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "httpexception",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "microservicios_cmts_inits_router",
-      "label": "inits/router.py",
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "inits/router.py",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_cmts_inits_router_py_get",
-      "label": "get",
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "code",
-      "norm_label": "get",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "microservicios_cmts_inits_router_rationale_1",
-      "label": "API del monitoreo INIT; GET s\u00f3lo consulta CSV ya publicados.",
-      "_origin": "ast",
-      "community": 118,
-      "community_name": "inits/router.py",
-      "file_type": "rationale",
-      "norm_label": "api del monitoreo init; get solo consulta csv ya publicados.",
-      "source_file": "microservicios/cmts/inits/router.py",
-      "source_location": "L1"
-    },
-    {
       "id": "agents_skills_impeccable_reference_hooks_constraints",
       "label": "Constraints",
       "_origin": "ast",
@@ -13970,6 +14070,28 @@
       "norm_label": "caidas/queries.py",
       "source_file": "microservicios/olt/caidas/queries.py",
       "source_location": "L1"
+    },
+    {
+      "id": "microservicios_olt_caidas_router",
+      "label": "caidas/router.py",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "caidas/service.py",
+      "file_type": "code",
+      "norm_label": "caidas/router.py",
+      "source_file": "microservicios/olt/caidas/router.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_olt_caidas_router_py_get",
+      "label": "get",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "caidas/service.py",
+      "file_type": "code",
+      "norm_label": "get",
+      "source_file": "",
+      "source_location": ""
     },
     {
       "id": "microservicios_olt_caidas_service",
@@ -14060,6 +14182,17 @@
       "source_location": "L9"
     },
     {
+      "id": "microservicios_olt_caidas_router_rationale_1",
+      "label": "Rutas HTTP de ca\u00eddas e intermitencias OLT.",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "caidas/service.py",
+      "file_type": "rationale",
+      "norm_label": "rutas http de caidas e intermitencias olt.",
+      "source_file": "microservicios/olt/caidas/router.py",
+      "source_location": "L1"
+    },
+    {
       "id": "microservicios_olt_caidas_service_rationale_1",
       "label": "L\u00f3gica de negocio para ca\u00eddas de puertos OLT por tr\u00e1fico.",
       "_origin": "ast",
@@ -14080,6 +14213,17 @@
       "norm_label": "descubrir tambien puertos sin muestras en los ultimos cuatro dias.",
       "source_file": "microservicios/olt/caidas/service.py",
       "source_location": "L33"
+    },
+    {
+      "id": "microservicios_olt_caidas_service_rationale_365",
+      "label": "Detecta puertos intermitentes reutilizando las mismas ca\u00eddas hist\u00f3ricas. Regla:\u2026",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "caidas/service.py",
+      "file_type": "rationale",
+      "norm_label": "detecta puertos intermitentes reutilizando las mismas caidas historicas. regla:...",
+      "source_file": "microservicios/olt/caidas/service.py",
+      "source_location": "L365"
     },
     {
       "id": "microservicios_olt_caidas_service_rationale_708",
@@ -14389,325 +14533,6 @@
       "source_location": "L1"
     },
     {
-      "id": "microservicios_olt_caidas_router",
-      "label": "caidas/router.py",
-      "_origin": "ast",
-      "community": 128,
-      "community_name": "caidas/router.py",
-      "file_type": "code",
-      "norm_label": "caidas/router.py",
-      "source_file": "microservicios/olt/caidas/router.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_olt_caidas_router_py_get",
-      "label": "get",
-      "_origin": "ast",
-      "community": 128,
-      "community_name": "caidas/router.py",
-      "file_type": "code",
-      "norm_label": "get",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "microservicios_olt_caidas_router_rationale_1",
-      "label": "Rutas HTTP de ca\u00eddas e intermitencias OLT.",
-      "_origin": "ast",
-      "community": 128,
-      "community_name": "caidas/router.py",
-      "file_type": "rationale",
-      "norm_label": "rutas http de caidas e intermitencias olt.",
-      "source_file": "microservicios/olt/caidas/router.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_olt_caidas_service_rationale_365",
-      "label": "Detecta puertos intermitentes reutilizando las mismas ca\u00eddas hist\u00f3ricas. Regla:\u2026",
-      "_origin": "ast",
-      "community": 128,
-      "community_name": "caidas/router.py",
-      "file_type": "rationale",
-      "norm_label": "detecta puertos intermitentes reutilizando las mismas caidas historicas. regla:...",
-      "source_file": "microservicios/olt/caidas/service.py",
-      "source_location": "L365"
-    },
-    {
-      "id": "microservicios_olt_temperatura_queries",
-      "label": "temperatura/queries.py",
-      "_origin": "ast",
-      "community": 129,
-      "community_name": "temperatura/service.py",
-      "file_type": "code",
-      "norm_label": "temperatura/queries.py",
-      "source_file": "microservicios/olt/temperatura/queries.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_olt_temperatura_router_py_get",
-      "label": "get",
-      "_origin": "ast",
-      "community": 129,
-      "community_name": "temperatura/service.py",
-      "file_type": "code",
-      "norm_label": "get",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "microservicios_olt_temperatura_service",
-      "label": "temperatura/service.py",
-      "_origin": "ast",
-      "community": 129,
-      "community_name": "temperatura/service.py",
-      "file_type": "code",
-      "norm_label": "temperatura/service.py",
-      "source_file": "microservicios/olt/temperatura/service.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_olt_temperatura_service_py_any",
-      "label": "Any",
-      "_origin": "ast",
-      "community": 129,
-      "community_name": "temperatura/service.py",
-      "file_type": "code",
-      "norm_label": "any",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "microservicios_olt_temperatura_queries_rationale_1",
-      "label": "Consulta de temperatura actual por tarjeta OLT.",
-      "_origin": "ast",
-      "community": 129,
-      "community_name": "temperatura/service.py",
-      "file_type": "rationale",
-      "norm_label": "consulta de temperatura actual por tarjeta olt.",
-      "source_file": "microservicios/olt/temperatura/queries.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_olt_temperatura_service_rationale_1",
-      "label": "Lecturas de temperatura m\u00e1xima actual por equipo OLT.",
-      "_origin": "ast",
-      "community": 129,
-      "community_name": "temperatura/service.py",
-      "file_type": "rationale",
-      "norm_label": "lecturas de temperatura maxima actual por equipo olt.",
-      "source_file": "microservicios/olt/temperatura/service.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_cmts_puertos_docsis_router",
-      "label": "puertos_docsis/router.py",
-      "_origin": "ast",
-      "community": 130,
-      "community_name": "puertos_docsis/router.py",
-      "file_type": "code",
-      "norm_label": "puertos_docsis/router.py",
-      "source_file": "microservicios/cmts/puertos_docsis/router.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_cmts_puertos_docsis_router_py_get",
-      "label": "get",
-      "_origin": "ast",
-      "community": 130,
-      "community_name": "puertos_docsis/router.py",
-      "file_type": "code",
-      "norm_label": "get",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "microservicios_cmts_puertos_docsis_service",
-      "label": "puertos_docsis/service.py",
-      "_origin": "ast",
-      "community": 130,
-      "community_name": "puertos_docsis/router.py",
-      "file_type": "code",
-      "norm_label": "puertos_docsis/service.py",
-      "source_file": "microservicios/cmts/puertos_docsis/service.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_cmts_puertos_docsis_service_py_any",
-      "label": "Any",
-      "_origin": "ast",
-      "community": 130,
-      "community_name": "puertos_docsis/router.py",
-      "file_type": "code",
-      "norm_label": "any",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "microservicios_cmts_puertos_docsis_router_rationale_1",
-      "label": "Rutas HTTP de puertos DOCSIS.",
-      "_origin": "ast",
-      "community": 130,
-      "community_name": "puertos_docsis/router.py",
-      "file_type": "rationale",
-      "norm_label": "rutas http de puertos docsis.",
-      "source_file": "microservicios/cmts/puertos_docsis/router.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_cmts_puertos_docsis_service_rationale_1",
-      "label": "Logica de negocio para la consulta de puertos DOCSIS.",
-      "_origin": "ast",
-      "community": 130,
-      "community_name": "puertos_docsis/router.py",
-      "file_type": "rationale",
-      "norm_label": "logica de negocio para la consulta de puertos docsis.",
-      "source_file": "microservicios/cmts/puertos_docsis/service.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_cmts_puertos_docsis_service_rationale_7",
-      "label": "Devuelve un resultado vacio hasta disponer de la fuente real.",
-      "_origin": "ast",
-      "community": 130,
-      "community_name": "puertos_docsis/router.py",
-      "file_type": "rationale",
-      "norm_label": "devuelve un resultado vacio hasta disponer de la fuente real.",
-      "source_file": "microservicios/cmts/puertos_docsis/service.py",
-      "source_location": "L7"
-    },
-    {
-      "id": "exception",
-      "label": "Exception",
-      "_origin": "ast",
-      "community": 131,
-      "community_name": "error_http",
-      "file_type": "code",
-      "norm_label": "exception",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "exception_handler",
-      "label": "exception_handler",
-      "_origin": "ast",
-      "community": 131,
-      "community_name": "error_http",
-      "file_type": "code",
-      "norm_label": "exception_handler",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "jsonresponse",
-      "label": "JSONResponse",
-      "_origin": "ast",
-      "community": 131,
-      "community_name": "error_http",
-      "file_type": "code",
-      "norm_label": "jsonresponse",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "request",
-      "label": "Request",
-      "_origin": "ast",
-      "community": 131,
-      "community_name": "error_http",
-      "file_type": "code",
-      "norm_label": "request",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "requestvalidationerror",
-      "label": "RequestValidationError",
-      "_origin": "ast",
-      "community": 131,
-      "community_name": "error_http",
-      "file_type": "code",
-      "norm_label": "requestvalidationerror",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "probar_topologias",
-      "label": "probar_topologias.py",
-      "_origin": "ast",
-      "community": 132,
-      "community_name": "probar_topologias.py",
-      "file_type": "code",
-      "norm_label": "probar_topologias.py",
-      "source_file": "probar_topologias.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "probar_topologias_rationale_1",
-      "label": "Prueba manual de la API de topolog\u00edas OLT con conversi\u00f3n VSD/VSDX -> JPG.",
-      "_origin": "ast",
-      "community": 132,
-      "community_name": "probar_topologias.py",
-      "file_type": "rationale",
-      "norm_label": "prueba manual de la api de topologias olt con conversion vsd/vsdx -> jpg.",
-      "source_file": "probar_topologias.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "probar_vsd_jpg",
-      "label": "probar_vsd_jpg.py",
-      "_origin": "ast",
-      "community": 133,
-      "community_name": "probar_vsd_jpg.py",
-      "file_type": "code",
-      "norm_label": "probar_vsd_jpg.py",
-      "source_file": "probar_vsd_jpg.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_olt_correlacion_router_py_get",
-      "label": "get",
-      "_origin": "ast",
-      "community": 134,
-      "community_name": "obtener_correlacion",
-      "file_type": "code",
-      "norm_label": "get",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "microservicios_olt_correlacion_service_py_any",
-      "label": "Any",
-      "_origin": "ast",
-      "community": 134,
-      "community_name": "obtener_correlacion",
-      "file_type": "code",
-      "norm_label": "any",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "microservicios_olt_correlacion_service_rationale_19",
-      "label": "Indica si dos intervalos se cruzan dentro del margen configurado.",
-      "_origin": "ast",
-      "community": 134,
-      "community_name": "obtener_correlacion",
-      "file_type": "rationale",
-      "norm_label": "indica si dos intervalos se cruzan dentro del margen configurado.",
-      "source_file": "microservicios/olt/correlacion/service.py",
-      "source_location": "L19"
-    },
-    {
-      "id": "microservicios_olt_correlacion_service_rationale_30",
-      "label": "Consulta cada fenomeno una vez y cruza sus episodios por OLT y puerto.",
-      "_origin": "ast",
-      "community": 134,
-      "community_name": "obtener_correlacion",
-      "file_type": "rationale",
-      "norm_label": "consulta cada fenomeno una vez y cruza sus episodios por olt y puerto.",
-      "source_file": "microservicios/olt/correlacion/service.py",
-      "source_location": "L30"
-    },
-    {
       "id": "basesettings",
       "label": "BaseSettings",
       "_origin": "ast",
@@ -14738,28 +14563,6 @@
       "file_type": "rationale",
       "norm_label": "configuracion comun de los microservicios.",
       "source_file": "microservicios/config.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_cmts_inits_init",
-      "label": "__init__.py",
-      "_origin": "ast",
-      "community": 137,
-      "community_name": "__init__.py",
-      "file_type": "code",
-      "norm_label": "__init__.py",
-      "source_file": "microservicios/cmts/inits/__init__.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_cmts_inits_init_rationale_1",
-      "label": "Monitoreo de m\u00f3dems en estado INIT para CMTS.",
-      "_origin": "ast",
-      "community": 137,
-      "community_name": "__init__.py",
-      "file_type": "rationale",
-      "norm_label": "monitoreo de modems en estado init para cmts.",
-      "source_file": "microservicios/cmts/inits/__init__.py",
       "source_location": "L1"
     },
     {
@@ -14978,83 +14781,6 @@
       "norm_label": "live-browser-dom.js",
       "source_file": ".agents/skills/impeccable/scripts/live-browser-dom.js",
       "source_location": "L1"
-    },
-    {
-      "id": "api_route",
-      "label": "api_route",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "api_route",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "microservicios_grafana_proxy_app",
-      "label": "grafana_proxy/app.py",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "grafana_proxy/app.py",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_py_get",
-      "label": "get",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "get",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_py_request",
-      "label": "Request",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "request",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "response",
-      "label": "Response",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "code",
-      "norm_label": "response",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_rationale_1",
-      "label": "Proxy local cerrado para embeber un Grafana autenticado en la vista HFC.",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "rationale",
-      "norm_label": "proxy local cerrado para embeber un grafana autenticado en la vista hfc.",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "microservicios_grafana_proxy_app_rationale_47",
-      "label": "Indica que el proxy no puede atender la solicitud de forma segura.",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "grafana_proxy/app.py",
-      "file_type": "rationale",
-      "norm_label": "indica que el proxy no puede atender la solicitud de forma segura.",
-      "source_file": "microservicios/grafana_proxy/app.py",
-      "source_location": "L47"
     },
     {
       "id": "fileresponse",
@@ -15666,17 +15392,6 @@
       "source_location": "L1"
     },
     {
-      "id": "microservicios_cmts_intermitencias_router",
-      "label": "intermitencias/router.py",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "intermitencias/service.py",
-      "file_type": "code",
-      "norm_label": "intermitencias/router.py",
-      "source_file": "microservicios/cmts/intermitencias/router.py",
-      "source_location": "L1"
-    },
-    {
       "id": "microservicios_cmts_intermitencias_router_py_get",
       "label": "get",
       "_origin": "ast",
@@ -15732,17 +15447,6 @@
       "source_location": "L9"
     },
     {
-      "id": "microservicios_cmts_intermitencias_router_rationale_1",
-      "label": "Rutas HTTP de intermitencias HFC.",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "intermitencias/service.py",
-      "file_type": "rationale",
-      "norm_label": "rutas http de intermitencias hfc.",
-      "source_file": "microservicios/cmts/intermitencias/router.py",
-      "source_location": "L1"
-    },
-    {
       "id": "microservicios_cmts_intermitencias_service_rationale_1",
       "label": "L\u00f3gica de negocio para intermitencias HFC.",
       "_origin": "ast",
@@ -15787,6 +15491,28 @@
       "source_location": "L1"
     },
     {
+      "id": "microservicios_cmts_puertos_duplicados_router",
+      "label": "puertos_duplicados/router.py",
+      "_origin": "ast",
+      "community": 27,
+      "community_name": "puertos_duplicados/service.py",
+      "file_type": "code",
+      "norm_label": "puertos_duplicados/router.py",
+      "source_file": "microservicios/cmts/puertos_duplicados/router.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_cmts_puertos_duplicados_router_py_get",
+      "label": "get",
+      "_origin": "ast",
+      "community": 27,
+      "community_name": "puertos_duplicados/service.py",
+      "file_type": "code",
+      "norm_label": "get",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
       "id": "microservicios_cmts_puertos_duplicados_service",
       "label": "puertos_duplicados/service.py",
       "_origin": "ast",
@@ -15829,6 +15555,17 @@
       "norm_label": "obtiene la ubicacion mas reciente de cada descripcion, cmts y puerto.",
       "source_file": "microservicios/cmts/puertos_duplicados/queries.py",
       "source_location": "L7"
+    },
+    {
+      "id": "microservicios_cmts_puertos_duplicados_router_rationale_1",
+      "label": "Rutas HTTP de nodos asociados a multiples puertos CMTS.",
+      "_origin": "ast",
+      "community": 27,
+      "community_name": "puertos_duplicados/service.py",
+      "file_type": "rationale",
+      "norm_label": "rutas http de nodos asociados a multiples puertos cmts.",
+      "source_file": "microservicios/cmts/puertos_duplicados/router.py",
+      "source_location": "L1"
     },
     {
       "id": "microservicios_cmts_puertos_duplicados_service_rationale_1",
@@ -16319,17 +16056,6 @@
       "source_location": "L1"
     },
     {
-      "id": "microservicios_olt_correlacion_service",
-      "label": "correlacion/service.py",
-      "_origin": "ast",
-      "community": 31,
-      "community_name": "olt/saturacion/service.py",
-      "file_type": "code",
-      "norm_label": "correlacion/service.py",
-      "source_file": "microservicios/olt/correlacion/service.py",
-      "source_location": "L1"
-    },
-    {
       "id": "microservicios_olt_saturacion_queries",
       "label": "olt/saturacion/queries.py",
       "_origin": "ast",
@@ -16383,17 +16109,6 @@
       "norm_label": "any",
       "source_file": "",
       "source_location": ""
-    },
-    {
-      "id": "microservicios_olt_correlacion_service_rationale_1",
-      "label": "Correlacion temporal de saturacion, CRC y caidas OLT.",
-      "_origin": "ast",
-      "community": 31,
-      "community_name": "olt/saturacion/service.py",
-      "file_type": "rationale",
-      "norm_label": "correlacion temporal de saturacion, crc y caidas olt.",
-      "source_file": "microservicios/olt/correlacion/service.py",
-      "source_location": "L1"
     },
     {
       "id": "microservicios_olt_saturacion_queries_rationale_1",
@@ -16506,13 +16221,46 @@
       "source_location": ""
     },
     {
-      "id": "runtimeerror",
-      "label": "RuntimeError",
+      "id": "microservicios_olt_temperatura_queries",
+      "label": "temperatura/queries.py",
       "_origin": "ast",
       "community": 32,
       "community_name": "consultar_flux_temp",
       "file_type": "code",
-      "norm_label": "runtimeerror",
+      "norm_label": "temperatura/queries.py",
+      "source_file": "microservicios/olt/temperatura/queries.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_olt_temperatura_router_py_get",
+      "label": "get",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "consultar_flux_temp",
+      "file_type": "code",
+      "norm_label": "get",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "microservicios_olt_temperatura_service",
+      "label": "temperatura/service.py",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "consultar_flux_temp",
+      "file_type": "code",
+      "norm_label": "temperatura/service.py",
+      "source_file": "microservicios/olt/temperatura/service.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_olt_temperatura_service_py_any",
+      "label": "Any",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "consultar_flux_temp",
+      "file_type": "code",
+      "norm_label": "any",
       "source_file": "",
       "source_location": ""
     },
@@ -16539,6 +16287,28 @@
       "source_location": "L87"
     },
     {
+      "id": "microservicios_olt_temperatura_queries_rationale_1",
+      "label": "Consulta de temperatura actual por tarjeta OLT.",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "consultar_flux_temp",
+      "file_type": "rationale",
+      "norm_label": "consulta de temperatura actual por tarjeta olt.",
+      "source_file": "microservicios/olt/temperatura/queries.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_olt_temperatura_service_rationale_1",
+      "label": "Lecturas de temperatura m\u00e1xima actual por equipo OLT.",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "consultar_flux_temp",
+      "file_type": "rationale",
+      "norm_label": "lecturas de temperatura maxima actual por equipo olt.",
+      "source_file": "microservicios/olt/temperatura/service.py",
+      "source_location": "L1"
+    },
+    {
       "id": "backend_lib_microserviceclient",
       "label": "MicroserviceClient.php",
       "_origin": "ast",
@@ -16554,7 +16324,7 @@
       "label": "iniciar_microserviciosypuente.py",
       "_origin": "ast",
       "community": 34,
-      "community_name": "iniciar_microserviciosypuente.py",
+      "community_name": "RuntimeError",
       "file_type": "code",
       "norm_label": "iniciar_microserviciosypuente.py",
       "source_file": "iniciar_microserviciosypuente.py",
@@ -16565,11 +16335,55 @@
       "label": "Popen",
       "_origin": "ast",
       "community": 34,
-      "community_name": "iniciar_microserviciosypuente.py",
+      "community_name": "RuntimeError",
       "file_type": "code",
       "norm_label": "popen",
       "source_file": "",
       "source_location": ""
+    },
+    {
+      "id": "probar_topologias",
+      "label": "probar_topologias.py",
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "probar_topologias.py",
+      "source_file": "probar_topologias.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "probar_vsd_jpg",
+      "label": "probar_vsd_jpg.py",
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "probar_vsd_jpg.py",
+      "source_file": "probar_vsd_jpg.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "runtimeerror",
+      "label": "RuntimeError",
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "code",
+      "norm_label": "runtimeerror",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "probar_topologias_rationale_1",
+      "label": "Prueba manual de la API de topolog\u00edas OLT con conversi\u00f3n VSD/VSDX -> JPG.",
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "RuntimeError",
+      "file_type": "rationale",
+      "norm_label": "prueba manual de la api de topologias olt con conversion vsd/vsdx -> jpg.",
+      "source_file": "probar_topologias.py",
+      "source_location": "L1"
     },
     {
       "id": "agents_skills_impeccable_skill",
@@ -17129,6 +16943,28 @@
       "source_location": ""
     },
     {
+      "id": "microservicios_olt_correlacion_service",
+      "label": "correlacion/service.py",
+      "_origin": "ast",
+      "community": 38,
+      "community_name": "consultar_influx.py",
+      "file_type": "code",
+      "norm_label": "correlacion/service.py",
+      "source_file": "microservicios/olt/correlacion/service.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_olt_correlacion_service_py_any",
+      "label": "Any",
+      "_origin": "ast",
+      "community": 38,
+      "community_name": "consultar_influx.py",
+      "file_type": "code",
+      "norm_label": "any",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
       "id": "microservicios_consultar_influx_rationale_1",
       "label": "Herramienta interactiva para probar manualmente los servicios OLT.",
       "_origin": "ast",
@@ -17138,6 +16974,39 @@
       "norm_label": "herramienta interactiva para probar manualmente los servicios olt.",
       "source_file": "microservicios/consultar_influx.py",
       "source_location": "L1"
+    },
+    {
+      "id": "microservicios_olt_correlacion_service_rationale_1",
+      "label": "Correlacion temporal de saturacion, CRC y caidas OLT.",
+      "_origin": "ast",
+      "community": 38,
+      "community_name": "consultar_influx.py",
+      "file_type": "rationale",
+      "norm_label": "correlacion temporal de saturacion, crc y caidas olt.",
+      "source_file": "microservicios/olt/correlacion/service.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_olt_correlacion_service_rationale_19",
+      "label": "Indica si dos intervalos se cruzan dentro del margen configurado.",
+      "_origin": "ast",
+      "community": 38,
+      "community_name": "consultar_influx.py",
+      "file_type": "rationale",
+      "norm_label": "indica si dos intervalos se cruzan dentro del margen configurado.",
+      "source_file": "microservicios/olt/correlacion/service.py",
+      "source_location": "L19"
+    },
+    {
+      "id": "microservicios_olt_correlacion_service_rationale_30",
+      "label": "Consulta cada fenomeno una vez y cruza sus episodios por OLT y puerto.",
+      "_origin": "ast",
+      "community": 38,
+      "community_name": "consultar_influx.py",
+      "file_type": "rationale",
+      "norm_label": "consulta cada fenomeno una vez y cruza sus episodios por olt y puerto.",
+      "source_file": "microservicios/olt/correlacion/service.py",
+      "source_location": "L30"
     },
     {
       "id": "backgroundtasks",
@@ -17270,17 +17139,6 @@
       "norm_label": "validacion.py",
       "source_file": "microservicios/cmts/saturacion/validacion.py",
       "source_location": "L1"
-    },
-    {
-      "id": "post",
-      "label": "post",
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "cmts/saturacion/service.py",
-      "file_type": "code",
-      "norm_label": "post",
-      "source_file": "",
-      "source_location": ""
     },
     {
       "id": "microservicios_cmts_saturacion_cache_rationale_1",
@@ -17632,28 +17490,6 @@
       "file_type": "code",
       "norm_label": "microserviceclient_20261001_152721.php",
       "source_file": "backend/lib/_backups/MicroserviceClient_20261001_152721.php",
-      "source_location": "L1"
-    },
-    {
-      "id": "parametrize",
-      "label": "parametrize",
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "parametrize",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "tests_test_cmts_inits",
-      "label": "test_cmts_inits.py",
-      "_origin": "ast",
-      "community": 42,
-      "community_name": "test_cmts_inits.py",
-      "file_type": "code",
-      "norm_label": "test_cmts_inits.py",
-      "source_file": "tests/test_cmts_inits.py",
       "source_location": "L1"
     },
     {
@@ -18818,6 +18654,28 @@
       "source_location": "L7"
     },
     {
+      "id": "api_route",
+      "label": "api_route",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "api_route",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "httpexception",
+      "label": "HTTPException",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "httpexception",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
       "id": "microservicios_cmts_inits_inits_cmts",
       "label": "inits_cmts.py",
       "_origin": "ast",
@@ -18827,6 +18685,72 @@
       "norm_label": "inits_cmts.py",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
       "source_location": "L1"
+    },
+    {
+      "id": "microservicios_cmts_inits_router",
+      "label": "inits/router.py",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "inits/router.py",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_py_get",
+      "label": "get",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "get",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "microservicios_grafana_proxy_app",
+      "label": "grafana_proxy/app.py",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "grafana_proxy/app.py",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_py_get",
+      "label": "get",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "get",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_py_request",
+      "label": "Request",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "request",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "parametrize",
+      "label": "parametrize",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "parametrize",
+      "source_file": "",
+      "source_location": ""
     },
     {
       "id": "path",
@@ -18840,6 +18764,39 @@
       "source_location": ""
     },
     {
+      "id": "post",
+      "label": "post",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "post",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "response",
+      "label": "Response",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "response",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "tests_test_cmts_inits",
+      "label": "test_cmts_inits.py",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "code",
+      "norm_label": "test_cmts_inits.py",
+      "source_file": "tests/test_cmts_inits.py",
+      "source_location": "L1"
+    },
+    {
       "id": "microservicios_cmts_inits_inits_cmts_rationale_1",
       "label": "Recolector INIT integrado; CSV como \u00fanica persistencia.",
       "_origin": "ast",
@@ -18851,7 +18808,7 @@
       "source_location": "L1"
     },
     {
-      "id": "microservicios_cmts_inits_inits_cmts_rationale_186",
+      "id": "microservicios_cmts_inits_inits_cmts_rationale_178",
       "label": "Reserva un ciclo global o una prueba aislada entre procesos.",
       "_origin": "ast",
       "community": 8,
@@ -18859,10 +18816,10 @@
       "file_type": "rationale",
       "norm_label": "reserva un ciclo global o una prueba aislada entre procesos.",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L186"
+      "source_location": "L178"
     },
     {
-      "id": "microservicios_cmts_inits_inits_cmts_rationale_233",
+      "id": "microservicios_cmts_inits_inits_cmts_rationale_257",
       "label": "Completa el hist\u00f3rico si un apagado ocurri\u00f3 despu\u00e9s de publicar actual.csv.",
       "_origin": "ast",
       "community": 8,
@@ -18870,7 +18827,62 @@
       "file_type": "rationale",
       "norm_label": "completa el historico si un apagado ocurrio despues de publicar actual.csv.",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L233"
+      "source_location": "L257"
+    },
+    {
+      "id": "microservicios_cmts_inits_inits_cmts_rationale_530",
+      "label": "El progreso es auxiliar; un bloqueo no aborta las consultas SSH.",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "rationale",
+      "norm_label": "el progreso es auxiliar; un bloqueo no aborta las consultas ssh.",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L530"
+    },
+    {
+      "id": "microservicios_cmts_inits_inits_cmts_rationale_712",
+      "label": "Valida filas INIT y total expl\u00edcito del CMTS; nunca cuenta cabeceras.",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "rationale",
+      "norm_label": "valida filas init y total explicito del cmts; nunca cuenta cabeceras.",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L712"
+    },
+    {
+      "id": "microservicios_cmts_inits_router_rationale_1",
+      "label": "API del monitoreo INIT; GET s\u00f3lo consulta CSV ya publicados.",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "rationale",
+      "norm_label": "api del monitoreo init; get solo consulta csv ya publicados.",
+      "source_file": "microservicios/cmts/inits/router.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_rationale_1",
+      "label": "Proxy local cerrado para embeber un Grafana autenticado en la vista HFC.",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "rationale",
+      "norm_label": "proxy local cerrado para embeber un grafana autenticado en la vista hfc.",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "microservicios_grafana_proxy_app_rationale_47",
+      "label": "Indica que el proxy no puede atender la solicitud de forma segura.",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "inits_cmts.py",
+      "file_type": "rationale",
+      "norm_label": "indica que el proxy no puede atender la solicitud de forma segura.",
+      "source_file": "microservicios/grafana_proxy/app.py",
+      "source_location": "L47"
     },
     {
       "id": "agents_skills_impeccable_reference_live",
@@ -39878,7 +39890,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L165",
+      "source_location": "L151",
       "weight": 1.0
     },
     {
@@ -39890,7 +39902,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L173",
+      "source_location": "L160",
       "weight": 1.0
     },
     {
@@ -39902,7 +39914,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L388",
+      "source_location": "L585",
       "weight": 1.0
     },
     {
@@ -39914,7 +39926,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L388",
+      "source_location": "L585",
       "weight": 1.0
     },
     {
@@ -39926,7 +39938,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L280",
+      "source_location": "L314",
       "weight": 1.0
     },
     {
@@ -39938,7 +39950,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L187",
+      "source_location": "L179",
       "weight": 1.0
     },
     {
@@ -39950,7 +39962,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L189",
+      "source_location": "L181",
       "weight": 1.0
     },
     {
@@ -39962,7 +39974,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L195",
+      "source_location": "L205",
       "weight": 1.0
     },
     {
@@ -39974,7 +39986,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L36",
+      "source_location": "L53",
       "weight": 1.0
     },
     {
@@ -39986,7 +39998,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L421",
+      "source_location": "L642",
       "weight": 1.0
     },
     {
@@ -39998,7 +40010,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L422",
+      "source_location": "L643",
       "weight": 1.0
     },
     {
@@ -40010,7 +40022,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L427",
+      "source_location": "L650",
       "weight": 1.0
     },
     {
@@ -40022,7 +40034,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L383",
+      "source_location": "L577",
       "weight": 1.0
     },
     {
@@ -40034,7 +40046,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L392",
+      "source_location": "L596",
       "weight": 1.0
     },
     {
@@ -40046,7 +40058,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L396",
+      "source_location": "L601",
       "weight": 1.0
     },
     {
@@ -40058,7 +40070,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L401",
+      "source_location": "L608",
       "weight": 1.0
     },
     {
@@ -40070,7 +40082,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L404",
+      "source_location": "L614",
       "weight": 1.0
     },
     {
@@ -40082,7 +40094,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L57",
+      "source_location": "L77",
       "weight": 1.0
     },
     {
@@ -40094,7 +40106,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L50",
+      "source_location": "L69",
       "weight": 1.0
     },
     {
@@ -40106,7 +40118,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L455",
+      "source_location": "L695",
       "weight": 1.0
     },
     {
@@ -40118,7 +40130,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L458",
+      "source_location": "L700",
       "weight": 1.0
     },
     {
@@ -40130,19 +40142,31 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L104",
+      "source_location": "L781",
       "weight": 1.0
     },
     {
       "source": "microservicios_cmts_inits_inits_cmts_query",
-      "target": "microservicios_cmts_inits_inits_cmts_validate_output",
+      "target": "microservicios_cmts_inits_inits_cmts_read_cli_prompt",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L124",
+      "source_location": "L806",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts_query",
+      "target": "microservicios_cmts_inits_inits_cmts_parse",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L813",
       "weight": 1.0
     },
     {
@@ -40154,7 +40178,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L125",
+      "source_location": "L814",
       "weight": 1.0
     },
     {
@@ -40166,7 +40190,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L207",
+      "source_location": "L225",
       "weight": 1.0
     },
     {
@@ -40178,7 +40202,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L234",
+      "source_location": "L258",
       "weight": 1.0
     },
     {
@@ -40190,7 +40214,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L248",
+      "source_location": "L275",
       "weight": 1.0
     },
     {
@@ -40202,7 +40226,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L253",
+      "source_location": "L280",
       "weight": 1.0
     },
     {
@@ -40214,7 +40238,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L267",
+      "source_location": "L298",
       "weight": 1.0
     },
     {
@@ -40226,7 +40250,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L276",
+      "source_location": "L310",
       "weight": 1.0
     },
     {
@@ -40238,7 +40262,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L320",
+      "source_location": "L388",
       "weight": 1.0
     },
     {
@@ -40250,7 +40274,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L321",
+      "source_location": "L391",
       "weight": 1.0
     },
     {
@@ -40262,7 +40286,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L323",
+      "source_location": "L393",
       "weight": 1.0
     },
     {
@@ -40274,19 +40298,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L325",
-      "weight": 1.0
-    },
-    {
-      "source": "microservicios_cmts_inits_inits_cmts_run_cycle",
-      "target": "microservicios_cmts_inits_inits_cmts_now",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L326",
+      "source_location": "L396",
       "weight": 1.0
     },
     {
@@ -40298,7 +40310,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L326",
+      "source_location": "L397",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts_run_cycle",
+      "target": "microservicios_cmts_inits_inits_cmts_now",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L401",
       "weight": 1.0
     },
     {
@@ -40310,7 +40334,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L334",
+      "source_location": "L425",
       "weight": 1.0
     },
     {
@@ -40322,7 +40346,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L335",
+      "source_location": "L426",
       "weight": 1.0
     },
     {
@@ -40334,7 +40358,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L336",
+      "source_location": "L427",
       "weight": 1.0
     },
     {
@@ -40346,7 +40370,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L341",
+      "source_location": "L442",
       "weight": 1.0
     },
     {
@@ -40358,7 +40382,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L351",
+      "source_location": "L462",
       "weight": 1.0
     },
     {
@@ -40370,7 +40394,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L352",
+      "source_location": "L465",
       "weight": 1.0
     },
     {
@@ -40382,19 +40406,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L355",
-      "weight": 1.0
-    },
-    {
-      "source": "microservicios_cmts_inits_inits_cmts_run_probe",
-      "target": "microservicios_cmts_inits_inits_cmts_now",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L357",
+      "source_location": "L472",
       "weight": 1.0
     },
     {
@@ -40406,7 +40418,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L357",
+      "source_location": "L479",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts_run_probe",
+      "target": "microservicios_cmts_inits_inits_cmts_now",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L483",
       "weight": 1.0
     },
     {
@@ -40418,7 +40442,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L358",
+      "source_location": "L492",
       "weight": 1.0
     },
     {
@@ -40430,7 +40454,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L359",
+      "source_location": "L494",
       "weight": 1.0
     },
     {
@@ -40442,7 +40466,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L363",
+      "source_location": "L510",
       "weight": 1.0
     },
     {
@@ -40454,7 +40478,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L300",
+      "source_location": "L354",
       "weight": 1.0
     },
     {
@@ -40466,7 +40490,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L301",
+      "source_location": "L355",
       "weight": 1.0
     },
     {
@@ -40478,7 +40502,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L307",
+      "source_location": "L368",
       "weight": 1.0
     },
     {
@@ -40490,7 +40514,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L409",
+      "source_location": "L623",
       "weight": 1.0
     },
     {
@@ -40502,7 +40526,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L411",
+      "source_location": "L625",
       "weight": 1.0
     },
     {
@@ -40514,7 +40538,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L99",
+      "source_location": "L107",
       "weight": 1.0
     },
     {
@@ -44666,7 +44690,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L236",
+      "source_location": "L261",
       "weight": 1.0
     },
     {
@@ -46742,7 +46766,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -47714,7 +47738,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L160",
+      "source_location": "L142",
       "weight": 1.0
     },
     {
@@ -47726,7 +47750,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L217",
+      "source_location": "L237",
       "weight": 1.0
     },
     {
@@ -47738,7 +47762,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L279",
+      "source_location": "L313",
       "weight": 1.0
     },
     {
@@ -47750,7 +47774,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L134",
+      "source_location": "L110",
       "weight": 1.0
     },
     {
@@ -47762,7 +47786,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L54",
+      "source_location": "L73",
       "weight": 1.0
     },
     {
@@ -47774,7 +47798,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L202",
+      "source_location": "L218",
       "weight": 1.0
     },
     {
@@ -47786,7 +47810,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L232",
+      "source_location": "L256",
       "weight": 1.0
     },
     {
@@ -47798,7 +47822,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L266",
+      "source_location": "L297",
       "weight": 1.0
     },
     {
@@ -47810,7 +47834,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L370",
+      "source_location": "L529",
       "weight": 1.0
     },
     {
@@ -61047,7 +61071,7 @@
     },
     {
       "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_query",
+      "target": "microservicios_cmts_inits_inits_cmts_validate_output",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -61064,7 +61088,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L134",
+      "source_location": "L110",
       "weight": 1.0
     },
     {
@@ -61075,7 +61099,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L144",
+      "source_location": "L122",
       "weight": 1.0
     },
     {
@@ -61086,7 +61110,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L160",
+      "source_location": "L142",
       "weight": 1.0
     },
     {
@@ -61097,7 +61121,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L185",
+      "source_location": "L177",
       "weight": 1.0
     },
     {
@@ -61108,7 +61132,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L202",
+      "source_location": "L218",
       "weight": 1.0
     },
     {
@@ -61119,7 +61143,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L210",
+      "source_location": "L228",
       "weight": 1.0
     },
     {
@@ -61130,7 +61154,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L217",
+      "source_location": "L237",
       "weight": 1.0
     },
     {
@@ -61141,7 +61165,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L232",
+      "source_location": "L256",
       "weight": 1.0
     },
     {
@@ -61152,7 +61176,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L266",
+      "source_location": "L297",
       "weight": 1.0
     },
     {
@@ -61163,7 +61187,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L279",
+      "source_location": "L313",
       "weight": 1.0
     },
     {
@@ -61174,18 +61198,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L299",
-      "weight": 1.0
-    },
-    {
-      "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_now",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L31",
+      "source_location": "L353",
       "weight": 1.0
     },
     {
@@ -61196,18 +61209,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L319",
-      "weight": 1.0
-    },
-    {
-      "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_data_dir",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L35",
+      "source_location": "L387",
       "weight": 1.0
     },
     {
@@ -61218,100 +61220,12 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L350",
+      "source_location": "L461",
       "weight": 1.0
     },
     {
       "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_write_progress",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L370",
-      "weight": 1.0
-    },
-    {
-      "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_get_progress",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L381",
-      "weight": 1.0
-    },
-    {
-      "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_actual",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L388",
-      "weight": 1.0
-    },
-    {
-      "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_history",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L391",
-      "weight": 1.0
-    },
-    {
-      "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_trend",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L407",
-      "weight": 1.0
-    },
-    {
-      "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_export_rows",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L420",
-      "weight": 1.0
-    },
-    {
-      "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_in_range",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L431",
-      "weight": 1.0
-    },
-    {
-      "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_main",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L449",
-      "weight": 1.0
-    },
-    {
-      "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_inventory_path",
+      "target": "microservicios_cmts_inits_inits_cmts_now",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -61322,13 +61236,112 @@
     },
     {
       "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_inventory",
+      "target": "microservicios_cmts_inits_inits_cmts_data_dir",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L54",
+      "source_location": "L52",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts",
+      "target": "microservicios_cmts_inits_inits_cmts_write_progress",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L529",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts",
+      "target": "microservicios_cmts_inits_inits_cmts_get_progress",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L575",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts",
+      "target": "microservicios_cmts_inits_inits_cmts_actual",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L584",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts",
+      "target": "microservicios_cmts_inits_inits_cmts_history",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L588",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts",
+      "target": "microservicios_cmts_inits_inits_cmts_trend",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L621",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts",
+      "target": "microservicios_cmts_inits_inits_cmts_export_rows",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L641",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts",
+      "target": "microservicios_cmts_inits_inits_cmts_in_range",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L655",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts",
+      "target": "microservicios_cmts_inits_inits_cmts_inventory_path",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts",
+      "target": "microservicios_cmts_inits_inits_cmts_main",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L686",
       "weight": 1.0
     },
     {
@@ -61339,7 +61352,40 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L70",
+      "source_location": "L711",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts",
+      "target": "microservicios_cmts_inits_inits_cmts_inventory",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts",
+      "target": "microservicios_cmts_inits_inits_cmts_read_cli_prompt",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L741",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts",
+      "target": "microservicios_cmts_inits_inits_cmts_query",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L776",
       "weight": 1.0
     },
     {
@@ -61350,18 +61396,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L87",
-      "weight": 1.0
-    },
-    {
-      "source": "microservicios_cmts_inits_inits_cmts",
-      "target": "microservicios_cmts_inits_inits_cmts_validate_output",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L94",
+      "source_location": "L92",
       "weight": 1.0
     },
     {
@@ -64489,17 +64524,6 @@
       "weight": 1.0
     },
     {
-      "source": "microservicios_cmts_inits_init_rationale_1",
-      "target": "microservicios_cmts_inits_init",
-      "relation": "rationale_for",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "microservicios/cmts/inits/__init__.py",
-      "source_location": "L1",
-      "weight": 1.0
-    },
-    {
       "source": "microservicios_cmts_inits_inits_cmts_rationale_1",
       "target": "microservicios_cmts_inits_inits_cmts",
       "relation": "rationale_for",
@@ -64511,25 +64535,47 @@
       "weight": 1.0
     },
     {
-      "source": "microservicios_cmts_inits_inits_cmts_rationale_186",
+      "source": "microservicios_cmts_inits_inits_cmts_rationale_178",
       "target": "microservicios_cmts_inits_inits_cmts_claim_cycle",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L186",
+      "source_location": "L178",
       "weight": 1.0
     },
     {
-      "source": "microservicios_cmts_inits_inits_cmts_rationale_233",
+      "source": "microservicios_cmts_inits_inits_cmts_rationale_257",
       "target": "microservicios_cmts_inits_inits_cmts_reconcile_published_cycle",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L233",
+      "source_location": "L257",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts_rationale_530",
+      "target": "microservicios_cmts_inits_inits_cmts_write_progress",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L530",
+      "weight": 1.0
+    },
+    {
+      "source": "microservicios_cmts_inits_inits_cmts_rationale_712",
+      "target": "microservicios_cmts_inits_inits_cmts_parse",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "microservicios/cmts/inits/inits_cmts.py",
+      "source_location": "L712",
       "weight": 1.0
     },
     {
@@ -66592,7 +66638,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "microservicios/cmts/inits/inits_cmts.py",
-      "source_location": "L329",
+      "source_location": "L412",
       "weight": 1.0
     },
     {
@@ -67520,5 +67566,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "c68a06854a0bbd5ced268161ba2988f72ef9c25b"
+  "built_at_commit": "c3be184a1794b665d05ea691a54e8f2e364abe5d"
 }

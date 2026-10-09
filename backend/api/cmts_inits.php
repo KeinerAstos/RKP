@@ -37,7 +37,7 @@ try {
         }
         exit;
     }
-    $response = $method === 'POST' ? $client->post($path) : $client->get($path, $query);
+    $response = $method === 'POST' ? $client->post($path . ($query ? '?' . http_build_query($query, '', '&', PHP_QUERY_RFC3986) : '')) : $client->get($path, $query);
     jsonResponse($response['body'], $response['status']);
 } catch (Throwable $error) {
     error_log('CMTS INIT: ' . $error->getMessage());
