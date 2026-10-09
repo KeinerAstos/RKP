@@ -10,6 +10,7 @@
         historyCmts: $('init-history-cmts'), historyFrom: $('init-history-from'), historyTo: $('init-history-to')
     };
     let current = [], historyOffset = 0, historyTotal = 0, sortKey = 'total_init', sortDirection = -1;
+    let trendData = [];
     let pollTimer = 0, controller = null, active = true, destroyed = false, busy = false;
     const number = new Intl.NumberFormat('es-CO');
     const date = (value) => value ? new Date(value).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'short', timeStyle: 'short' }) : '—';
@@ -38,12 +39,24 @@
             const total = document.createElement('td'); total.textContent = row.total_init == null ? '—' : number.format(row.total_init); tr.append(total);
             const severity = document.createElement('td'); severity.append(badge(row.estado, ({ CRITICO: 'critical', RIESGO: 'risk', ATENCION: 'attention', 'SIN INIT': 'ok', 'ERROR DE CONSULTA': 'error' })[row.estado] || 'error')); tr.append(severity);
             const result = document.createElement('td'); result.append(badge(row.ok ? 'ÉXITO' : 'FALLÓ', row.ok ? 'ok' : 'error')); tr.append(result);
-            const delta = document.createElement('td'); delta.textContent = row.variacion == null ? '—' : `${row.variacion > 0 ? '+' : ''}${number.format(row.variacion)}`; delta.title = row.comparado_con ? `Contra ${date(row.comparado_con)}` : 'Sin lectura válida anterior'; tr.append(delta);
-            const detail = document.createElement('td'); detail.textContent = row.error || '—'; detail.title = row.error || '';
+            const delta = document.createElement('td'); delta.textContent = row.variacion == null ? '—' : `${row.variacion > 0 ? '+' : ''}${number.format(row.variacion)}`; const comparison = document.createElement('small'); comparison.className = 'init-comparison'; comparison.textContent = row.comparado_con ? `Contra ${date(row.comparado_con)}` : 'Sin lectura válida anterior'; delta.append(comparison); tr.append(delta);
+            const detail = document.createElement('td');
+            if (row.error) {
+                const disclosure = document.createElement('details'); disclosure.className = 'init-error';
+                const summary = document.createElement('summary'); summary.textContent = row.error.length > 95 ? row.error.slice(0, 95) + '…' : row.error;
+                const full = document.createElement('p'); full.textContent = row.error; disclosure.append(summary, full); detail.append(disclosure);
+            } else detail.textContent = '—';
             const probe = document.createElement('button'); probe.type = 'button'; probe.className = 'init-probe'; probe.dataset.probe = row.cmts; probe.textContent = 'Probar'; probe.setAttribute('aria-label', `Probar consulta de ${row.cmts}`); detail.append(document.createElement('br'), probe); tr.append(detail);
             fragment.append(tr);
         });
         nodes.rows.replaceChildren(fragment); nodes.empty.hidden = filtered.length > 0;
+        nodes.empty.textContent = current.length ? 'Sin coincidencias. Cambia la búsqueda o el filtro de resultados.' : 'Sin mediciones disponibles. Revisa el acceso e inicia una actualización.';
+        document.querySelectorAll('[data-sort]').forEach((button) => {
+            const selected = button.dataset.sort === sortKey;
+            button.closest('th').setAttribute('aria-sort', selected ? (sortDirection === 1 ? 'ascending' : 'descending') : 'none');
+            button.querySelector('[aria-hidden]')?.remove();
+            if (selected) { const arrow = document.createElement('span'); arrow.setAttribute('aria-hidden', 'true'); arrow.textContent = sortDirection === 1 ? ' ↑' : ' ↓'; button.append(arrow); }
+        });
         nodes.total.textContent = number.format(current.length); nodes.success.textContent = number.format(current.filter((x) => x.ok && x.total_init != null).length);
         nodes.failed.textContent = number.format(current.filter((x) => !x.ok || x.total_init == null).length);
         nodes.sum.textContent = number.format(current.filter((x) => x.ok && x.total_init != null).reduce((sum, row) => sum + row.total_init, 0));
@@ -115,9 +128,10 @@
         catch (_) { drawTrend([]); }
     }
     function drawTrend(data) {
-        const context = nodes.canvas.getContext('2d'); const width = Math.max(320, nodes.canvas.clientWidth); const height = 180; const scale = window.devicePixelRatio || 1;
+        trendData = data;
+        const context = nodes.canvas.getContext('2d'); const width = Math.max(1, nodes.canvas.clientWidth); const height = 180; const scale = window.devicePixelRatio || 1;
         nodes.canvas.width = width * scale; nodes.canvas.height = height * scale; context.scale(scale, scale); context.clearRect(0, 0, width, height);
-        nodes.trendEmpty.hidden = data.length > 0; if (!data.length) return;
+        nodes.trendEmpty.hidden = data.length > 0; nodes.canvas.setAttribute('aria-label', data.length ? `Tendencia de ${nodes.select.value}: ${data.length} lecturas, última ${number.format(data[data.length - 1].total_init)} INIT, ${date(data[data.length - 1].fecha)}.` : 'Sin lecturas válidas para graficar'); if (!data.length) return;
         const values = data.map((x) => x.total_init); const max = Math.max(1, ...values); const pad = { left: 34, right: 10, top: 12, bottom: 24 }; const w = width - pad.left - pad.right; const h = height - pad.top - pad.bottom;
         context.strokeStyle = '#d8e1e9'; context.lineWidth = 1; context.fillStyle = '#64728a'; context.font = '10px Segoe UI, sans-serif';
         for (let i = 0; i <= 4; i += 1) { const y = pad.top + h * i / 4; context.beginPath(); context.moveTo(pad.left, y); context.lineTo(width - pad.right, y); context.stroke(); context.fillText(number.format(Math.round(max * (4 - i) / 4)), 2, y + 3); }
@@ -140,8 +154,9 @@
     document.querySelectorAll('[data-sort]').forEach((button) => handlers.push([button, 'click', () => { const next = button.dataset.sort; sortDirection = sortKey === next ? -sortDirection : (next === 'total_init' || next === 'variacion' ? -1 : 1); sortKey = next; render(); }]));
     handlers.forEach(([node, event, fn]) => node.addEventListener(event, fn));
     const visibility = () => { active = !document.hidden; if (active) { poll(); } else clearTimeout(pollTimer); };
-    const resize = () => { if (nodes.select.value) loadTrend(nodes.select.value); };
-    const cleanup = () => { destroyed = true; clearTimeout(pollTimer); controller?.abort(); handlers.forEach(([node, event, fn]) => node.removeEventListener(event, fn)); document.removeEventListener('visibilitychange', visibility); window.removeEventListener('resize', resize); window.removeEventListener('pagehide', cleanup); };
+    const resize = () => drawTrend(trendData);
+    const trendObserver = new ResizeObserver(resize); trendObserver.observe(nodes.canvas);
+    const cleanup = () => { destroyed = true; trendObserver.disconnect(); clearTimeout(pollTimer); controller?.abort(); handlers.forEach(([node, event, fn]) => node.removeEventListener(event, fn)); document.removeEventListener('visibilitychange', visibility); window.removeEventListener('resize', resize); window.removeEventListener('pagehide', cleanup); };
     document.addEventListener('visibilitychange', visibility); window.addEventListener('resize', resize); window.addEventListener('pagehide', cleanup, { once: true });
     Promise.all([loadActual(), loadHistory()]).then(() => loadStatus());
 })();

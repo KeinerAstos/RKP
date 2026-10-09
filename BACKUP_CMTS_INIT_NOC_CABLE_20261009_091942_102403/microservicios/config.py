@@ -105,12 +105,6 @@ class Settings(BaseSettings):
     cmts_init_cli_timeout_seconds: int = Field(default=90, ge=1, le=600)
     cmts_init_retention_days: int = 90
     cmts_init_inventory_path: str = ""
-    # Salto SSH exclusivo de CMTS INIT; credenciales privadas en .env.
-    cmts_init_jump_enabled: bool = False
-    cmts_init_jump_host: str = ""
-    cmts_init_jump_port: int = Field(default=22, ge=1, le=65535)
-    cmts_init_jump_user: str = ""
-    cmts_init_jump_password: str = ""
     cmts_init_threshold_attention_max: int = 9
     cmts_init_threshold_risk_max: int = 49
 

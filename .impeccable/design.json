@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-16T11:26:57.2824225-05:00",
+  "generatedAt": "2026-10-09T09:00:00-05:00",
   "title": "Design System: NOC BOA",
   "extensions": {
     "colorMeta": {
@@ -8,80 +8,203 @@
         "role": "neutral",
         "displayName": "Negro de Sala",
         "canonical": "#020305",
-        "tonalRamp": ["#020305", "#0c0f14", "#1a2029", "#303945", "#56616e", "#818b95", "#b4bbc2", "#edf0f2"]
+        "tonalRamp": [
+          "#020305",
+          "#0c0f14",
+          "#1a2029",
+          "#303945",
+          "#56616e",
+          "#818b95",
+          "#b4bbc2",
+          "#edf0f2"
+        ]
       },
       "surface": {
         "role": "neutral",
         "displayName": "Grafito de Consola",
         "canonical": "#080b10",
-        "tonalRamp": ["#080b10", "#121820", "#202a35", "#35424f", "#596673", "#858f99", "#b7bdc4", "#eef0f2"]
+        "tonalRamp": [
+          "#080b10",
+          "#121820",
+          "#202a35",
+          "#35424f",
+          "#596673",
+          "#858f99",
+          "#b7bdc4",
+          "#eef0f2"
+        ]
       },
       "primary": {
         "role": "primary",
         "displayName": "Azul de Telemetría",
         "canonical": "#128cff",
-        "tonalRamp": ["#00182f", "#00345f", "#00518f", "#0871c5", "#128cff", "#55abff", "#9bcfff", "#e6f4ff"]
+        "tonalRamp": [
+          "#00182f",
+          "#00345f",
+          "#00518f",
+          "#0871c5",
+          "#128cff",
+          "#55abff",
+          "#9bcfff",
+          "#e6f4ff"
+        ]
       },
       "green": {
         "role": "secondary",
         "displayName": "Verde Operativo",
         "canonical": "#14cf7b",
-        "tonalRamp": ["#032619", "#075035", "#0a754c", "#0da866", "#14cf7b", "#58e5a2", "#a0f2ca", "#e7fcf2"]
+        "tonalRamp": [
+          "#032619",
+          "#075035",
+          "#0a754c",
+          "#0da866",
+          "#14cf7b",
+          "#58e5a2",
+          "#a0f2ca",
+          "#e7fcf2"
+        ]
       },
       "yellow": {
         "role": "secondary",
         "displayName": "Amarillo de Señal",
         "canonical": "#ffd229",
-        "tonalRamp": ["#2b2200", "#574500", "#806600", "#b79200", "#ffd229", "#ffe16a", "#ffedaa", "#fff9e3"]
+        "tonalRamp": [
+          "#2b2200",
+          "#574500",
+          "#806600",
+          "#b79200",
+          "#ffd229",
+          "#ffe16a",
+          "#ffedaa",
+          "#fff9e3"
+        ]
       },
       "orange": {
         "role": "secondary",
         "displayName": "Naranja de Señal",
         "canonical": "#ff811a",
-        "tonalRamp": ["#301300", "#622b00", "#914200", "#c55e08", "#ff811a", "#ffa45a", "#ffc69b", "#fff0df"]
+        "tonalRamp": [
+          "#301300",
+          "#622b00",
+          "#914200",
+          "#c55e08",
+          "#ff811a",
+          "#ffa45a",
+          "#ffc69b",
+          "#fff0df"
+        ]
       },
       "red": {
         "role": "secondary",
         "displayName": "Rojo de Alarma",
         "canonical": "#ff3048",
-        "tonalRamp": ["#32030b", "#650714", "#950d20", "#c91a30", "#ff3048", "#ff7180", "#ffabb3", "#ffe8eb"]
+        "tonalRamp": [
+          "#32030b",
+          "#650714",
+          "#950d20",
+          "#c91a30",
+          "#ff3048",
+          "#ff7180",
+          "#ffabb3",
+          "#ffe8eb"
+        ]
       },
       "light-canvas": {
         "role": "neutral",
         "displayName": "Blanco de Reporte",
-        "canonical": "#f2faff",
-        "tonalRamp": ["#13242f", "#294454", "#456879", "#668b9d", "#91b3c3", "#bed6e1", "#ddecf3", "#f2faff"]
+        "canonical": "#f4f8f6",
+        "tonalRamp": [
+          "#13242f",
+          "#294454",
+          "#456879",
+          "#668b9d",
+          "#91b3c3",
+          "#bed6e1",
+          "#ddecf3",
+          "#f2faff"
+        ]
       },
       "light-text": {
         "role": "neutral",
         "displayName": "Índigo de Lectura",
-        "canonical": "#06127a",
-        "tonalRamp": ["#03072d", "#06105e", "#0c198b", "#2637ad", "#5262c8", "#8792dc", "#bac1eb", "#eef0fb"]
+        "canonical": "#10263a",
+        "tonalRamp": [
+          "#03072d",
+          "#06105e",
+          "#0c198b",
+          "#2637ad",
+          "#5262c8",
+          "#8792dc",
+          "#bac1eb",
+          "#eef0fb"
+        ]
       }
     },
     "typographyMeta": {
-      "headline": { "displayName": "Headline", "purpose": "Títulos principales de vista, compactos y funcionales." },
-      "title": { "displayName": "Title", "purpose": "Encabezados de panel y nombres de módulos." },
-      "body": { "displayName": "Body", "purpose": "Contenido operacional y ayudas de lectura continua." },
-      "label": { "displayName": "Label", "purpose": "Estados, categorías y metadatos compactos." }
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Títulos principales de vista, compactos y funcionales."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Encabezados de panel y nombres de módulos."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Contenido operacional y ayudas de lectura continua."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Estados, categorías y metadatos compactos."
+      }
     },
     "shadows": [
-      { "name": "sidebar-separation", "value": "12px 0 40px rgba(0, 0, 0, .22)", "purpose": "Separación lateral de la navegación fija." },
-      { "name": "active-navigation", "value": "inset 3px 0 0 #27a4ff, 0 6px 18px rgba(0, 70, 130, .15)", "purpose": "Confirmar la sección activa sin hacerla flotar." },
-      { "name": "status-signal", "value": "0 0 10px rgba(21, 217, 122, .4)", "purpose": "Resplandor localizado alrededor de un indicador pequeño." },
-      { "name": "overlay-alarm", "value": "0 0 28px rgba(255, 48, 72, .6)", "purpose": "Alertas superpuestas que demandan atención." }
+      {
+        "name": "sidebar-separation",
+        "value": "12px 0 40px rgba(0, 0, 0, .22)",
+        "purpose": "Separación lateral de la navegación fija."
+      },
+      {
+        "name": "active-navigation",
+        "value": "inset 3px 0 0 #27a4ff, 0 6px 18px rgba(0, 70, 130, .15)",
+        "purpose": "Confirmar la sección activa sin hacerla flotar."
+      },
+      {
+        "name": "status-signal",
+        "value": "0 0 10px rgba(21, 217, 122, .4)",
+        "purpose": "Resplandor localizado alrededor de un indicador pequeño."
+      },
+      {
+        "name": "overlay-alarm",
+        "value": "0 0 28px rgba(255, 48, 72, .6)",
+        "purpose": "Alertas superpuestas que demandan atención."
+      }
     ],
     "motion": [
-      { "name": "state-fast", "value": "150ms ease", "purpose": "Hover, foco y selección en controles compactos." },
-      { "name": "state-standard", "value": "180ms ease", "purpose": "Transiciones tonales de navegación y superficies." }
+      {
+        "name": "state-fast",
+        "value": "150ms ease",
+        "purpose": "Hover, foco y selección en controles compactos."
+      },
+      {
+        "name": "state-standard",
+        "value": "180ms ease",
+        "purpose": "Transiciones tonales de navegación y superficies."
+      }
     ],
     "breakpoints": [
-      { "name": "small-mobile", "value": "480px" },
-      { "name": "mobile", "value": "700px" },
-      { "name": "tablet", "value": "850px" },
-      { "name": "desktop-compact", "value": "1150px" },
-      { "name": "panel-stack", "value": "1180px" },
-      { "name": "wide", "value": "1600px" }
+      {
+        "name": "hfc-monitor",
+        "value": "1180px"
+      },
+      {
+        "name": "init-stack",
+        "value": "900px"
+      },
+      {
+        "name": "init-mobile",
+        "value": "640px"
+      }
     ]
   },
   "components": [
@@ -99,7 +222,7 @@
       "refersTo": "input",
       "description": "Búsqueda operacional dentro de tablas de alta densidad.",
       "html": "<input class=\"ds-search\" placeholder=\"Buscar por OLT, nodo o descripción…\">",
-      "css": ".ds-search { min-width:260px; background:#010101; color:#f4f7fb; border:1px solid #2b3a48; border-radius:7px; padding:8px 10px; font:400 13px 'Segoe UI',Arial,sans-serif; transition:border-color .15s ease; } .ds-search::placeholder { color:#83919f; } .ds-search:hover { border-color:#3b5268; } .ds-search:focus-visible { border-color:#128cff; outline:2px solid rgba(18,140,255,.35); outline-offset:1px; }"
+      "css": ".ds-search { min-width:260px; background:#010101; color:#10263a; border:1px solid #2b3a48; border-radius:7px; padding:8px 10px; font:400 13px 'Segoe UI',Arial,sans-serif; transition:border-color .15s ease; } .ds-search::placeholder { color:#83919f; } .ds-search:hover { border-color:#3b5268; } .ds-search:focus-visible { border-color:#128cff; outline:2px solid rgba(18,140,255,.35); outline-offset:1px; }"
     },
     {
       "name": "Navigation Item",
@@ -123,7 +246,7 @@
       "refersTo": "card",
       "description": "Superficie tonal para agrupar información operacional relacionada.",
       "html": "<section class=\"ds-panel\"><span class=\"ds-panel-label\">INFRAESTRUCTURA</span><h3>Estado de OLT</h3><p>Lectura consolidada de la red.</p></section>",
-      "css": ".ds-panel { width:320px; background:linear-gradient(180deg,#080b10,#040506); color:#f4f7fb; border:1px solid #192431; border-radius:12px; padding:16px; font-family:'Segoe UI',Arial,sans-serif; } .ds-panel-label { color:#83919f; font-size:10px; font-weight:800; letter-spacing:.11em; } .ds-panel h3 { margin:8px 0 4px; font-size:18px; line-height:1.25; } .ds-panel p { margin:0; color:#83919f; font-size:13px; line-height:1.5; } .ds-panel:hover { background:#0e141d; border-color:#26384b; } .ds-panel:focus-within { outline:2px solid #128cff; outline-offset:2px; }"
+      "css": ".ds-panel { width:320px; background:linear-gradient(180deg,#ffffff,#040506); color:#10263a; border:1px solid #d9e5df; border-radius:12px; padding:16px; font-family:'Segoe UI',Arial,sans-serif; } .ds-panel-label { color:#83919f; font-size:10px; font-weight:800; letter-spacing:.11em; } .ds-panel h3 { margin:8px 0 4px; font-size:18px; line-height:1.25; } .ds-panel p { margin:0; color:#83919f; font-size:13px; line-height:1.5; } .ds-panel:hover { background:#0e141d; border-color:#26384b; } .ds-panel:focus-within { outline:2px solid #128cff; outline-offset:2px; }"
     },
     {
       "name": "Contextual Status Badge",
@@ -143,40 +266,72 @@
   ],
   "narrative": {
     "northStar": "Torre de Control",
-    "overview": "NOC BOA es una consola técnica de vigilancia operacional: oscura por defecto, precisa y jerárquica. La interfaz debe permitir reconocer en segundos qué funciona, qué se desvía y qué exige atención. Su densidad es deliberadamente alta, pero cada nivel se separa mediante ritmo compacto, contraste controlado y capas tonales.\n\nEl sistema puede incorporar el lenguaje de la instrumentación de red en métricas, indicadores y estados compactos. Las vistas claras quedan reservadas para reportes, tablas extensas, exportaciones o consultas donde mejoren realmente la lectura; deben conservar la misma jerarquía, tipografía, espaciado y gramática de componentes. La experiencia nunca adopta recursos de landing page, marketing ni dashboard de BI decorativo.",
+    "overview": "NOC BOA es una consola técnica de vigilancia operacional: con shell oscuro y áreas operativas claras, precisa y jerárquica. La interfaz debe permitir reconocer en segundos qué funciona, qué se desvía y qué exige atención. Su densidad es deliberadamente alta, pero cada nivel se separa mediante ritmo compacto, contraste controlado y capas tonales.\n\nEl sistema puede incorporar el lenguaje de la instrumentación de red en métricas, indicadores y estados compactos. Los módulos actuales usan superficies claras para monitoreo, reportes y consultas; deben conservar la misma jerarquía, tipografía, espaciado y gramática de componentes. La experiencia nunca adopta recursos de landing page, marketing ni dashboard de BI decorativo.",
     "keyCharacteristics": [
-      "Oscuro por defecto, con vistas claras excepcionales y coherentes.",
+      "Shell oscuro con módulos claros y variantes por superficie.",
       "Alta densidad de información útil con jerarquía inequívoca.",
       "Estados operacionales reconocibles por color, texto e indicador.",
       "Componentes compactos, técnicos y contenidos.",
       "Decoración mínima; cada recurso visual debe ayudar a detectar, entender, priorizar o actuar."
     ],
     "rules": [
-      { "name": "The Context Defines Meaning Rule", "body": "El color no define por sí solo la severidad; el módulo y el estado operacional determinan su significado. Tabla principal — Estado actual de red: Caída actual → rojo; Saturación uplink → amarillo; Error CRC → amarillo. Temperatura OLT: ≥ 70 °C → amarillo; ≥ 80 °C → naranja; ≥ 90 °C → rojo. Ambas semánticas son independientes.", "section": "colors" },
-      { "name": "The Signal, Not Decoration Rule", "body": "Los colores saturados se reservan para estados, alarmas, selección, foco y acciones importantes; nunca llenan grandes superficies con intención decorativa.", "section": "colors" },
-      { "name": "The Redundancy Rule", "body": "Ningún estado crítico depende únicamente del color: debe incluir texto, icono, etiqueta o indicador equivalente.", "section": "colors" },
-      { "name": "The Operational Hierarchy Rule", "body": "Una métrica importante gana jerarquía mediante contraste, peso y posición; el tamaño extremo no sustituye una estructura clara.", "section": "typography" },
-      { "name": "The Controlled Density Rule", "body": "Reducir espacios vacíos innecesarios sin mezclar grupos funcionales ni degradar la legibilidad.", "section": "layout" },
-      { "name": "The Reflow Before Shrink Rule", "body": "Reorganizar paneles y controles progresivamente antes de comprimir tipografía o contenido indiscriminadamente.", "section": "layout" },
-      { "name": "The Tonal First Rule", "body": "Una superficie en reposo obtiene jerarquía por tono y borde; la sombra sólo aparece cuando existe superposición o una señal operacional justificada.", "section": "elevation" },
-      { "name": "The Contained Corners Rule", "body": "La curvatura suaviza controles y paneles sin convertir la interfaz en una colección de tarjetas blandas o decorativas.", "section": "shapes" }
+      {
+        "name": "The Context Defines Meaning Rule",
+        "body": "El color no define por sí solo la severidad; el módulo y el estado operacional determinan su significado. Tabla principal — Estado actual de red: Caída actual → rojo; Saturación uplink → amarillo; Error CRC → amarillo. Temperatura OLT: ≥ 70 °C → amarillo; ≥ 80 °C → naranja; ≥ 90 °C → rojo. Ambas semánticas son independientes.",
+        "section": "colors"
+      },
+      {
+        "name": "The Signal, Not Decoration Rule",
+        "body": "Los colores saturados se reservan para estados, alarmas, selección, foco y acciones importantes; nunca llenan grandes superficies con intención decorativa.",
+        "section": "colors"
+      },
+      {
+        "name": "The Redundancy Rule",
+        "body": "Ningún estado crítico depende únicamente del color: debe incluir texto, icono, etiqueta o indicador equivalente.",
+        "section": "colors"
+      },
+      {
+        "name": "The Operational Hierarchy Rule",
+        "body": "Una métrica importante gana jerarquía mediante contraste, peso y posición; el tamaño extremo no sustituye una estructura clara.",
+        "section": "typography"
+      },
+      {
+        "name": "The Controlled Density Rule",
+        "body": "Reducir espacios vacíos innecesarios sin mezclar grupos funcionales ni degradar la legibilidad.",
+        "section": "layout"
+      },
+      {
+        "name": "The Reflow Before Shrink Rule",
+        "body": "Reorganizar paneles y controles progresivamente antes de comprimir tipografía o contenido indiscriminadamente.",
+        "section": "layout"
+      },
+      {
+        "name": "The Tonal First Rule",
+        "body": "Una superficie en reposo obtiene jerarquía por tono y borde; la sombra sólo aparece cuando existe superposición o una señal operacional justificada.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Contained Corners Rule",
+        "body": "La curvatura suaviza controles y paneles sin convertir la interfaz en una colección de tarjetas blandas o decorativas.",
+        "section": "shapes"
+      }
     ],
     "dos": [
-      "Do usar el modo oscuro como identidad dominante para monitoreo continuo y operación intensiva.",
-      "Do verificar el contexto del componente antes de interpretar o cambiar un color.",
-      "Do conservar rojo para Caída actual y amarillo tanto para Saturación uplink como para Error CRC en la tabla principal.",
-      "Do conservar los umbrales de temperatura OLT: amarillo desde 70 °C, naranja desde 80 °C y rojo desde 90 °C.",
-      "Do usar texto, iconos o etiquetas junto al color para comunicar estados.",
-      "Do reorganizar paneles según el ancho y mantener el overflow dentro de regiones de datos.",
-      "Do reservar vistas claras para casos donde aporten una ventaja real de lectura."
+      "**Do** conservar el shell oscuro y las superficies claras vigentes de los módulos.",
+      "**Do** verificar el contexto del componente antes de interpretar o cambiar un color.",
+      "**Do** conservar rojo para Caída actual y amarillo tanto para Saturación uplink como para Error CRC en la tabla principal.",
+      "**Do** conservar los umbrales de temperatura OLT: amarillo desde 70 °C, naranja desde 80 °C y rojo desde 90 °C.",
+      "**Do** usar texto, iconos o etiquetas junto al color para comunicar estados.",
+      "**Do** reorganizar paneles según el ancho y mantener el overflow dentro de regiones de datos.",
+      "**Do** comprobar la variante efectiva al final de la cascada antes de elegir colores."
     ],
     "donts": [
-      "Don't imponer una escala global de severidad sobre módulos con semántica distinta.",
-      "Don't trasladar la escala de temperatura a la tabla principal ni viceversa.",
-      "Don't modificar reglas de negocio, endpoints, consultas o estructuras de datos para obtener consistencia visual.",
-      "Don't usar sombras ambientales fuertes, glassmorphism, gradientes decorativos o tarjetas flotantes innecesarias.",
-      "Don't llenar grandes áreas con colores saturados ni hacer que información secundaria compita con alarmas.",
-      "Don't depender sólo del color, introducir animación distractora o sacrificar densidad útil por decoración."
+      "**Don't** imponer una escala global de severidad sobre módulos con semántica distinta.",
+      "**Don't** trasladar la escala de temperatura a la tabla principal ni viceversa.",
+      "**Don't** modificar reglas de negocio, endpoints, consultas o estructuras de datos para obtener consistencia visual.",
+      "**Don't** usar sombras ambientales fuertes, glassmorphism, gradientes decorativos o tarjetas flotantes innecesarias.",
+      "**Don't** llenar grandes áreas con colores saturados ni hacer que información secundaria compita con alarmas.",
+      "**Don't** depender sólo del color, introducir animación distractora o sacrificar densidad útil por decoración."
     ]
   }
 }

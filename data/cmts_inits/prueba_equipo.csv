@@ -1,2 +1,2 @@
 run_id,alcance,cmts,ip,fecha,total_init,ok,estado,error
-a741cef2404942579511775842d183a8,equipo,BARR-BOST-H-02-CS100G,172.25.255.6,2026-10-08T21:23:49+00:00,5,True,ATENCION,
+c7f5b500b7b549fea9f6112dd69c36f9,equipo,CALI-CERR-H-01-CS100G,172.22.255.17,2026-10-09T14:43:40+00:00,,False,ERROR DE CONSULTA,[CANAL_NOC_CABLE_CMTS] SSHException: Timeout opening channel.

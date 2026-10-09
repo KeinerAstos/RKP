@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="assets/css/gkp.css">
     <link rel="stylesheet" href="assets/css/module-page.css">
 </head>
-<body class="gkp-page hfc-page">
+<body class="gkp-page hfc-page module-flow-page">
 <div class="app">
     <?php require __DIR__ . '/components/sidebar.php'; ?>
     <main class="main">

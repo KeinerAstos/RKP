@@ -790,46 +790,12 @@ def query(item: dict[str, str]) -> dict:
         error="",
     )
     client = paramiko.SSHClient()
-    jump_client = None
-    tunnel = None
-    connect_options = {}
     stage = "CONEXION_SSH"
     try:
         client.load_system_host_keys()
         if settings.cmts_known_hosts:
             client.load_host_keys(settings.cmts_known_hosts)
         client.set_missing_host_key_policy(paramiko.RejectPolicy())
-        if settings.cmts_init_jump_enabled:
-            stage = "CONEXION_NOC_CABLE"
-            if not settings.cmts_init_jump_host or not settings.cmts_init_jump_user or not settings.cmts_init_jump_password:
-                raise ValueError("Configura CMTS_INIT_JUMP_HOST, USER y PASSWORD")
-            jump_client = paramiko.SSHClient()
-            jump_client.load_system_host_keys()
-            if settings.cmts_known_hosts:
-                jump_client.load_host_keys(settings.cmts_known_hosts)
-            jump_client.set_missing_host_key_policy(paramiko.RejectPolicy())
-            jump_client.connect(
-                settings.cmts_init_jump_host,
-                port=settings.cmts_init_jump_port,
-                username=settings.cmts_init_jump_user,
-                password=settings.cmts_init_jump_password,
-                timeout=settings.cmts_init_connect_timeout_seconds,
-                banner_timeout=settings.cmts_init_connect_timeout_seconds,
-                auth_timeout=settings.cmts_init_connect_timeout_seconds,
-                look_for_keys=False, allow_agent=False,
-            )
-            stage = "CANAL_NOC_CABLE_CMTS"
-            transport = jump_client.get_transport()
-            if transport is None or not transport.is_active():
-                raise ConnectionError("Sesión SSH de noc_cable inactiva")
-            transport.set_keepalive(20)
-            tunnel = transport.open_channel(
-                "direct-tcpip", (item["ip"], settings.cmts_init_ssh_port),
-                ("127.0.0.1", 0),
-                timeout=settings.cmts_init_connect_timeout_seconds,
-            )
-            connect_options["sock"] = tunnel
-            stage = "CONEXION_CMTS_VIA_NOC_CABLE"
         client.connect(
             item["ip"],
             port=settings.cmts_init_ssh_port,
@@ -840,7 +806,6 @@ def query(item: dict[str, str]) -> dict:
             auth_timeout=settings.cmts_init_connect_timeout_seconds,
             look_for_keys=False,
             allow_agent=False,
-            **connect_options,
         )
         stage = "APERTURA_CLI"
         channel = client.invoke_shell(width=240, height=1000)
@@ -860,23 +825,16 @@ def query(item: dict[str, str]) -> dict:
         total = parse(output)
         result.update(total_init=total, ok=True, estado=severity(total))
     except Exception as exc:
-        message = str(exc)
-        for secret in (settings.cmts_password, settings.cmts_init_jump_password):
-            if secret:
-                message = message.replace(secret, "<oculto>")
+        message = (
+            str(exc).replace(settings.cmts_password, "<oculto>")
+            if settings.cmts_password
+            else str(exc)
+        )
         if isinstance(exc, (TimeoutError, paramiko.ssh_exception.NoValidConnectionsError)) and stage == "CONEXION_SSH":
             message = f"Sin conexión SSH a {item['ip']}:{settings.cmts_init_ssh_port}; revisar ruta/VPN, ACL y puerto. {message}"
         result["error"] = f"[{stage}] {type(exc).__name__}: {message}"[:400]
     finally:
-        try:
-            client.close()
-        finally:
-            try:
-                if tunnel is not None:
-                    tunnel.close()
-            finally:
-                if jump_client is not None:
-                    jump_client.close()
+        client.close()
         result["fecha"] = now()
     return result
 

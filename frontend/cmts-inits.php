@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="assets/css/module-page.css">
     <link rel="stylesheet" href="assets/css/cmts-inits.css">
 </head>
-<body class="gkp-page hfc-page">
+<body class="gkp-page hfc-page cmts-init-page">
 <div class="app">
     <?php require __DIR__ . '/components/sidebar.php'; ?>
     <main class="main">

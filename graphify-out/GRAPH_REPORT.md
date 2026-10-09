@@ -1,23 +1,23 @@
-# Graph Report - RKP  (2026-10-08)
+# Graph Report - RKP  (2026-10-09)
 
 ## Corpus Check
-- 158 files · ~359,116 words
+- 158 files · ~359,537 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 20 file(s) not represented in the graph (top: .css 6, .toml 4, .csv 4)
 
 ## Summary
-- 1808 nodes · 3966 edges · 133 communities (90 shown, 9 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 116 edges (avg confidence: 0.85)
+- 1819 nodes · 3974 edges · 135 communities (91 shown, 10 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 111 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c3be184a`
+- Built from commit: `fe827a35`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - renderDesignVisual
-- syncEditBadgeHitProxies
+- applyEditing
 - topologias/service.py
 - modern-screenshot.umd.js
 - cmts/saturacion/service.py
@@ -29,12 +29,13 @@
 - Any
 - handleManualEditActivity
 - caidas/service.py
-- startVariantObserver
-- cleanup
+- grafana_proxy/app.py
+- mountSvelteComponentVariant
 - captureElementToBlob
 - HistorialTests
 - Extract Flow
 - createLiveBrowserDomHelpers
+- showBar
 - crc/service.py
 - resolveLiveInjectionAnchor
 - createLiveBrowserSessionState
@@ -57,6 +58,7 @@
 - initGlobalBar
 - new-work.md
 - MicroserviceClient
+- cleanup
 - live-browser-ignores.js
 - impeccable
 - scrollToTop
@@ -67,7 +69,7 @@
 - live.md
 - Handle `generate`
 - Generate Report
-- handleGo
+- enableInlineEdit
 - New visual work
 - optimize.md
 - live-browser.js
@@ -101,6 +103,7 @@
 - Impeccable Finish Reviewer
 - Impeccable Manual Edit Applier
 - Diagnostic Scan
+- get
 - $impeccable hooks
 - Visualize: Direction Comps & Asset Production
 - Impeccable Documenter
@@ -110,7 +113,6 @@
 - Puertos down: consulta de 4 días y verificación de 7 días
 - cmts-inits.js
 - scopeCssBlock
-- config.py
 - datetime
 - Exception
 - HTTPException
@@ -133,25 +135,25 @@
   probar_cmts.py → microservicios/olt/topologias/router.py
 - `test_cycle_claim_is_global_and_recovers_dead_process_lock()` --calls--> `claim_cycle()`  [EXTRACTED]
   tests/test_cmts_inits.py → microservicios/cmts/inits/inits_cmts.py
+- `test_status_ignores_lock_from_dead_process_even_without_published_csv()` --calls--> `status()`  [EXTRACTED]
+  tests/test_cmts_inits.py → microservicios/cmts/inits/inits_cmts.py
 - `test_history_paginates_without_loading_entire_file()` --calls--> `history()`  [EXTRACTED]
   tests/test_cmts_inits.py → microservicios/cmts/inits/inits_cmts.py
 - `test_parser_counts_unique_init_rows_and_zero()` --calls--> `parse()`  [EXTRACTED]
   tests/test_cmts_inits.py → microservicios/cmts/inits/inits_cmts.py
-- `CacheTests` --uses--> `CacheHistorial`  [INFERRED]
-  tests/test_olt_caidas_historial.py → microservicios/olt/caidas/cache.py
 
 ## Import Cycles
 - None detected.
 
-## Communities (133 total, 9 thin omitted)
+## Communities (135 total, 10 thin omitted)
 
 ### Community 0 - "renderDesignVisual"
 Cohesion: 0.08
 Nodes (39): buildCollapsible(), buildColorModels(), buildDesignHeader(), buildListHtml(), buildRadiiModels(), buildTypographyModels(), cssSafe(), designEmptyMessage() (+31 more)
 
-### Community 1 - "syncEditBadgeHitProxies"
-Cohesion: 0.36
-Nodes (8): bindEditBadgeProxy(), editBadgeProxyTargets(), initEditBadgeHitProxies(), proxyMouseEvent(), setImportantStyle(), styleEditBadgeProxy(), syncEditBadgeHitProxies(), usesShadowChromeRoot()
+### Community 1 - "applyEditing"
+Cohesion: 0.09
+Nodes (32): addManualContextText(), applyEditing(), buildLocatorForLeaf(), canRestoreManualEditElement(), collectManualContextPieces(), walk(), contextElementForManualEdit(), copyEditContainerContext() (+24 more)
 
 ### Community 2 - "topologias/service.py"
 Cohesion: 0.10
@@ -163,43 +165,43 @@ Nodes (55): ae(), be(), bt(), Ce(), s(), Ct(), de(), dt() (+47 more)
 
 ### Community 4 - "cmts/saturacion/service.py"
 Cohesion: 0.09
-Nodes (46): BackgroundTasks, _guardar_atomico(), guardar_estado(), guardar_saturacion(), _leer(), leer_estado(), leer_saturacion(), Any (+38 more)
+Nodes (47): BackgroundTasks, _guardar_atomico(), guardar_estado(), guardar_saturacion(), _leer(), leer_estado(), leer_saturacion(), Any (+39 more)
 
 ### Community 5 - "initPageChat"
-Cohesion: 0.08
-Nodes (53): applyGlobalBarLabelState(), armPageChatForTyping(), attachSteerFocusDebug(), attachSteerFocusGuard(), buildSteerProcessingDots(), buildSteerQueueHint(), clearSteerAwaitTimer(), collapsePageChat() (+45 more)
+Cohesion: 0.11
+Nodes (39): agentHasWorkInFlight(), armPageChatForTyping(), attachSteerFocusDebug(), attachSteerFocusGuard(), buildSteerProcessingDots(), buildSteerQueueHint(), clearSteerAwaitTimer(), collapsePageChat() (+31 more)
 
 ### Community 6 - "el"
-Cohesion: 0.08
-Nodes (53): actionLabel(), applyConfigureBarChrome(), bindConfigureCountPillTooltip(), bindConfigureInlineControlHover(), bindConfigureModifierPillHover(), buildConfigureActionControl(), buildConfigureCountControl(), buildConfigureRow() (+45 more)
+Cohesion: 0.09
+Nodes (45): bindConfigureCountPillTooltip(), bindConfigureInlineControlHover(), bindConfigureModifierPillHover(), buildConfigureActionControl(), buildConfigureCountControl(), buildConfigureRow(), buildConfigureSubmitButton(), buildConfigureTrailingCluster() (+37 more)
 
 ### Community 7 - "consultar_mysql"
 Cohesion: 0.10
 Nodes (25): consultar_mysql(), crear_conexion(), Any, Cliente comun para consultas MySQL., Consulta SQL de las lecturas actuales de gestión., perdida_latencia_actual(), get, Rutas HTTP de pérdida y latencia OLT. (+17 more)
 
 ### Community 8 - "inits_cmts.py"
-Cohesion: 0.05
-Nodes (91): api_route, HTTPException, _acquire_lock(), actual(), _append_history(), apply_retention(), _atomic_csv(), claim_cycle() (+83 more)
+Cohesion: 0.06
+Nodes (73): get, _acquire_lock(), actual(), _append_history(), apply_retention(), _atomic_csv(), claim_cycle(), data_dir() (+65 more)
 
 ### Community 9 - "resumeSession"
 Cohesion: 0.09
-Nodes (46): applySavedSessionMeta(), checkpointPayload(), clampVariantIndex(), clearHandled(), clearSession(), connectSSE(), copyToClipboard(), discardOrphanedSession() (+38 more)
+Nodes (65): abandonForeignSession(), applyParamDefaults(), applySavedSessionMeta(), clampVariantIndex(), clearHandled(), clearSession(), completeParameterGenerationIfReady(), completeParameterPublication() (+57 more)
 
 ### Community 11 - "handleManualEditActivity"
 Cohesion: 0.18
 Nodes (25): clearStoredManualApplyState(), fetchPendingCount(), handleManualEditActivity(), hidePendingApplyDock(), manualApplyLoadingText(), manualApplyStateKey(), manualEditEventForCurrentPage(), numberOrNull() (+17 more)
 
 ### Community 12 - "caidas/service.py"
-Cohesion: 0.12
-Nodes (35): _escapar_flux(), obtener_caidas_flux(), obtener_estado_actual_flux(), obtener_ultima_actividad_flux(), obtener_ultima_muestra_conocida_flux(), Consultas Flux para detectar caídas de puertos OLT por tráfico., Obtiene las últimas muestras de tráfico recientes. Se revisan 30 minutos para…, Obtiene la última muestra conocida de cada puerto. Sirve para detectar puertos… (+27 more)
+Cohesion: 0.16
+Nodes (28): _escapar_flux(), obtener_caidas_flux(), obtener_estado_actual_flux(), obtener_ultima_actividad_flux(), obtener_ultima_muestra_conocida_flux(), Consultas Flux para detectar caídas de puertos OLT por tráfico., Obtiene las últimas muestras de tráfico recientes. Se revisan 30 minutos para…, Obtiene la última muestra conocida de cada puerto. Sirve para detectar puertos… (+20 more)
 
-### Community 13 - "startVariantObserver"
-Cohesion: 0.13
-Nodes (37): applyPlaceholderDimensions(), closedClipPath(), commitAcceptedVariantToDom(), completeParameterGenerationIfReady(), completeParameterPublication(), completeSourceInjection(), ensureInsertPlaceholder(), findVariantsWrapper() (+29 more)
+### Community 13 - "grafana_proxy/app.py"
+Cohesion: 0.14
+Nodes (28): api_route, Exception, exception_handler, HTTPException, JSONResponse, error_http(), error_no_controlado(), error_validacion() (+20 more)
 
-### Community 14 - "cleanup"
+### Community 14 - "mountSvelteComponentVariant"
 Cohesion: 0.08
-Nodes (42): abandonForeignSession(), abortSvelteComponentInjection(), applyOriginalAttrsToSvelteAnchor(), cleanup(), clearMountErrorCard(), clearScrollY(), commitAcceptedSvelteComponentToDom(), componentModuleCandidates() (+34 more)
+Nodes (31): abortSvelteComponentInjection(), applyOriginalAttrsToSvelteAnchor(), captureAndEmit(), checkpointPayload(), commitAcceptedSvelteComponentToDom(), compileShader(), componentModuleCandidates(), describeMountFailure() (+23 more)
 
 ### Community 15 - "captureElementToBlob"
 Cohesion: 0.08
@@ -216,6 +218,10 @@ Nodes (7): Extract Flow, Step 1: Discover the Design System, Step 2: Identify Pa
 ### Community 18 - "createLiveBrowserDomHelpers"
 Cohesion: 0.17
 Nodes (10): createLiveBrowserDomHelpers(), cssId(), liveUiRoot(), makeFrozenAnchor(), own(), pickable(), rectIsUsableAnchor(), uiAppend() (+2 more)
+
+### Community 19 - "showBar"
+Cohesion: 0.18
+Nodes (17): actionLabel(), applyConfigureBarChrome(), buildConfirmedRow(), buildCyclingRow(), buildDots(), buildGeneratingRow(), cycleVariant(), cyclingCounterText() (+9 more)
 
 ### Community 20 - "crc/service.py"
 Cohesion: 0.17
@@ -234,16 +240,16 @@ Cohesion: 0.24
 Nodes (16): changeDays(), changePanel(), checkUpdateStatus(), compareCriticality(), eyeButton(), formatUpdatedAt(), grafanaUrl(), load() (+8 more)
 
 ### Community 24 - "setLiveState"
-Cohesion: 0.08
-Nodes (61): beginNewLiveConfiguration(), cancelEditing(), cancelEditingToPicking(), cancelInsertConfigure(), cleanupAcceptedSession(), clearAnnotations(), clearInsertPicking(), clearSteerFocusRecoverTimer() (+53 more)
+Cohesion: 0.13
+Nodes (46): beginNewLiveConfiguration(), buildInsertPlaceholderSnapshotFromDom(), cancelEditing(), cancelEditingToPicking(), cancelInsertConfigure(), cleanupAcceptedSession(), clearAnnotations(), clearInsertPicking() (+38 more)
 
 ### Community 25 - "Responsive Design"
 Cohesion: 0.08
 Nodes (25): Assess Adaptation Challenge, Breakpoints: Content-Driven, Content Adaptation, Desktop Adaptation (Mobile → Desktop), Detect Input Method, Not Just Screen Size, Email Adaptation (Web → Email), Implement Adaptations, Layout Adaptation Patterns (+17 more)
 
 ### Community 26 - "intermitencias/service.py"
-Cohesion: 0.21
-Nodes (12): obtener_intermitencias_flux(), Consultas Flux para detectar intermitencias HFC., Detecta caídas de puertos HFC usando cm_registrados. Una caída se confirma…, intermitencias_actual(), get, _numero_entero(), obtener_intermitencias_actuales(), procesar_intermitencias() (+4 more)
+Cohesion: 0.19
+Nodes (13): obtener_intermitencias_flux(), Consultas Flux para detectar intermitencias HFC., Detecta caídas de puertos HFC usando cm_registrados. Una caída se confirma…, intermitencias_actual(), get, Rutas HTTP de intermitencias HFC., _numero_entero(), obtener_intermitencias_actuales() (+5 more)
 
 ### Community 27 - "puertos_duplicados/service.py"
 Cohesion: 0.19
@@ -266,8 +272,8 @@ Cohesion: 0.15
 Nodes (20): _metricas_saturacion_flux(), obtener_saturacion_actual_flux(), obtener_saturacion_flux(), Consultas Flux para saturacion de puertos OLT., Devuelve la secuencia de muestras con saturacion superior al 70 %., Filtra el umbral despues de seleccionar la ultima muestra de cada puerto., get, Rutas HTTP de saturacion OLT. (+12 more)
 
 ### Community 32 - "consultar_flux_temp"
-Cohesion: 0.17
-Nodes (17): InfluxDBClient, consultar_flux_temp(), crear_cliente_cmts(), crear_cliente_temp(), iterar_flux_temp(), probar_conexion_temp(), Any, Cliente InfluxDB para Trafico Temperatura OLTs. (+9 more)
+Cohesion: 0.15
+Nodes (19): BaseSettings, InfluxDBClient, get_settings(), Configuracion comun de los microservicios., Settings, consultar_flux_temp(), crear_cliente_cmts(), crear_cliente_temp() (+11 more)
 
 ### Community 34 - "RuntimeError"
 Cohesion: 0.16
@@ -286,16 +292,20 @@ Cohesion: 0.09
 Nodes (22): Assess Onboarding Needs, Context Over Ceremony, Contextual Help, Design Onboarding Experiences, Documentation & Help, Empty State Design, Feature Discovery & Adoption, Guided Tours & Walkthroughs (+14 more)
 
 ### Community 38 - "consultar_influx.py"
-Cohesion: 0.20
-Nodes (16): ejecutar_caidas(), ejecutar_intermitencias(), imprimir_resultado(), main(), mostrar_menu(), Any, Herramienta interactiva para probar manualmente los servicios OLT., seleccionar_periodo_caidas() (+8 more)
+Cohesion: 0.14
+Nodes (21): ejecutar_caidas(), ejecutar_intermitencias(), imprimir_resultado(), main(), mostrar_menu(), Any, Herramienta interactiva para probar manualmente los servicios OLT., seleccionar_periodo_caidas() (+13 more)
 
 ### Community 39 - "initGlobalBar"
-Cohesion: 0.15
-Nodes (22): agentHasWorkInFlight(), agentStatusText(), barPaletteForTheme(), brandMarkSvg(), buildParamsPanel(), designPanelCss(), detectPageTheme(), ensureAgentPollTooltip() (+14 more)
+Cohesion: 0.09
+Nodes (36): agentStatusText(), applyParamValue(), barPaletteForTheme(), brandMarkSvg(), buildParamsPanel(), buildSavingRow(), clearMountErrorCard(), clearSteerFocusRecoverTimer() (+28 more)
 
 ### Community 40 - "new-work.md"
 Cohesion: 0.13
 Nodes (14): Recommended Actions, Craft (deprecated alias), Apply, Live-mode signature params, Set the spatial thesis, Two isolated assessments, Verify, Visitor mode (+6 more)
+
+### Community 42 - "cleanup"
+Cohesion: 0.36
+Nodes (9): cleanup(), clearScrollY(), discardedWrappers(), discardStateStyleId(), releaseDiscardedStaticWrapper(), releaseDiscardedStaticWrappers(), removeDiscardStateStylesheet(), showOriginalDuringDiscard() (+1 more)
 
 ### Community 43 - "live-browser-ignores.js"
 Cohesion: 0.52
@@ -333,9 +343,9 @@ Nodes (16): 1. Read the screenshot (if present), 2. Wrap the element, 3. Load th
 Cohesion: 0.13
 Nodes (14): 1. Accessibility (A11y), 2. Performance, 3. Theming, 4. Responsive Design, 5. Implementation Integrity (CRITICAL), Audit Health Score, Detailed Findings by Severity, Diagnostic Scan (+6 more)
 
-### Community 83 - "handleGo"
-Cohesion: 0.23
-Nodes (12): buildInsertPlaceholderSnapshotFromDom(), buildPickedAnchorSnapshot(), captureAndEmit(), compileShader(), handleGo(), handleInsertCreate(), resetSessionFileMeta(), resolveScrollLockAnchorTop() (+4 more)
+### Community 83 - "enableInlineEdit"
+Cohesion: 0.60
+Nodes (5): collectEditableTextRows(), visit(), enableInlineEdit(), onInlineInput(), wrapMixedContentTextNodes()
 
 ### Community 84 - "New visual work"
 Cohesion: 0.14
@@ -346,8 +356,8 @@ Cohesion: 0.14
 Nodes (13): Animation Performance, Assess Performance Issues, Core Web Vitals Optimization, Cumulative Layout Shift (CLS < 0.1), Interaction to Next Paint (INP < 200ms), Largest Contentful Paint (LCP < 2.5s), Loading Performance, Network Optimization (+5 more)
 
 ### Community 86 - "live-browser.js"
-Cohesion: 0.05
-Nodes (80): addManualContextText(), applyEditing(), applyParamDefaults(), applyParamValue(), applyPlaceholderSizingStyles(), buildLocatorForLeaf(), buildPlaceholderResizeHandles(), canRestoreManualEditElement() (+72 more)
+Cohesion: 0.04
+Nodes (89): applyGlobalBarLabelState(), applyPlaceholderDimensions(), applyPlaceholderSizingStyles(), bindEditBadgeProxy(), buildPickedAnchorSnapshot(), buildPlaceholderResizeHandles(), closedClipPath(), commitAcceptedVariantToDom() (+81 more)
 
 ### Community 87 - "Scan mode (approach C: auto-extract, then confirm descriptive language)"
 Cohesion: 0.15
@@ -414,8 +424,8 @@ Cohesion: 0.22
 Nodes (8): Cadence, Confirm and stop, Phase 1: Discovery interview, Phase 2: Resolve the design direction, Phase 3: Write the brief, Round 1: purpose, people, and outcome, Round 2: material, behavior, and boundaries, Shape
 
 ### Community 103 - "microservicios/app.py"
-Cohesion: 0.08
-Nodes (27): Exception, exception_handler, FastAPI, JSONResponse, error_http(), error_no_controlado(), error_validacion(), health() (+19 more)
+Cohesion: 0.10
+Nodes (21): FastAPI, health(), lifespan(), get, Aplicacion FastAPI principal de Backend Datos., worker_topologias(), puertos_docsis_actual(), get (+13 more)
 
 ### Community 104 - "adapt.native.md"
 Cohesion: 0.25
@@ -501,29 +511,25 @@ Nodes (10): drawTrend(), loadActual(), loadHistory(), loadStatus(), loadTrend(),
 Cohesion: 0.40
 Nodes (6): findMatchingCssBrace(), prefixCssSelectors(), scopeCssBlock(), shouldScopeNestedCssAtRule(), splitCssSelectorList(), unwrapSvelteGlobalSelector()
 
-### Community 136 - "config.py"
-Cohesion: 0.50
-Nodes (4): BaseSettings, get_settings(), Configuracion comun de los microservicios., Settings
-
 ## Knowledge Gaps
 - **415 isolated node(s):** `Color & materials`, `Components & controls`, `Layout & structure`, `Motion`, `The iOS slop test` (+410 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 604 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 614 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+- **Why does `Reference Material` connect `Heuristics Scoring Guide` to `critique.md`, `Cognitive Load Assessment`, `Persona-Based Design Testing`?**
+  _High betweenness centrality (0.015) - this node is a cross-community bridge._
 - **Why does `consultar_flux_temp()` connect `consultar_flux_temp` to `RuntimeError`, `caidas/service.py`, `crc/service.py`, `intermitencias/service.py`, `puertos_duplicados/service.py`, `olt/saturacion/service.py`?**
   _High betweenness centrality (0.012) - this node is a cross-community bridge._
-- **Why does `Reference Material` connect `Heuristics Scoring Guide` to `critique.md`, `Cognitive Load Assessment`, `Persona-Based Design Testing`?**
-  _High betweenness centrality (0.012) - this node is a cross-community bridge._
+- **Why does `New visual work` connect `New visual work` to `new-work.md`?**
+  _High betweenness centrality (0.007) - this node is a cross-community bridge._
 - **Are the 7 inferred relationships involving `initGlobalBar()` (e.g. with `hideAgentPollTooltip()` and `onDetectMessage()`) actually correct?**
   _`initGlobalBar()` has 7 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Color & materials`, `Components & controls`, `Layout & structure` to the rest of the system?**
   _415 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `renderDesignVisual` be split into smaller, more focused modules?**
   _Cohesion score 0.07692307692307693 - nodes in this community are weakly interconnected._
-- **Should `topologias/service.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.10227936879018118 - nodes in this community are weakly interconnected._
-- **Should `modern-screenshot.umd.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.09147869674185463 - nodes in this community are weakly interconnected._
+- **Should `applyEditing` be split into smaller, more focused modules?**
+  _Cohesion score 0.08870967741935484 - nodes in this community are weakly interconnected._
