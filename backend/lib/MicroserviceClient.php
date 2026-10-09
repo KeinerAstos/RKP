@@ -53,6 +53,24 @@ final class MicroserviceClient
         return $status;
     }
 
+    /** Descarga binaria sin interpretar JSON ni alterar bytes del ZIP XLSX. */
+    public function download(string $path, array $query = []): array
+    {
+        $handle = curl_init($this->buildUrl($path, $query));
+        if ($handle === false) { throw new RuntimeException('No fue posible inicializar HTTP'); }
+        curl_setopt_array($handle, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => max(0, $this->timeout),
+            CURLOPT_CONNECTTIMEOUT => $this->connectTimeout,
+            CURLOPT_HTTPHEADER => ['Accept: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        ]);
+        $body = curl_exec($handle);
+        $status = (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
+        curl_close($handle);
+        if ($body === false) { throw new RuntimeException('Exportación INIT no disponible'); }
+        return ['status' => $status, 'body' => $body];
+    }
+
     private function buildUrl(string $path, array $query = []): string
     {
         $url = rtrim($this->baseUrl, '/') . '/' . ltrim($path, '/');

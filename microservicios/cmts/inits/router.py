@@ -5,7 +5,12 @@ import io
 from contextlib import suppress
 
 from fastapi import APIRouter, HTTPException, Query, Response
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
+from starlette.background import BackgroundTask
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from datetime import datetime, timedelta, timezone
+from microservicios.cmts.inits.export_excel import write_excel, select_rows, MIME
 
 from microservicios.config import settings
 from microservicios.cmts.inits import inits_cmts as service
@@ -202,11 +207,52 @@ def _safe_cell(value: str, numeric: bool) -> str:
 
 @router.get("/inits/exportar")
 def exportar(cmts: str = "", desde: str = "", hasta: str = ""):
+    """CSV legible del histórico; nunca altera los CSV internos."""
     def stream():
-        buffer = io.StringIO(newline=""); writer = csv.DictWriter(buffer, fieldnames=service.FIELDS); writer.writeheader()
-        yield "\ufeff" + buffer.getvalue(); buffer.seek(0); buffer.truncate(0)
+        buffer = io.StringIO(newline="")
+        writer = csv.writer(buffer, delimiter=";")
+        writer.writerow(["Fecha Colombia", "CMTS", "IP", "Total INIT", "Gravedad", "Consulta", "Detalle", "Alcance", "Ciclo"])
+        yield "\ufeffsep=;\r\n" + buffer.getvalue()
+        buffer.seek(0); buffer.truncate(0)
         for row in service.export_rows(cmts, desde, hasta):
-            for key in ("run_id", "alcance", "cmts", "ip", "fecha", "estado", "error"):
-                row[key] = _safe_cell(str(row.get(key) or ""), False)
-            writer.writerow(row); yield buffer.getvalue(); buffer.seek(0); buffer.truncate(0)
+            stamp = datetime.fromisoformat(row["fecha"].replace("Z", "+00:00"))
+            if stamp.tzinfo is None: stamp = stamp.replace(tzinfo=timezone.utc)
+            fecha = stamp.astimezone(timezone(timedelta(hours=-5))).strftime("%Y-%m-%d %H:%M:%S")
+            valid = str(row.get("ok", "")).lower() == "true" and row.get("total_init") not in (None, "")
+            values = [fecha, row["cmts"], row["ip"], row["total_init"] if valid else "", row["estado"], "ÉXITO" if valid else "FALLÓ", str(row.get("error") or "").replace("\r", " ").replace("\n", " "), row["alcance"], row["run_id"]]
+            writer.writerow([_safe_cell(str(v), i == 3) for i, v in enumerate(values)])
+            yield buffer.getvalue(); buffer.seek(0); buffer.truncate(0)
     return StreamingResponse(stream(), media_type="text/csv; charset=utf-8", headers={"Content-Disposition": "attachment; filename=cmts-init-historico.csv"})
+
+
+def _history_excel_rows(busqueda: str, estado: str, start: datetime, end: datetime):
+    """Streaming; conserva una última lectura válida por CMTS como referencia."""
+    previous = {}
+    for raw in service.export_rows("", "", end.isoformat()):
+        row = service.normalize(raw)
+        stamp = datetime.fromisoformat(row["fecha"].replace("Z", "+00:00"))
+        if stamp.tzinfo is None: stamp = stamp.replace(tzinfo=timezone.utc)
+        valid = row["ok"] and row["total_init"] is not None
+        old = previous.get(row["cmts"])
+        delta = row["total_init"] - old if valid and old is not None else None
+        if valid: previous[row["cmts"]] = row["total_init"]
+        if start <= stamp <= end:
+            row["variacion"] = delta
+            yield from select_rows([row], busqueda, estado)
+
+
+@router.get("/inits/exportar-excel")
+def exportar_excel(busqueda: str = "", estado: str = "", ordenar: str = "total_init", direccion: int = -1, alcance: str = Query("actual", pattern="^(actual|historico5d)$")):
+    history = alcance == "historico5d"
+    now = datetime.now(timezone.utc)
+    start = now - timedelta(days=5)
+    rows = _history_excel_rows(busqueda, estado, start, now) if history else select_rows(_with_delta(service.actual()), busqueda, estado, ordenar, direccion)
+    with NamedTemporaryFile(suffix=".xlsx", delete=False) as f:
+        path = Path(f.name)
+    try:
+        write_excel(path, rows, search=busqueda, estado=estado, include_chart=not history, historical=history, period=(start, now) if history else None)
+    except Exception:
+        path.unlink(missing_ok=True)
+        raise
+    filename = "cmts-init-historico-5-dias.xlsx" if history else "cmts-init-actual.xlsx"
+    return FileResponse(path, media_type=MIME, filename=filename, background=BackgroundTask(path.unlink, missing_ok=True))

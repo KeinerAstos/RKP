@@ -1,2 +1,2 @@
 run_id,started,completed,total,estado,error,alcance,cmts
-c7f5b500b7b549fea9f6112dd69c36f9,2026-10-09T14:43:40+00:00,1,1,completo,[CANAL_NOC_CABLE_CMTS] SSHException: Timeout opening channel.,equipo,CALI-CERR-H-01-CS100G
+69fcb8d47ebf4250905cb8427a8c8644,2026-10-09T20:00:05+00:00,160,160,completo,,,

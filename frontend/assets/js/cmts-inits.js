@@ -5,7 +5,7 @@
     const nodes = {
         run: $('init-run-state'), last: $('init-last-run'), notice: $('init-notice'), rows: $('init-rows'), empty: $('init-empty'),
         total: $('init-total-cmts'), success: $('init-success'), failed: $('init-failed'), sum: $('init-total-init'), search: $('init-search'),
-        refresh: $('init-refresh'), export: $('init-export'), filter: $('init-filter'), top: $('init-top'), select: $('init-trend-cmts'), canvas: $('init-trend'),
+        refresh: $('init-refresh'), export: $('init-export'), exportHistory: $('init-export-history'), exportMenu: $('init-export-menu'), xlsxActual: $('init-xlsx-actual'), xlsxHistory5: $('init-xlsx-history5'), filter: $('init-filter'), top: $('init-top'), select: $('init-trend-cmts'), canvas: $('init-trend'),
         trendEmpty: $('init-trend-empty'), history: $('init-history-rows'), historyMeta: $('init-history-meta'), prev: $('init-history-prev'), next: $('init-history-next'),
         historyCmts: $('init-history-cmts'), historyFrom: $('init-history-from'), historyTo: $('init-history-to')
     };
@@ -18,8 +18,8 @@
         const url = new URL(endpoint); url.searchParams.set('accion', action);
         Object.entries(params).forEach(([key, value]) => { if (value !== '' && value != null) url.searchParams.set(key, value); });
         const response = await fetch(url, { cache: 'no-store', signal: controller?.signal, ...options });
-        const payload = options.method === 'POST' ? await response.json() : (action === 'exportar' ? response : await response.json());
-        if (!response.ok || (action !== 'exportar' && payload.ok !== true)) throw new Error(payload.error || (typeof payload.detail === 'string' ? payload.detail : '') || 'Respuesta no disponible');
+        const payload = options.method === 'POST' ? await response.json() : (['exportar', 'exportar_excel'].includes(action) ? response : await response.json());
+        if (!response.ok || (!['exportar', 'exportar_excel'].includes(action) && payload.ok !== true)) throw new Error(payload.error || (typeof payload.detail === 'string' ? payload.detail : '') || 'Respuesta no disponible');
         return payload;
     };
     const notice = (text, state = '') => { nodes.notice.textContent = text; nodes.notice.dataset.state = state; };
@@ -138,12 +138,38 @@
         context.strokeStyle = '#0876ce'; context.lineWidth = 2; context.beginPath();
         data.forEach((point, index) => { const x = pad.left + w * (data.length === 1 ? .5 : index / (data.length - 1)); const y = pad.top + h * (1 - point.total_init / max); if (index === 0) context.moveTo(x, y); else context.lineTo(x, y); }); context.stroke();
     }
-    async function exportCsv() {
-        try { const response = await api('exportar', { cmts: nodes.historyCmts.value, desde: nodes.historyFrom.value, hasta: nodes.historyTo.value }); const blob = await response.blob(); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'cmts-init-historico.csv'; link.click(); URL.revokeObjectURL(link.href); }
-        catch (error) { notice(error.message || 'No se pudo exportar el histórico.', 'error'); }
+    async function downloadExport(action, params, filename, button) {
+        button.disabled = true;
+        let objectUrl = null;
+        try {
+            const response = await api(action, params);
+            const mime = response.headers.get('content-type') || '';
+            if (mime.includes('application/json')) {
+                const problem = await response.json();
+                throw new Error(problem.error || problem.detail || 'Exportación no disponible');
+            }
+            const blob = await response.blob();
+            objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a'); link.href = objectUrl; link.download = filename;
+            document.body.append(link); link.click(); link.remove();
+            const savedUrl = objectUrl; setTimeout(() => URL.revokeObjectURL(savedUrl), 1000); objectUrl = null;
+        } catch (error) { notice(error.message || 'No se pudo exportar.', 'error'); }
+        finally { if (objectUrl) URL.revokeObjectURL(objectUrl); button.disabled = false; }
+    }
+    function exportCsv() {
+        return downloadExport('exportar', { cmts: nodes.historyCmts.value, desde: nodes.historyFrom.value, hasta: nodes.historyTo.value }, 'cmts-init-historico.csv', nodes.exportHistory);
+    }
+    function exportMenuWorkbook(alcance, button) {
+        nodes.exportMenu.open = false;
+        nodes.exportMenu.querySelector('summary').focus();
+        const filename = alcance === 'actual' ? 'cmts-init-actual.xlsx' : 'cmts-init-historico-5-dias.xlsx';
+        return downloadExport('exportar_excel', { alcance, busqueda: nodes.search.value, estado: nodes.filter.value, ordenar: sortKey, direccion: sortDirection }, filename, button);
     }
     const handlers = [
-        [nodes.search, 'input', render], [nodes.filter, 'change', render], [nodes.refresh, 'click', start], [nodes.export, 'click', exportCsv],
+        [nodes.search, 'input', render], [nodes.filter, 'change', render], [nodes.refresh, 'click', start], [nodes.exportHistory, 'click', exportCsv],
+        [nodes.xlsxActual, 'click', () => exportMenuWorkbook('actual', nodes.xlsxActual)], [nodes.xlsxHistory5, 'click', () => exportMenuWorkbook('historico5d', nodes.xlsxHistory5)],
+        [document, 'click', (event) => { if (!nodes.exportMenu.contains(event.target)) nodes.exportMenu.open = false; }],
+        [nodes.exportMenu, 'keydown', (event) => { if (event.key === 'Escape') { nodes.exportMenu.open = false; nodes.exportMenu.querySelector('summary').focus(); } }],
         [nodes.select, 'change', () => loadTrend(nodes.select.value)], [nodes.prev, 'click', () => { historyOffset = Math.max(0, historyOffset - 100); loadHistory(); }],
         [nodes.next, 'click', () => { historyOffset += 100; loadHistory(); }],
         [nodes.historyCmts, 'input', () => { historyOffset = 0; loadHistory(); }], [nodes.historyFrom, 'change', () => { historyOffset = 0; loadHistory(); }],

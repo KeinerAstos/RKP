@@ -1,8 +1,0 @@
-{
-  "repo": "C:\\Users\\UITMICRO\\Documents\\Ftth-Hfc\\RKP",
-  "after": {
-    "microservicios/cmts/inits/inits_cmts.py": "190ab5019b364eb7e7c495f19d602aa1358616a559445f43f77c02609c2c149b",
-    "microservicios/config.py": "78d0e14dfc9c7727553cd286073ff107b358a4a0646afd1736a48dc91893283b",
-    ".env": "55b3eeefb20d3d00fbd1a65d26a2ad1d38d823cef22847d83d5d1ce364769a33"
-  }
-}
