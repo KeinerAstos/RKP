@@ -39,7 +39,7 @@ $hfcRoutinesActive = array_key_exists(
     <div class="sidebar__top">
 
         <a href="index.php" class="sidebar-brand">
-            <img class="sidebar-brand__logo" src="assets/img/rkp-logo.png" alt="RKP">
+            <img class="sidebar-brand__logo" src="assets/img/rkps-logo.png" alt="RKPS">
             <div class="sidebar-brand__text sidebar-brand__text--logo">
                 <span>Operación FTTH / HFC</span>
             </div>

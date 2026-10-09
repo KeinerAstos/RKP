@@ -816,7 +816,8 @@
     padding: 6px 8px 14px;
 }
 .gkp-page .sidebar-brand__logo {
-    width: min(158px, 100%);
+    width: 190px;
+    max-width: 100%;
     height: auto;
     display: block;
     object-fit: contain;
