@@ -533,24 +533,6 @@
     "ast_hash": "c4f48432af87b15f940c2a5835ab7b75",
     "semantic_hash": ""
   },
-  "probar_cmts.py": {
-    "mtime": 1791317432.2706602,
-    "seen": 1791478147.489881,
-    "ast_hash": "0db1d9e77a59187ea1953fb5dfb544e4",
-    "semantic_hash": "0db1d9e77a59187ea1953fb5dfb544e4"
-  },
-  "probar_topologias.py": {
-    "mtime": 1791317432.271657,
-    "seen": 1791478147.4898827,
-    "ast_hash": "7af1de9157ec7e2fe4afebd29a96666b",
-    "semantic_hash": "7af1de9157ec7e2fe4afebd29a96666b"
-  },
-  "probar_vsd_jpg.py": {
-    "mtime": 1791317432.271657,
-    "seen": 1791478147.489884,
-    "ast_hash": "9d9d99a5a7968164563ff572fa188a5b",
-    "semantic_hash": "9d9d99a5a7968164563ff572fa188a5b"
-  },
   ".agents/skills/impeccable/SKILL.md": {
     "mtime": 1791317431.810088,
     "seen": 1791478147.4898868,
@@ -1007,42 +989,6 @@
     "ast_hash": "cafb4d1b65be7b46459a3993ba2030ec",
     "semantic_hash": ""
   },
-  "BACKUP_CMTS_MENU_5DIAS_20261009_101544_189823/backend/api/cmts_inits.php": {
-    "mtime": 1791557752.0,
-    "seen": 1791575593.077606,
-    "ast_hash": "fe2da77999dbbb344aec76b5b33e9c2a",
-    "semantic_hash": ""
-  },
-  "BACKUP_CMTS_MENU_5DIAS_20261009_101544_189823/frontend/assets/js/cmts-inits.js": {
-    "mtime": 1791557752.0,
-    "seen": 1791575593.0776107,
-    "ast_hash": "ab64f0ec5766411b7e0bb9f0c52584b8",
-    "semantic_hash": ""
-  },
-  "BACKUP_CMTS_MENU_5DIAS_20261009_101544_189823/frontend/cmts-inits.php": {
-    "mtime": 1791557752.0,
-    "seen": 1791575593.0776134,
-    "ast_hash": "06cb5a476b5c24875946f947503ead5d",
-    "semantic_hash": ""
-  },
-  "BACKUP_CMTS_MENU_5DIAS_20261009_101544_189823/microservicios/cmts/inits/export_excel.py": {
-    "mtime": 1791557674.0,
-    "seen": 1791575593.077623,
-    "ast_hash": "2fb5b69029d30922baa6f12f54337e7a",
-    "semantic_hash": ""
-  },
-  "BACKUP_CMTS_MENU_5DIAS_20261009_101544_189823/microservicios/cmts/inits/router.py": {
-    "mtime": 1791557752.0,
-    "seen": 1791575593.0776246,
-    "ast_hash": "041002d238e9c30323c8b10942d41738",
-    "semantic_hash": ""
-  },
-  "BACKUP_CMTS_MENU_5DIAS_20261009_101544_189823/restaurar.json": {
-    "mtime": 1791558944.2427247,
-    "seen": 1791575593.077627,
-    "ast_hash": "4976b982ef172c052a08f76a8976f320",
-    "semantic_hash": ""
-  },
   "frontend/assets/js/table-wheel.js": {
     "mtime": 1791575909.2099495,
     "seen": 1791575954.8274634,
@@ -1155,12 +1101,6 @@
     "mtime": 1791576072.649766,
     "seen": 1791576119.5842643,
     "ast_hash": "26af39441a82e827e333d8d8a1579534",
-    "semantic_hash": ""
-  },
-  "docs/RESPONSIVE_VALIDATION.md": {
-    "mtime": 1791576036.3142262,
-    "seen": 1791576119.5845015,
-    "ast_hash": "5b8b23337bc41f7ae2bcf3ea2d54970b",
     "semantic_hash": ""
   },
   "artifacts/responsive-edge/modal-1280-600.png": {
