@@ -46,7 +46,7 @@ const rows = Array.from({length:160}, (_,i) => ({cmts:`CMTS-${String(i).padStart
  const summary=page.locator('.init-error summary'); await summary.focus(); await page.keyboard.press('Enter'); assert(await page.locator('.init-error').evaluate(e=>e.open)); assert.match(await page.locator('.init-error p').innerText(),/Timeout SSH/); await page.keyboard.press('Enter'); assert(!(await page.locator('.init-error').evaluate(e=>e.open)));
  await page.locator('.init-probe').click(); await page.waitForTimeout(100); assert(requests.some(x=>x.action==='probar'&&x.method==='POST'&&x.cmts===rows[1].cmts));
  await page.locator('#init-refresh').click(); await page.waitForTimeout(100); assert(requests.some(x=>x.action==='actualizar'&&x.method==='POST'));
- const download=page.waitForEvent('download'); await page.locator('#init-export').click(); await download;
+ const download=page.waitForEvent('download'); await page.locator(await page.locator('#init-export-history').count() ? '#init-export-history' : '#init-export').click(); await download;
  const tables=[];
  for(const path of ['index.php','hfc.php','intermitencias.php','agotamiento-ip.php','puertos-docsis.php','recursos-zte.php']){
   await page.goto(`${base}/frontend/${path}`);

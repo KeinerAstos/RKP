@@ -7,8 +7,9 @@
     <title>GKP | Estado actual de red</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/sidebar.css">
-    <link rel="stylesheet" href="assets/css/gkp.css">
+    <link rel="stylesheet" href="assets/css/gkp.css?v=20261009">
     <link rel="stylesheet" href="assets/css/gkp-casos-helix.css?v=2">
+<link rel="stylesheet" href="assets/css/responsive-tables.css?v=1">
 </head>
 <body class="gkp-page dashboard-page">
 <div class="app">

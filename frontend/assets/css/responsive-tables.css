@@ -1,0 +1,20 @@
+/* Shared geometry; module colors and data semantics stay in their own stylesheets. */
+.gkp-page .app { height: auto; min-height: 100dvh; overflow: visible; }
+.gkp-page .main { height: auto; min-height: 100dvh; overflow: visible; }
+.gkp-content, .module-content, .module-sections, .module-panel,
+.gkp-panel-heading > div, .topbar__left, .topbar__title-group { min-width: 0; }
+.gkp-panel-heading, .module-heading, .topbar__title-group { overflow-wrap: anywhere; }
+.gkp-table-scroll, .gkp-table-wrap, .init-table-scroll {
+    min-width: 0; max-width: 100%; overflow: auto;
+    overscroll-behavior: auto; scrollbar-gutter: stable;
+}
+.gkp-table-wrap { max-height: max(240px, 60dvh); }
+.table-column-hint { margin: 4px 12px; color: var(--gkp-muted); font-size: 12px; }
+.table-column-hint[hidden] { display: none; }
+.hfc-dialog__header, .ftth-dialog__header, .temperature-detail-dialog__header { flex-shrink: 0; }
+.hfc-dialog__body { overflow: auto; }
+.hfc-dialog__header > div { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 1023px) {
+    .gkp-page .app { grid-template-columns: minmax(0, 1fr); }
+    .gkp-page .main { grid-column: 1; }
+}

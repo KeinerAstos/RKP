@@ -20,10 +20,10 @@
     grid-column: 2;
     min-width: 0;
     padding: 0;
-    overflow-x: hidden;
+    container-type: inline-size;
 }
 
-@media (min-width: 861px) {
+@media (min-width: 1024px) {
     .gkp-page.sidebar-collapsed .app { grid-template-columns: 0 minmax(0, 1fr); }
     .gkp-page.sidebar-collapsed .main { grid-column: 2; }
 }
@@ -33,11 +33,6 @@
     .gkp-page .main { grid-column: 1; }
 }
 
-@media (min-width: 1280px) {
-    .gkp-page.sidebar-collapsed .gkp-panels {
-        grid-template-columns: minmax(0, 1.9fr) minmax(350px, 1fr);
-    }
-}
 
 .gkp-page .topbar {
     min-height: 88px;
@@ -207,7 +202,7 @@
     width: 100%;
     min-width: 0;
     display: grid;
-    grid-template-columns: minmax(0, 1.9fr) minmax(350px, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
     align-items: start;
 }
@@ -301,7 +296,7 @@
 #temperatura-table-region,
 #perdida-latencia-table-region {
     overflow-y: auto;
-    overscroll-behavior: contain;
+    overscroll-behavior: auto;
     scrollbar-gutter: stable;
 }
 
@@ -684,60 +679,11 @@
 .gkp-page .footer { padding: 14px 18px; color: #64728a; font-size: 11px; }
 .gkp-page ::selection { color: #fff; background: #0d5e98; }
 .gkp-page :focus-visible { outline: 3px solid #52a7e3; outline-offset: 3px; }
-@media (min-width: 1181px) {
-    .dashboard-page .app {
-        height: 100dvh;
-        min-height: 0;
-        overflow: hidden;
-    }
-    .dashboard-page .main {
-        height: 100dvh;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-    .dashboard-page .topbar { flex: 0 0 auto; }
-    .dashboard-page .gkp-content {
-        min-height: 0;
-        flex: 1 1 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-    .dashboard-page .gkp-toolbar { flex: 0 0 auto; }
-    .dashboard-page .gkp-panels {
-        min-height: 0;
-        flex: 1 1 0;
-        align-items: stretch;
-        overflow: hidden;
-    }
-    .dashboard-page #alarmas {
-        height: 100%;
-        min-height: 0;
-        max-height: 100%;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    .dashboard-page #alarmas .gkp-panel-heading,
-    .dashboard-page #alarmas #gkp-status,
-    .dashboard-page #alarmas .gkp-panel-foot {
-        flex: 0 0 auto;
-    }
-
-    .dashboard-page #alarmas #gkp-table-region {
-        height: 0;
-        min-height: 0;
-        flex: 1 1 auto;
-        max-height: none;
-        overflow-x: auto;
-        overflow-y: auto;
-    }
-    .dashboard-page .footer { flex: 0 0 auto; }
+/* Panel distribution follows available content width, including sidebar and zoom. */
+@container (min-width: 1200px) {
+    .gkp-panels { grid-template-columns: minmax(0, 1.9fr) minmax(380px, 1fr); }
 }
-
+#gkp-table-region { max-height: max(240px, 60dvh); }
 @media (max-width: 1180px) {
     .gkp-page .main { height: auto; min-height: 100vh; overflow: visible; }
     .gkp-content { overflow: visible; }
@@ -752,10 +698,6 @@
     .ftth-charts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (max-width: 860px) and (min-width: 641px) {
-    .gkp-page .app { grid-template-columns: 76px minmax(0, 1fr); }
-    .gkp-page .main { grid-column: 2; }
-}
 
 @media (max-width: 640px) {
     .gkp-page .app { display: block; }
