@@ -25,3 +25,24 @@
     #alarmas .gkp-table th:nth-child(5),
     #alarmas .gkp-table td.gkp-helix-cases { min-width: 250px; }
 }
+
+/* Casos por OLT completa: pérdida de gestión y temperatura. */
+#perdida-latencia-panel .gkp-table { min-width: 680px; }
+#temperatura-panel .gkp-table { min-width: 720px; }
+#perdida-latencia-panel .gkp-helix-cases--equipo,
+#temperatura-panel .gkp-helix-cases--equipo { min-width: 225px; max-width: 380px; white-space: normal; vertical-align: top; line-height: 1.45; overflow-wrap: anywhere; }
+#temperatura-panel .gkp-temperature-detail-cell { width: 58px; min-width: 58px; text-align: center; }
+#temperatura-panel .gkp-temperature-detail-cell .temperature-detail-button { margin-inline: auto; }
+
+/* Mostrar cada caso abierto en una línea independiente */
+#perdida-latencia-panel .gkp-helix-case,
+#temperatura-panel .gkp-helix-case {
+    display: block;
+    overflow-wrap: anywhere;
+    margin-bottom: 4px;
+}
+
+#perdida-latencia-panel .gkp-helix-case:last-child,
+#temperatura-panel .gkp-helix-case:last-child {
+    margin-bottom: 0;
+}

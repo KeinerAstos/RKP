@@ -229,26 +229,63 @@ class ConfigurationAndOracleMockTests(unittest.TestCase):
 
             def execute(self, sql, _binds):
                 query = " ".join(sql.upper().split())
-                if "INT_NETCOOL_ALARMAS" in query:
-                    self.rows = [("", "INC1", f"{OLT},FRAME=0 SLOT=9 SUBSLOT=65535 PORT=3", "", "", "", "")]
-                elif "HPD_HELP_DESK" in query and "INCIDENT_NUMBER IN" in query:
-                    self.rows = [("INC1", 5)]
+
+                if "AST_BASEELEMENT" in query:
+                    self.rows = [("CI_TEST_OLT",)]
+
+                elif "HPD_ASSOCIATIONS" in query:
+                    self.rows = [
+                        ("CI_TEST_OLT", "INC1"),
+                        ("CI_TEST_OLT", "INC2"),
+                    ]
+
                 elif "HPD_HELP_DESK" in query:
-                    self.rows = [("INC2", 2, f"{OLT},FRAME=0 SLOT=9 PORT=3", "")]
-                elif "WOI_WORKORDER" in query and "ROOT_INCIDENT IN" in query:
-                    self.rows = [("WO1", "INC1", 4, "Generic", "", ""), ("WO2", "INC1", 8, "Generic", "", "")]
+                    self.rows = [
+                        (
+                            "INC1",
+                            5,
+                            f"{OLT},FRAME=0 SLOT=9 PORT=3",
+                            "",
+                            "",
+                        ),
+                        (
+                            "INC2",
+                            2,
+                            f"{OLT},FRAME=0 SLOT=9 PORT=3",
+                            "",
+                            "",
+                        ),
+                    ]
+
                 elif "WOI_WORKORDER" in query:
-                    self.rows = [("WO3", "", 4, f"{OLT},FRAME=0 SLOT=9 PORT=3", "", "")]
-                elif "TMS_TASK" in query and "'HPD:HELP DESK'" in query:
+                    self.rows = [
+                        ("WO1", "INC1", 4, "Generic", "", ""),
+                        ("WO2", "INC1", 8, "Generic", "", ""),
+                    ]
+
+                elif "TMS_TASK" in query and "ROOTREQUESTNAME = :INC" in query:
+                    inc = _binds["inc"]
+
                     self.rows = [
                         ("TAS1", "INC1", "HPD:Help Desk", 2000, "Generic"),
                         ("TAS2", "INC1", "HPD:Help Desk", 6000, "Generic"),
-                        ("TAS4", "INC1", "HPD:Help Desk", 2000, f"{OLT},FRAME=0 SLOT=9 PORT=4"),
-                    ]
-                elif "TMS_TASK" in query and "'WOI:WORKORDER'" in query:
-                    self.rows = [("TAS3", "WO2", "WOI:WorkOrder", 4000, "Generic"), ("TAS5", "WO2", "WOI:WorkOrder", 6000, "Generic")]
-                elif "TMS_TASK" in query:
-                    self.rows = [("TAS6", "", "", 3000, f"{OLT},FRAME=0 SLOT=9 PORT=3")]
+                        (
+                            "TAS4",
+                            "INC1",
+                            "HPD:Help Desk",
+                            2000,
+                            f"{OLT},FRAME=0 SLOT=9 PORT=4",
+                        ),
+                    ] if inc == "INC1" else []
+
+                elif "TMS_TASK" in query and "ROOTREQUESTNAME = :WO" in query:
+                    wo = _binds["wo"]
+
+                    self.rows = [
+                        ("TAS3", "WO2", "WOI:WorkOrder", 4000, "Generic"),
+                        ("TAS5", "WO2", "WOI:WorkOrder", 6000, "Generic"),
+                    ] if wo == "WO2" else []
+
                 else:
                     raise AssertionError(query)
 
@@ -291,9 +328,33 @@ class ConfigurationAndOracleMockTests(unittest.TestCase):
             patch.object(settings, "oracle_helix_call_timeout_ms", 0),
         ):
             result, _consulted_at = service._result(OLT, None, lambda cancel: cancel_registration.append(cancel))
-        numbers = [(item["tipo"], item["numero"]) for item in result["0/9/3"]]
-        self.assertEqual(numbers, [("INC", "INC2"), ("WO", "WO1"), ("WO", "WO3"), ("TAS", "TAS1"), ("TAS", "TAS3"), ("TAS", "TAS6")])
-        self.assertNotIn("0/9/4", [item["numero"] for item in result["0/9/3"]])
+        numbers = [
+            (item["tipo"], item["numero"])
+            for item in result["0/9/3"]
+        ]
+
+        self.assertEqual(
+            numbers,
+            [
+                ("INC", "INC2"),
+                ("WO", "WO1"),
+                ("TAS", "TAS1"),
+                ("TAS", "TAS3"),
+            ],
+        )
+
+        self.assertNotIn(
+            "TAS4",
+            [item["numero"] for item in result["0/9/3"]],
+        )
+
+        self.assertEqual(
+            [
+                (item["tipo"], item["numero"])
+                for item in result["0/9/4"]
+            ],
+            [("TAS", "TAS4")],
+        )
         self.assertTrue(connection.closed)
         self.assertEqual(connection.call_timeout, 0)
         self.assertIsNone(cancel_registration[-1])
@@ -334,3 +395,146 @@ class ConfigurationAndOracleMockTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class EquipoScopeIssue4Tests(unittest.TestCase):
+    def test_exact_olt_match_not_prefix(self):
+        self.assertEqual(service._scope_equipo(OLT, [f"Equipo: {OLT}"]), {"__equipo__"})
+        self.assertEqual(service._scope_equipo(OLT, [f"Equipo: {OLT}-OTRO"]), set())
+        self.assertEqual(service._scope_equipo(OLT, ["Ningún equipo relacionado"]), set())
+
+    def test_worker_separates_scope_and_reuses_same_equipment_cache(self):
+        calls = []
+        def ports(olt, cancel):
+            calls.append(("puertos", olt))
+            return {"0/9/3": [{"tipo": "INC", "numero": "INC1"}]}, "today"
+        def equipment(olt, cancel):
+            calls.append(("equipo", olt))
+            return {"__equipo__": [{"tipo": "TAS", "numero": "TAS1"}]}, "today"
+        worker = HelixWorker(ports, query_equipo=equipment)
+        worker.start()
+        try:
+            worker.submit(OLT, ["0/9/3"])
+            worker.submit(OLT, [], alcance="equipo")
+            self.assertTrue(esperar(lambda: worker.read(OLT, [], alcance="equipo")["estado"] == "listo"))
+            self.assertTrue(esperar(lambda: worker.read(OLT, ["0/9/3"])["estado"] == "listo"))
+            self.assertEqual(worker.read(OLT, [], alcance="equipo")["casos"][0]["numero"], "TAS1")
+            self.assertEqual(worker.read(OLT, ["0/9/3"])["puertos"]["0/9/3"]["casos"][0]["numero"], "INC1")
+            worker.submit(OLT, [], alcance="equipo")
+            self.assertEqual(calls.count(("equipo", OLT)), 1)
+        finally:
+            worker.stop()
+
+    def test_route_equipment_and_invalid_scope(self):
+        from fastapi import HTTPException
+        class FakeWorker:
+            def submit(self, olt, ports, alcance="puertos"):
+                return {"olt": olt, "alcance": alcance, "estado": "listo", "casos": [], "consultado_en": "today"}
+        with patch.object(worker_module, "get_worker", return_value=FakeWorker()):
+            result = casos_abiertos(OLT, None, "equipo")
+            self.assertEqual(result["data"]["alcance"], "equipo")
+            self.assertEqual(result["data"]["casos"], [])
+            with self.assertRaises(HTTPException) as ex:
+                casos_abiertos(OLT, None, "cualquier_cosa")
+            self.assertEqual(ex.exception.status_code, 422)
+            with self.assertRaises(HTTPException):
+                casos_abiertos(OLT, "0/9/3", "equipo")
+
+    def test_equipment_query_retains_open_task_with_closed_parent(self):
+        ci = "REGIUDJBJH36RAT0TEST"
+
+        class Cursor:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return None
+
+            def execute(self, sql, binds):
+                q = " ".join(sql.upper().split())
+
+                if "AST_BASEELEMENT" in q:
+                    self.rows = [(ci,)]
+
+                elif "HPD_ASSOCIATIONS" in q:
+                    self.rows = [
+                        (ci, "INC0001"),
+                        (ci, "INC0002"),
+                    ]
+
+                elif "HPD_HELP_DESK" in q:
+                    self.rows = [
+                        ("INC0001", 5, ".", "", OLT),
+                        ("INC0002", 2, ".", f"Troncal afectada {OLT}", ""),
+    ]
+
+                elif "WOI_WORKORDER" in q:
+                    self.rows = [
+                        ("WO0001", "INC0001", 8),  # Closed
+                        ("WO0002", "INC0002", 0),  # Assigned
+                    ]
+
+                elif "TMS_TASK" in q and "'HPD:HELP DESK'" in q:
+                    self.rows = [
+                        ("TAS0001", "INC0001", 2000),  # Assigned
+                    ]
+
+                elif "TMS_TASK" in q and "'WOI:WORKORDER'" in q:
+                    self.rows = [
+                        ("TAS0002", "WO0002", 4000),  # Work In Progress
+                    ]
+
+                else:
+                    raise AssertionError(q)
+
+            def fetchmany(self, n):
+                batch, self.rows = self.rows[:n], self.rows[n:]
+                return batch
+
+        class Conn:
+            call_timeout = 0
+
+            def cursor(self):
+                return Cursor()
+
+            def close(self):
+                pass
+
+            def cancel(self):
+                pass
+
+        class Oracle:
+            @staticmethod
+            def makedsn(*args, **kwargs):
+                return "fake"
+
+            @staticmethod
+            def connect(**kwargs):
+                return Conn()
+
+        with (
+            patch.object(service, "oracledb", Oracle),
+            patch.object(settings, "oracle_helix_host", "fake"),
+            patch.object(settings, "oracle_helix_service_name", "fake"),
+            patch.object(settings, "oracle_helix_user", "fake"),
+            patch.object(settings, "oracle_helix_password", "fake"),
+        ):
+            result, _ = service._result(
+                OLT,
+                None,
+                alcance="equipo",
+            )
+
+        encontrados = [
+            (item["tipo"], item["numero"])
+            for item in result["__equipo__"]
+        ]
+
+        self.assertEqual(
+            encontrados,
+            [
+                ("INC", "INC0002"),
+                ("WO", "WO0002"),
+                ("TAS", "TAS0001"),
+                ("TAS", "TAS0002"),
+            ],
+        )

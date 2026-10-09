@@ -62,6 +62,13 @@
             return;
         }
 
+        if (prior.casos.length === 0) {
+            cell.textContent = 'Sin INC, WO o TAS abiertos asociados';
+            cell.title = 'Consulta completada: no se identificaron casos abiertos asociados a este puerto';
+            cell.classList.add('gkp-helix-cases--empty');
+            return;
+        }
+
         cell.title = prior.consultado_en
             ? `Consulta completa: ${new Date(prior.consultado_en).toLocaleString()}` : '';
         const order = { INC: 0, WO: 1, TAS: 2 };
@@ -229,5 +236,123 @@
         void consultarLotes(visible).finally(() => { inFlight = false; });
     }
 
-    window.GKPCasosHelix = { actualizar, normalizarPuerto };
+    // Consultas por OLT completa; se mantienen separadas del contrato por puerto.
+    const equipos = new Map();
+    let equipoTimer = null;
+    let equipoBusy = false;
+    const EQUIPO_TTL = 120000;
+    const ERROR_RETRY = 30000;
+    const PENDING_RETRY = 25000;
+
+    function celdasEquipo(olt) {
+        return Array.from(document.querySelectorAll(
+            '#perdida-latencia-rows .gkp-helix-cases--equipo, #temperatura-rows .gkp-helix-cases--equipo'
+        )).filter((cell) => cell.dataset.olt === olt);
+    }
+
+    function pintarEquipo(olt) {
+        const state = equipos.get(olt);
+        for (const cell of celdasEquipo(olt)) {
+            cell.replaceChildren();
+            cell.classList.remove('gkp-helix-cases--error', 'gkp-helix-cases--empty');
+            cell.title = 'Casos abiertos asociados a la OLT; no necesariamente causados por esta condición';
+            if (!state || state.estado === 'actualizando') {
+                cell.textContent = 'Consultando…';
+            } else if (state.estado === 'error') {
+                cell.textContent = 'No se pudo consultar';
+                cell.classList.add('gkp-helix-cases--error');
+            } else if (!state.casos.length) {
+                cell.textContent = 'Sin INC, WO o TAS abiertos asociados';
+                cell.title = 'Consulta completada: no se identificaron casos abiertos asociados a esta OLT';
+                cell.classList.add('gkp-helix-cases--empty');
+            } else {
+                for (const item of state.casos) {
+                    const line = document.createElement('span');
+                    line.className = 'gkp-helix-case';
+                    line.textContent = `${item.numero} - ${item.estado}`;
+                    cell.appendChild(line);
+                }
+            }
+        }
+    }
+
+    function validarCasos(casos) {
+        if (!Array.isArray(casos)) throw new Error('Lista de casos inválida');
+        const unique = new Map();
+        const order = { INC: 0, WO: 1, TAS: 2 };
+        for (const item of casos) {
+            const tipo = String(item?.tipo || '').toUpperCase();
+            const numero = String(item?.numero || '').trim();
+            const estado = String(item?.estado || '').trim();
+            if (!Object.hasOwn(order, tipo) || !numero || !estado) {
+                throw new Error('Caso Helix inválido');
+            }
+            unique.set(`${tipo}:${numero}`, { tipo, numero, estado });
+        }
+        return Array.from(unique.values()).sort((a, b) =>
+            order[a.tipo] - order[b.tipo] || a.numero.localeCompare(b.numero, 'en', { numeric: true })
+        );
+    }
+
+    async function consultarEquipo(olt) {
+        const controller = new AbortController();
+        const timer = window.setTimeout(() => controller.abort(), 20000);
+        try {
+            const url = new URL(endpoint);
+            url.searchParams.set('olt', olt);
+            url.searchParams.set('alcance', 'equipo');
+            const response = await fetch(url.href, { cache: 'no-store', signal: controller.signal });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const payload = await response.json();
+            if (payload?.ok !== true || payload.data?.alcance !== 'equipo') {
+                throw new Error('Respuesta de alcance inválido');
+            }
+            const data = payload.data;
+            if (data.estado !== 'listo' && data.estado !== 'actualizando') {
+                throw new Error('Estado de consulta inválido');
+            }
+            if (data.estado === 'listo') {
+                equipos.set(olt, { estado: 'listo', casos: validarCasos(data.casos), at: Date.now() });
+            } else {
+                equipos.set(olt, { estado: 'actualizando', casos: [], at: Date.now() });
+            }
+        } catch (_error) {
+            equipos.set(olt, { estado: 'error', casos: [], at: Date.now() });
+        } finally {
+            window.clearTimeout(timer);
+            pintarEquipo(olt);
+        }
+    }
+
+    async function procesarEquipos() {
+        if (equipoBusy) return;
+        equipoBusy = true;
+        try {
+            const olts = new Set(Array.from(document.querySelectorAll(
+                '#perdida-latencia-rows .gkp-helix-cases--equipo[data-olt], #temperatura-rows .gkp-helix-cases--equipo[data-olt]'
+            )).map((cell) => cell.dataset.olt));
+            for (const olt of olts) {
+                const state = equipos.get(olt);
+                const ttl = state?.estado === 'listo' ? EQUIPO_TTL
+                    : state?.estado === 'error' ? ERROR_RETRY : PENDING_RETRY;
+                if (state && Date.now() - state.at < ttl) continue;
+                await consultarEquipo(olt);
+            }
+        } finally {
+            equipoBusy = false;
+        }
+    }
+
+    function actualizarEquipos() {
+        for (const cell of document.querySelectorAll(
+            '#perdida-latencia-rows .gkp-helix-cases--equipo[data-olt], #temperatura-rows .gkp-helix-cases--equipo[data-olt]'
+        )) pintarEquipo(cell.dataset.olt);
+        if (equipoTimer !== null) window.clearTimeout(equipoTimer);
+        equipoTimer = window.setTimeout(() => {
+            equipoTimer = null;
+            void procesarEquipos();
+        }, 0);
+    }
+
+    window.GKPCasosHelix = { actualizar, normalizarPuerto, actualizarEquipos };
 })();

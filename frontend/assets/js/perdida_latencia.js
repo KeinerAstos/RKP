@@ -27,6 +27,17 @@
             const valor = document.createElement('td');
             const estado = document.createElement('td');
             const badge = document.createElement('span');
+            const casos = document.createElement('td');
+            casos.className = 'gkp-helix-cases gkp-helix-cases--equipo';
+            const perdidaTotal = (item.estado === 'Pérdida' || item.estado === 'Pérdida + Latencia')
+                && item.unidad === '%' && Number(item.valor) === 100;
+            const olt = String(item.equipo || '').trim().toUpperCase();
+            if (perdidaTotal && /^[A-Z0-9._-]{1,120}$/.test(olt)) {
+                casos.dataset.olt = olt;
+                casos.textContent = 'Consultando…';
+            } else {
+                casos.textContent = '—';
+            }
 
             equipo.textContent = item.equipo || 'N/D';
             equipo.className = 'gkp-equipment';
@@ -49,11 +60,12 @@
                 ? 'gkp-badge gkp-badge--down'
                 : 'gkp-badge';
             estado.appendChild(badge);
-            row.append(equipo, valor, estado);
+            row.append(equipo, valor, estado, casos);
             fragment.appendChild(row);
         }
 
         rows.replaceChildren(fragment);
+        window.GKPCasosHelix?.actualizarEquipos?.('perdida');
         tableRegion.hidden = data.length === 0;
         empty.hidden = data.length !== 0;
         count.textContent = String(data.length);

@@ -51,8 +51,13 @@ class HelixWorker:
         max_cache: int = MAX_CACHED_OLTS,
         retry_seconds: int = ERROR_RETRY_SECONDS,
         clock: Callable[[], float] = time.monotonic,
+        query_equipo: Callable | None = None,
     ) -> None:
         self._query = query
+        if query_equipo is None:
+            from microservicios.olt.casos_helix.service import consultar_olt_equipo
+            query_equipo = consultar_olt_equipo
+        self._query_equipo = query_equipo
         self._ttl_seconds = max(0, ttl_seconds)
         self._max_cache = max(1, max_cache)
         self._retry_seconds = max(0, retry_seconds)
@@ -110,15 +115,15 @@ class HelixWorker:
             victim = terminal.pop(0)
             self._states.pop(victim, None)
 
-    def _schedule_locked(self, olt: str, previous: JobState | None) -> JobState:
+    def _schedule_locked(self, olt: str, previous: JobState | None, alcance: str = "puertos") -> JobState:
         if not self._accepting:
             return JobState(
-                olt=olt, job_id="", generation=0, estado="error", creado_en=self._clock(),
+                olt=olt, alcance=alcance, job_id="", generation=0, estado="error", creado_en=self._clock(),
                 error_codigo="WORKER_STOPPED", error="La consulta Helix no está disponible temporalmente",
             )
         if self._reserved_pending >= self._queue.maxsize:
             return JobState(
-                olt=olt, job_id="", generation=self._generation + 1, estado="error", creado_en=self._clock(),
+                olt=olt, alcance=alcance, job_id="", generation=self._generation + 1, estado="error", creado_en=self._clock(),
                 error_codigo="QUEUE_FULL", error="Hay demasiadas consultas Helix pendientes; reintente en la próxima actualización",
             )
         self._evict_terminal_locked()
@@ -128,13 +133,14 @@ class HelixWorker:
             self._queue.put_nowait((olt, job_id, generation))
         except queue.Full:
             return JobState(
-                olt=olt, job_id="", generation=generation, estado="error", creado_en=self._clock(),
+                olt=olt, alcance=alcance, job_id="", generation=generation, estado="error", creado_en=self._clock(),
                 error_codigo="QUEUE_FULL", error="Hay demasiadas consultas Helix pendientes; reintente en la próxima actualización",
             )
         self._reserved_pending += 1
         self._generation = generation
         state = JobState(
             olt=olt,
+            alcance=alcance,
             job_id=job_id,
             generation=generation,
             estado="actualizando",
@@ -155,10 +161,13 @@ class HelixWorker:
             self._states.move_to_end(olt)
         return state
 
-    def submit(self, olt: str, ports: list[str]) -> dict[str, Any]:
+    def submit(self, olt: str, ports: list[str], alcance: str = "puertos") -> dict[str, Any]:
+        if alcance not in {"puertos", "equipo"}:
+            raise ValueError("Alcance inválido")
+        key = olt if alcance == "puertos" else f"equipo:{olt}"
         now = self._clock()
         with self._lock:
-            state = self._state_locked(olt)
+            state = self._state_locked(key)
             if state and state.estado == "actualizando":
                 return self._snapshot_locked(state, ports)
             if state and state.estado == "listo" and state.finalizado_at is not None:
@@ -166,25 +175,30 @@ class HelixWorker:
                     return self._snapshot_locked(state, ports)
             if state and state.estado == "error" and now < state.retry_at:
                 return self._snapshot_locked(state, ports)
-            state = self._schedule_locked(olt, state)
+            state = self._schedule_locked(key, state, alcance)
             if state.estado == "error":
                 # Queue rejection isn't persisted as a false terminal result.
                 return self._snapshot_locked(state, ports)
             return self._snapshot_locked(state, ports)
 
-    def read(self, olt: str, ports: list[str]) -> dict[str, Any]:
+    def read(self, olt: str, ports: list[str], alcance: str = "puertos") -> dict[str, Any]:
+        if alcance not in {"puertos", "equipo"}:
+            raise ValueError("Alcance inválido")
+        key = olt if alcance == "puertos" else f"equipo:{olt}"
         with self._lock:
-            state = self._state_locked(olt)
+            state = self._state_locked(key)
             if not state:
                 return {
-                    "olt": olt, "estado": "sin_solicitud", "consultado_en": None,
+                    "olt": olt, "alcance": alcance, "estado": "sin_solicitud", "consultado_en": None,
                     "puertos": {port: {"estado": "sin_solicitud", "casos": None} for port in ports},
+                    "casos": None,
                 }
             if state.estado == "listo" and state.finalizado_at is not None:
                 if self._clock() - state.finalizado_at >= self._ttl_seconds:
                     return {
-                        "olt": olt, "estado": "expirado", "consultado_en": state.consultado_en,
+                        "olt": olt, "alcance": alcance, "estado": "expirado", "consultado_en": state.consultado_en,
                         "puertos": {port: {"estado": "expirado", "casos": None} for port in ports},
+                        "casos": None,
                     }
             return self._snapshot_locked(state, ports)
 
@@ -206,7 +220,7 @@ class HelixWorker:
                 for port in ports
             }
         result: dict[str, Any] = {
-            "olt": state.olt,
+            "olt": state.olt.removeprefix("equipo:"),
             "estado": state.estado,
             "job_id": state.job_id or None,
             "generacion": state.generation,
@@ -217,6 +231,10 @@ class HelixWorker:
             "consultado_en": state.consultado_en,
             "puertos": port_results,
         }
+        if state.alcance == "equipo":
+            result["casos"] = (list((state.casos_por_puerto or {}).get("__equipo__", []))
+                               if state.estado == "listo" else None)
+            result.pop("puertos", None)
         if state.estado == "error":
             result["error"] = {"codigo": state.error_codigo, "mensaje": state.error}
         return result
@@ -265,7 +283,8 @@ class HelixWorker:
                     pass
 
         try:
-            result, consulted_at = self._query(olt, register_cancel)
+            query = self._query_equipo if state.alcance == "equipo" else self._query
+            result, consulted_at = query(olt.removeprefix("equipo:"), register_cancel)
             if self._stopping.is_set():
                 return
             with self._lock:

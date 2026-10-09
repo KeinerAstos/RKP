@@ -220,6 +220,17 @@
                 `temperature-badge ${badgeClass(item.nivel || 'amarillo')}`;
 
             const actions = document.createElement('div');
+            const casos = document.createElement('td');
+            casos.className = 'gkp-helix-cases gkp-helix-cases--equipo';
+            const olt = String(item.equipo || '').trim().toUpperCase();
+            if (temperatura > 80 && /^[A-Z0-9._-]{1,120}$/.test(olt)) {
+                casos.dataset.olt = olt;
+                casos.textContent = 'Consultando…';
+            } else {
+                casos.textContent = '—';
+            }
+            const detalle = document.createElement('td');
+            detalle.className = 'gkp-temperature-detail-cell';
             const detailButton = document.createElement('button');
 
             actions.className = 'temperature-cell-actions';
@@ -232,18 +243,22 @@
             );
             detailButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>';
             detailButton.addEventListener('click', () => openTemperatureModal(item, detailButton));
-            actions.append(badge, detailButton);
+            actions.append(badge);
             valor.appendChild(actions);
+            detalle.append(detailButton);
 
             row.append(
                 equipo,
-                valor
+                valor,
+                casos,
+                detalle
             );
 
             fragment.appendChild(row);
         }
 
         rows.replaceChildren(fragment);
+        window.GKPCasosHelix?.actualizarEquipos?.('temperatura');
 
         tableRegion.hidden = visibleCount === 0;
         empty.hidden = visibleCount !== 0;

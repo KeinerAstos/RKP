@@ -14,8 +14,24 @@ if ($method === 'GET') {
     $path = '/api/olt/casos-abiertos';
     $query = [
         'olt' => trim((string) ($_GET['olt'] ?? '')),
-        'puertos' => trim((string) ($_GET['puertos'] ?? '')),
     ];
+
+    $alcance = trim((string) ($_GET['alcance'] ?? ''));
+
+    if ($alcance !== '') {
+        if (!in_array($alcance, ['equipo', 'puertos'], true)) {
+            jsonResponse([
+                'ok' => false,
+                'error' => 'Alcance no válido',
+            ], 422);
+        }
+
+        $query['alcance'] = $alcance;
+    }
+
+    if ($alcance !== 'equipo') {
+        $query['puertos'] = trim((string) ($_GET['puertos'] ?? ''));
+    }
 } else {
     try {
         $body = json_decode((string) file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);

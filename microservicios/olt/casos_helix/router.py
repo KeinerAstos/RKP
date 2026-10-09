@@ -60,17 +60,26 @@ def _legacy_result(result: dict[str, Any]) -> dict[str, Any]:
 @router.get("/casos-abiertos")
 def casos_abiertos(
     olt: str = Query(..., min_length=1, max_length=120),
-    puertos: str = Query(..., min_length=1, max_length=1200),
+    puertos: str | None = Query(None, max_length=1200),
+    alcance: str = "puertos",
 ) -> dict[str, Any]:
     try:
         equipo = normalizar_olt(olt)
-        ports = normalizar_puertos(puertos)
+        if alcance not in {"puertos", "equipo"}:
+            raise ValueError("Alcance inválido")
+        if alcance == "equipo":
+            if puertos:
+                raise ValueError("No envíe puertos cuando alcance=equipo")
+            ports = []
+        else:
+            ports = normalizar_puertos(puertos or "")
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    result = _worker().submit(equipo, ports)
+    result = (_worker().submit(equipo, ports) if alcance == "puertos"
+              else _worker().submit(equipo, [], alcance="equipo"))
     if result["estado"] == "error":
         raise HTTPException(status_code=503, detail=result.get("error", {}).get("mensaje", "No se pudo consultar Helix"))
-    return {"ok": True, "data": _legacy_result(result)}
+    return {"ok": True, "data": (_legacy_result(result) if alcance == "puertos" else result)}
 
 
 @router.post("/casos-abiertos/lote")
