@@ -15,6 +15,8 @@
         region: document.getElementById(id),
         resumeAt: performance.now() + START_DELAY,
         bottomSince: null,
+        position: 0,
+        lastWritten: 0,
     })).filter((state) => state.region);
     let enabled = false;
     let lastFrame = performance.now();
@@ -23,6 +25,8 @@
     function hold(state, duration) {
         state.resumeAt = performance.now() + duration;
         state.bottomSince = null;
+        state.position = state.region.scrollTop;
+        state.lastWritten = state.region.scrollTop;
     }
 
     function scrollToTop(state, delay = TOP_DELAY) {
@@ -55,10 +59,18 @@
                     }
                 } else {
                     state.bottomSince = null;
-                    region.scrollTop = Math.min(
+                    // Keep fractional progress outside the DOM: some browsers
+                    // round scrollTop writes below one pixel back to zero.
+                    // Resync if native scrolling or a render changed the offset.
+                    if (region.scrollTop !== state.lastWritten) {
+                        state.position = region.scrollTop;
+                    }
+                    state.position = Math.min(
                         maxScroll,
-                        region.scrollTop + elapsed * SPEED_PX_SECOND / 1000
+                        state.position + elapsed * SPEED_PX_SECOND / 1000
                     );
+                    region.scrollTop = state.position;
+                    state.lastWritten = region.scrollTop;
                 }
             });
         }
@@ -69,6 +81,10 @@
         setEnabled(value) {
             enabled = Boolean(value);
             lastFrame = performance.now();
+            states.forEach((state) => {
+                state.position = state.region.scrollTop;
+                state.lastWritten = state.region.scrollTop;
+            });
         },
         resetAll() {
             states.forEach((state) => scrollToTop(state, START_DELAY));

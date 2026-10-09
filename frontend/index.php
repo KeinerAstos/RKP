@@ -192,7 +192,7 @@
     </section>
 </div>
 <script src="assets/js/sidebar.js" defer></script>
-<script src="assets/js/table-autoscroll.js" defer></script>
+<script src="assets/js/table-autoscroll.js?v=20261009-fractional" defer></script>
 <script src="assets/js/gkp-casos-helix.js?v=2" defer></script>
 <script src="assets/js/gkp.js?v=2" defer></script>
 <script src="assets/js/temperatura.js?v=2" defer></script>
