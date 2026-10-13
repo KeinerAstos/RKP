@@ -5,6 +5,9 @@ from __future__ import annotations
 import re
 import logging
 import time
+import threading
+import os
+from contextvars import ContextVar
 from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Callable, Iterable, Iterator
@@ -35,6 +38,38 @@ OPEN_WO = frozenset({0, 1, 2, 3, 4})
 OPEN_TASK = frozenset({1000, 2000, 3000, 4000, 5000})
 MAX_RELATIONS = 5000
 MAX_CASES = 3000
+
+# RKP_HELIX_OPT_V1: pool único; no se comparten resultados entre alcances.
+_pool = None
+_pool_lock = threading.Lock()
+_query_metrics = ContextVar("helix_query_metrics", default=None)
+
+
+def _get_pool(dsn):
+    global _pool
+    with _pool_lock:
+        if _pool is None:
+            _pool = oracledb.create_pool(
+                user=settings.oracle_helix_user,
+                password=settings.oracle_helix_password,
+                dsn=dsn, min=0, max=1, increment=1,
+                getmode=oracledb.POOL_GETMODE_TIMEDWAIT,
+                wait_timeout=8000, tcp_connect_timeout=8,
+                ping_interval=60, stmtcachesize=20,
+            )
+        return _pool
+
+
+def close_oracle_pool():
+    global _pool
+    with _pool_lock:
+        pool, _pool = _pool, None
+    if pool is not None:
+        try:
+            pool.close(force=True)
+        except Exception:
+            logger.warning("[HELIX TIEMPOS] No se pudo cerrar el pool")
+
 
 class HelixQueryError(RuntimeError):
     """Fallo en una rama necesaria de la consulta Helix."""
@@ -169,18 +204,31 @@ def _fetch(
     connection: Any,
     relation_meter: list[int],
 ) -> Iterator[tuple[Any, ...]]:
-    _deadline_check(deadline, connection)
-    cursor.execute(sql, binds)
-    while True:
+    started = time.monotonic()
+    rows = 0
+    stage_match = re.search(r"\bFROM\s+ARADMIN\.([A-Z0-9_]+)", sql, re.I)
+    stage = stage_match.group(1).upper() if stage_match else "OTRA"
+    try:
         _deadline_check(deadline, connection)
-        batch = cursor.fetchmany(50)
-        if not batch:
-            break
-        for row in batch:
-            relation_meter[0] += 1
-            if relation_meter[0] > MAX_RELATIONS:
-                raise HelixQueryError("La consulta excedió el límite de relaciones; resultado incompleto")
-            yield tuple(_read(value) if hasattr(value, "read") else value for value in row)
+        cursor.execute(sql, binds)
+        while True:
+            _deadline_check(deadline, connection)
+            batch = cursor.fetchmany(50)
+            if not batch:
+                break
+            for row in batch:
+                relation_meter[0] += 1
+                rows += 1
+                if relation_meter[0] > MAX_RELATIONS:
+                    raise HelixQueryError("La consulta excedió el límite de relaciones; resultado incompleto")
+                yield tuple(_read(value) if hasattr(value, "read") else value for value in row)
+    finally:
+        metrics = _query_metrics.get()
+        if metrics is not None:
+            bucket = metrics.setdefault(stage, [0.0, 0, 0])
+            bucket[0] += time.monotonic() - started
+            bucket[1] += 1
+            bucket[2] += rows
 
 
 def _in_query(
@@ -587,13 +635,17 @@ def _result(
         service_name=settings.oracle_helix_service_name,
     )
     connection = None
+    pool = None
+    failed = True
+    started = time.monotonic()
+    metrics = {}
+    metrics_token = _query_metrics.set(metrics)
+    connection_seconds = 0.0
     try:
         _deadline_check(deadline)
-        connection = oracledb.connect(
-            user=settings.oracle_helix_user,
-            password=settings.oracle_helix_password,
-            dsn=dsn, tcp_connect_timeout=8,
-        )
+        pool = _get_pool(dsn)
+        connection = pool.acquire()
+        connection_seconds = time.monotonic() - started
         if register_cancel:
             register_cancel(connection.cancel)
         _deadline_check(deadline, connection)
@@ -609,6 +661,7 @@ def _result(
                 result = _consultar_puertos_asociaciones(
                     cursor, olt, deadline, connection, relation_meter,
                 )
+        failed = False
         return result, datetime.now(timezone.utc).isoformat(timespec="seconds")
     except HelixQueryError:
         raise
@@ -616,12 +669,31 @@ def _result(
         logger.exception("Falló la consulta completa de casos Helix para la OLT solicitada")
         raise HelixQueryError("Oracle Helix no está disponible o la consulta falló") from exc
     finally:
+        if register_cancel:
+            register_cancel(None)
         if connection is not None:
             try:
-                connection.close()
-            finally:
-                if register_cancel:
-                    register_cancel(None)
+                if failed:
+                    pool.drop(connection)
+                else:
+                    connection.call_timeout = 0
+                    pool.release(connection)
+            except Exception:
+                try:
+                    pool.drop(connection)
+                except Exception:
+                    pass
+        _query_metrics.reset(metrics_token)
+        if os.environ.get("HELIX_METRICAS", "1") != "0":
+            detail = "; ".join(
+                f"{name}={values[0]:.2f}s/{values[1]} consultas/{values[2]} filas"
+                for name, values in sorted(metrics.items())
+            )
+            logger.warning(
+                "[HELIX TIEMPOS] OLT=%s alcance=%s total=%.2fs conexion=%.2fs ok=%s %s",
+                olt, alcance, time.monotonic() - started,
+                connection_seconds, not failed, detail,
+            )
 
 
 def consultar_olt(

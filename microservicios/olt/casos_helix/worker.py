@@ -6,6 +6,10 @@ import queue
 import threading
 import time
 import uuid
+import logging
+
+logger = logging.getLogger(__name__)
+# RKP_HELIX_OPT_V1
 from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -148,7 +152,7 @@ class HelixWorker:
             iniciado_en=None,
             finalizado_en=None,
             consultado_en=previous.consultado_en if previous else None,
-            casos_por_puerto=None,
+            casos_por_puerto=previous.casos_por_puerto if previous else None,
             revision=(previous.revision + 1) if previous else 1,
         )
         self._states[olt] = state
@@ -195,30 +199,28 @@ class HelixWorker:
                 }
             if state.estado == "listo" and state.finalizado_at is not None:
                 if self._clock() - state.finalizado_at >= self._ttl_seconds:
-                    return {
-                        "olt": olt, "alcance": alcance, "estado": "expirado", "consultado_en": state.consultado_en,
-                        "puertos": {port: {"estado": "expirado", "casos": None} for port in ports},
-                        "casos": None,
-                    }
+                    result = self._snapshot_locked(state, ports)
+                    result["estado"] = "expirado"
+                    result["datos_anteriores"] = True
+                    for item in result.get("puertos", {}).values():
+                        item["estado"] = "expirado"
+                        item["datos_anteriores"] = True
+                    return result
             return self._snapshot_locked(state, ports)
 
     def _snapshot_locked(self, state: JobState, ports: list[str]) -> dict[str, Any]:
-        if state.estado == "listo":
-            port_results = {
-                port: {"estado": "listo", "casos": list((state.casos_por_puerto or {}).get(port, []))}
-                for port in ports
+        has_previous = state.casos_por_puerto is not None
+        stale = state.estado != "listo" and has_previous
+        port_results = {}
+        for port in ports:
+            item = {
+                "estado": state.estado,
+                "casos": (list(state.casos_por_puerto.get(port, [])) if has_previous else None),
+                "datos_anteriores": stale,
             }
-        elif state.estado == "error":
-            port_results = {
-                port: {"estado": "error", "casos": None,
-                       "error": {"codigo": state.error_codigo, "mensaje": state.error}}
-                for port in ports
-            }
-        else:
-            port_results = {
-                port: {"estado": "actualizando", "casos": None}
-                for port in ports
-            }
+            if state.estado == "error":
+                item["error"] = {"codigo": state.error_codigo, "mensaje": state.error}
+            port_results[port] = item
         result: dict[str, Any] = {
             "olt": state.olt.removeprefix("equipo:"),
             "estado": state.estado,
@@ -229,11 +231,12 @@ class HelixWorker:
             "iniciado_en": state.iniciado_en,
             "finalizado_en": state.finalizado_en,
             "consultado_en": state.consultado_en,
+            "datos_anteriores": stale,
             "puertos": port_results,
         }
         if state.alcance == "equipo":
             result["casos"] = (list((state.casos_por_puerto or {}).get("__equipo__", []))
-                               if state.estado == "listo" else None)
+                               if has_previous else None)
             result.pop("puertos", None)
         if state.estado == "error":
             result["error"] = {"codigo": state.error_codigo, "mensaje": state.error}
@@ -268,6 +271,9 @@ class HelixWorker:
             state.iniciado_at = self._clock()
             state.iniciado_en = datetime.now(timezone.utc).isoformat(timespec="seconds")
             self._active_olt = olt
+            logger.warning("[HELIX COLA] OLT=%s alcance=%s espera=%.2fs",
+                           olt.removeprefix("equipo:"), state.alcance,
+                           state.iniciado_at - state.creado_en)
             self._reserved_pending = max(0, self._reserved_pending - 1)
 
         def register_cancel(cancel: Callable[[], None] | None) -> None:
@@ -305,7 +311,7 @@ class HelixWorker:
                 current = self._states.get(olt)
                 if current and current.job_id == job_id and current.generation == generation:
                     current.estado = "error"
-                    current.casos_por_puerto = None
+                    # Conservar el último resultado completo ante errores.
                     current.finalizado_at = self._clock()
                     current.finalizado_en = datetime.now(timezone.utc).isoformat(timespec="seconds")
                     current.error_codigo = "QUERY_FAILED"

@@ -36,6 +36,7 @@ def _legacy_result(result: dict[str, Any]) -> dict[str, Any]:
     data = {
         "olt": result["olt"],
         "cache": state == "listo",
+        "datos_anteriores": result.get("datos_anteriores", False),
         "estado": state,
         "job_id": result.get("job_id"),
         "generacion": result.get("generacion"),
@@ -77,8 +78,8 @@ def casos_abiertos(
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     result = (_worker().submit(equipo, ports) if alcance == "puertos"
               else _worker().submit(equipo, [], alcance="equipo"))
-    if result["estado"] == "error":
-        raise HTTPException(status_code=503, detail=result.get("error", {}).get("mensaje", "No se pudo consultar Helix"))
+    # RKP_HELIX_OPT_V1: los errores del trabajo viajan con su estado y último resultado.
+    # La ausencia del worker y los parámetros inválidos conservan HTTP 503/422.
     return {"ok": True, "data": (_legacy_result(result) if alcance == "puertos" else result)}
 
 

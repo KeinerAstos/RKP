@@ -1,7 +1,7 @@
 # Graph Report - RKP  (2026-10-09)
 
 ## Corpus Check
-- 161 files · ~448,796 words
+- 164 files · ~450,091 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 22 file(s) not represented in the graph (top: .css 7, .toml 4, .csv 4)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `db3a5f97`
+- Built from commit: `0bbeb306`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -128,24 +128,24 @@
 2. `resumeSession()` - 32 edges
 3. `connectSSE()` - 31 edges
 4. `showToast()` - 30 edges
-5. `el()` - 29 edges
-6. `initGlobalBar()` - 29 edges
+5. `initGlobalBar()` - 29 edges
+6. `el()` - 29 edges
 7. `handleKeyDown()` - 27 edges
-8. `buildInsertConfigureRow()` - 26 edges
-9. `injectSvelteComponentsFromManifest()` - 26 edges
-10. `cleanup()` - 26 edges
+8. `cleanup()` - 26 edges
+9. `buildInsertConfigureRow()` - 26 edges
+10. `injectSvelteComponentsFromManifest()` - 26 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `terminado()` --calls--> `actualizar()`  [INFERRED]
   tests/test_olt_caidas_historial.py → microservicios/cmts/inits/router.py
-- `EquipoScopeIssue4Tests` --uses--> `HelixWorker`  [INFERRED]
-  tests/test_casos_helix_async.py → microservicios/olt/casos_helix/worker.py
 - `WorkerTests` --uses--> `HelixWorker`  [INFERRED]
   tests/test_casos_helix_async.py → microservicios/olt/casos_helix/worker.py
-- `test_cycle_claim_is_global_and_recovers_dead_process_lock()` --calls--> `claim_cycle()`  [EXTRACTED]
-  tests/test_cmts_inits.py → microservicios/cmts/inits/inits_cmts.py
-- `test_status_ignores_lock_from_dead_process_even_without_published_csv()` --calls--> `status()`  [EXTRACTED]
-  tests/test_cmts_inits.py → microservicios/cmts/inits/inits_cmts.py
+- `EquipoScopeIssue4Tests` --uses--> `HelixWorker`  [INFERRED]
+  tests/test_casos_helix_async.py → microservicios/olt/casos_helix/worker.py
+- `CacheTests` --uses--> `CacheHistorial`  [INFERRED]
+  tests/test_olt_caidas_historial.py → microservicios/olt/caidas/cache.py
+- `ConfigurationAndOracleMockTests` --uses--> `Settings`  [INFERRED]
+  tests/test_casos_helix_async.py → microservicios/config.py
 
 ## Import Cycles
 - None detected.
@@ -549,24 +549,24 @@ Cohesion: 0.50
 Nodes (3): assert, {chromium}, fs
 
 ## Knowledge Gaps
-- **428 isolated node(s):** `{ chromium }`, `assert`, `fs`, `rows`, `Setup` (+423 more)
+- **428 isolated node(s):** `Breakpoints: Content-Driven`, `Detect Input Method, Not Just Screen Size`, `Layout Adaptation Patterns`, `Mobile-First: Write It Right`, `Picture Element for Art Direction` (+423 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 678 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+- **Why does `HelixWorker` connect `HelixWorker` to `.test_equipment_query_retains_open_task_with_closed_parent`, `casos_helix/router.py`, `WorkerTests`?**
+  _High betweenness centrality (0.007) - this node is a cross-community bridge._
+- **Why does `ConfigurationAndOracleMockTests` connect `casos_helix/router.py` to `.test_query_streams_and_keeps_open_children_of_closed_parent`, `.test_all_required_candidate_searches_complete_before_empty_result`?**
+  _High betweenness centrality (0.007) - this node is a cross-community bridge._
 - **Why does `Reference Material` connect `Heuristics Scoring Guide` to `critique.md`, `Cognitive Load Assessment`, `Persona-Based Design Testing`?**
-  _High betweenness centrality (0.009) - this node is a cross-community bridge._
-- **Why does `New visual work` connect `New visual work` to `new-work.md`?**
   _High betweenness centrality (0.006) - this node is a cross-community bridge._
-- **What connects `{ chromium }`, `assert`, `fs` to the rest of the system?**
+- **Are the 7 inferred relationships involving `initGlobalBar()` (e.g. with `hideAgentPollTooltip()` and `onDetectMessage()`) actually correct?**
+  _`initGlobalBar()` has 7 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `Breakpoints: Content-Driven`, `Detect Input Method, Not Just Screen Size`, `Layout Adaptation Patterns` to the rest of the system?**
   _428 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `renderDesignVisual` be split into smaller, more focused modules?**
   _Cohesion score 0.07084785133565621 - nodes in this community are weakly interconnected._
 - **Should `topologias/service.py` be split into smaller, more focused modules?**
   _Cohesion score 0.10227936879018118 - nodes in this community are weakly interconnected._
-- **Should `modern-screenshot.umd.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.09147869674185463 - nodes in this community are weakly interconnected._
-- **Should `cmts/saturacion/service.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.08686868686868687 - nodes in this community are weakly interconnected._

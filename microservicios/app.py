@@ -74,6 +74,7 @@ async def lifespan(_app: FastAPI):
     finally:
         await stop_cmts_inits_scheduler()
         stop_helix_worker()
+        casos_helix_service.close_oracle_pool()  # RKP_HELIX_OPT_V1
         if tarea:
             tarea.cancel()
 

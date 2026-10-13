@@ -9497,7 +9497,7 @@
       "file_type": "code",
       "norm_label": "frame()",
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L40"
+      "source_location": "L44"
     },
     {
       "id": "frontend_assets_js_table_autoscroll_hold",
@@ -9509,7 +9509,7 @@
       "file_type": "code",
       "norm_label": "hold()",
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L23"
+      "source_location": "L25"
     },
     {
       "id": "frontend_assets_js_table_autoscroll_resetall",
@@ -9521,7 +9521,7 @@
       "file_type": "code",
       "norm_label": "resetall()",
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L73"
+      "source_location": "L89"
     },
     {
       "id": "frontend_assets_js_table_autoscroll_scrolltotop",
@@ -9533,7 +9533,7 @@
       "file_type": "code",
       "norm_label": "scrolltotop()",
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L28"
+      "source_location": "L32"
     },
     {
       "id": "frontend_assets_js_table_autoscroll_setenabled",
@@ -9545,7 +9545,7 @@
       "file_type": "code",
       "norm_label": "setenabled()",
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L69"
+      "source_location": "L81"
     },
     {
       "id": "frontend_assets_js_perdida_latencia_formatnumber",
@@ -41624,7 +41624,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L54",
+      "source_location": "L58",
       "weight": 1.0
     },
     {
@@ -41636,7 +41636,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L74",
+      "source_location": "L90",
       "weight": 1.0
     },
     {
@@ -41648,7 +41648,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L30",
+      "source_location": "L34",
       "weight": 1.0
     },
     {
@@ -41660,7 +41660,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L78",
+      "source_location": "L94",
       "weight": 1.0
     },
     {
@@ -64453,7 +64453,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L23",
+      "source_location": "L25",
       "weight": 1.0
     },
     {
@@ -64464,7 +64464,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L40",
+      "source_location": "L44",
       "weight": 1.0
     },
     {
@@ -64475,7 +64475,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L69",
+      "source_location": "L81",
       "weight": 1.0
     },
     {
@@ -64486,7 +64486,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L73",
+      "source_location": "L89",
       "weight": 1.0
     },
     {
@@ -64497,7 +64497,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/assets/js/table-autoscroll.js",
-      "source_location": "L76",
+      "source_location": "L92",
       "weight": 1.0
     },
     {
@@ -72636,5 +72636,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "db3a5f97a84f4133b7fbb990d3ce56ce4768f958"
+  "built_at_commit": "0bbeb3063bc46685d0613452e16e2ee32148e748"
 }

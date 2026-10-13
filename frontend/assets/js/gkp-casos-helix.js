@@ -1,5 +1,6 @@
 (() => {
     'use strict';
+    // RKP_HELIX_OPT_V1
 
     const endpoint = new URL('../backend/api/olt_casos_helix.php', window.location.href);
     const known = new Map();
@@ -34,6 +35,20 @@
 
     function paintCell(cell, state, port) {
         const prior = state?.ports.get(port);
+        if (state && state.estado !== 'listo' && Array.isArray(prior?.casos)) {
+            paintCell(cell, { ...state, estado: 'listo' }, port);
+            const notice = document.createElement('span');
+            notice.className = 'gkp-helix-case';
+            const last = prior.consultado_en
+                ? new Date(prior.consultado_en).toLocaleString() : 'sin fecha';
+            notice.textContent = state.estado === 'error'
+                ? 'No se pudo actualizar · datos anteriores'
+                : 'Actualizando… · datos anteriores';
+            cell.append(notice);
+            cell.title = `Última consulta completa: ${last}`;
+            if (state.estado === 'error') cell.classList.add('gkp-helix-cases--error');
+            return;
+        }
         cell.replaceChildren();
         cell.classList.remove('gkp-helix-cases--error', 'gkp-helix-cases--empty');
 
@@ -160,9 +175,9 @@
             error: incoming.error,
             ports: new Map(previous?.ports || [])
         };
-        if (incoming.estado === 'listo') {
+        if (incoming.puertos) {
             for (const [port, result] of Object.entries(incoming.puertos || {})) {
-                if (result?.estado === 'listo' && Array.isArray(result.casos)) {
+                if (Array.isArray(result?.casos)) {
                     next.ports.set(port, {
                         casos: result.casos,
                         consultado_en: incoming.consultado_en || result.consultado_en || null
@@ -240,7 +255,7 @@
     const equipos = new Map();
     let equipoTimer = null;
     let equipoBusy = false;
-    const EQUIPO_TTL = 120000;
+    const EQUIPO_TTL = 150000;
     const ERROR_RETRY = 30000;
     const PENDING_RETRY = 25000;
 
@@ -256,9 +271,9 @@
             cell.replaceChildren();
             cell.classList.remove('gkp-helix-cases--error', 'gkp-helix-cases--empty');
             cell.title = 'Casos abiertos asociados a la OLT; no necesariamente causados por esta condición';
-            if (!state || state.estado === 'actualizando') {
+            if ((!state || state.estado === 'actualizando') && !Array.isArray(state?.casos)) {
                 cell.textContent = 'Consultando…';
-            } else if (state.estado === 'error') {
+            } else if (state.estado === 'error' && !Array.isArray(state.casos)) {
                 cell.textContent = 'No se pudo consultar';
                 cell.classList.add('gkp-helix-cases--error');
             } else if (!state.casos.length) {
@@ -271,6 +286,20 @@
                     line.className = 'gkp-helix-case';
                     line.textContent = `${item.numero} - ${item.estado}`;
                     cell.appendChild(line);
+                }
+            }
+            if (state && Array.isArray(state.casos)) {
+                const last = state.consultado_en
+                    ? new Date(state.consultado_en).toLocaleString() : 'sin fecha';
+                cell.title = `Última consulta completa: ${last}`;
+                if (state.estado !== 'listo') {
+                    const notice = document.createElement('span');
+                    notice.className = 'gkp-helix-case';
+                    notice.textContent = state.estado === 'error'
+                        ? 'No se pudo actualizar · datos anteriores'
+                        : 'Actualizando… · datos anteriores';
+                    cell.appendChild(notice);
+                    if (state.estado === 'error') cell.classList.add('gkp-helix-cases--error');
                 }
             }
         }
@@ -308,16 +337,22 @@
                 throw new Error('Respuesta de alcance inválido');
             }
             const data = payload.data;
-            if (data.estado !== 'listo' && data.estado !== 'actualizando') {
+            if (!['listo', 'actualizando', 'error'].includes(data.estado)) {
                 throw new Error('Estado de consulta inválido');
             }
-            if (data.estado === 'listo') {
-                equipos.set(olt, { estado: 'listo', casos: validarCasos(data.casos), at: Date.now() });
-            } else {
-                equipos.set(olt, { estado: 'actualizando', casos: [], at: Date.now() });
-            }
+            const previous = equipos.get(olt);
+            const casos = Array.isArray(data.casos) ? validarCasos(data.casos)
+                : (data.estado === 'listo' ? validarCasos(data.casos) : previous?.casos ?? null);
+            equipos.set(olt, {
+                estado: data.estado, casos, at: Date.now(),
+                consultado_en: data.consultado_en || previous?.consultado_en || null
+            });
         } catch (_error) {
-            equipos.set(olt, { estado: 'error', casos: [], at: Date.now() });
+            const previous = equipos.get(olt);
+            equipos.set(olt, {
+                estado: 'error', casos: previous?.casos ?? null, at: Date.now(),
+                consultado_en: previous?.consultado_en || null
+            });
         } finally {
             window.clearTimeout(timer);
             pintarEquipo(olt);
