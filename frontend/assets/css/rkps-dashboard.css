@@ -1,0 +1,827 @@
+
+/* =====================================================
+   RKPS - DASHBOARD OPERACIONAL
+   Tres tablas visibles - distribución 60/40
+   ===================================================== */
+
+/* Distribución general */
+.dashboard-page .gkp-panels {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
+    gap: 14px;
+}
+
+/* Permitir que las tablas se ajusten al contenedor */
+.dashboard-page .gkp-panels > .gkp-panel,
+.dashboard-page .gkp-secondary-panels {
+    min-width: 0;
+    width: 100%;
+}
+
+/* Dos tablas de la derecha, una encima de otra */
+.dashboard-page .gkp-secondary-panels {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.dashboard-page .gkp-secondary-panels > .gkp-panel {
+    min-width: 0;
+    width: 100%;
+}
+
+/* Desplazamiento independiente de las tablas */
+.dashboard-page .gkp-table-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* Espaciado de las celdas */
+.dashboard-page .gkp-table th,
+.dashboard-page .gkp-table td {
+    padding: 11px 10px;
+    vertical-align: middle;
+}
+
+/* Encabezados compactos */
+.dashboard-page .gkp-panel-heading {
+    padding: 15px 16px;
+}
+
+/* Evitar que las tablas secundarias tengan
+   restricciones de altura innecesarias */
+.dashboard-page .gkp-secondary-panels .gkp-panel {
+    max-width: none;
+}
+
+/* Pantallas pequeñas */
+@media (max-width: 768px) {
+    .dashboard-page .gkp-secondary-panels {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .dashboard-page .gkp-table th,
+    .dashboard-page .gkp-table td {
+        padding: 10px 8px;
+    }
+}
+
+/* =====================================================
+   RKPS - CORRECCIÓN RESPONSIVE
+   ===================================================== */
+
+/* Escritorio: mantener las tres tablas visibles */
+@media (min-width: 1101px) {
+    .dashboard-page .gkp-panels {
+        display: grid;
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        gap: 14px;
+        align-items: start;
+    }
+
+    .dashboard-page .gkp-secondary-panels {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+}
+
+/* Tablets y pantallas pequeñas */
+@media (max-width: 1100px) {
+    .dashboard-page .gkp-panels {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .dashboard-page .gkp-secondary-panels {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+}
+
+/* Evitar que los paneles desborden su contenedor */
+.dashboard-page .gkp-panels,
+.dashboard-page .gkp-panels > .gkp-panel,
+.dashboard-page .gkp-secondary-panels,
+.dashboard-page .gkp-secondary-panels > .gkp-panel {
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* El scroll horizontal debe estar dentro de cada tabla */
+.dashboard-page .gkp-table-scroll {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* Evitar que los filtros ensanchen los paneles */
+.dashboard-page .rkps-filters {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.dashboard-page .rkps-filters input,
+.dashboard-page .rkps-filters select {
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* En móviles, los filtros se apilan */
+@media (max-width: 600px) {
+    .dashboard-page .rkps-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard-page .rkps-filters input,
+    .dashboard-page .rkps-filters select {
+        width: 100%;
+        flex: none;
+    }
+}
+
+/* Ficha cuando Helix confirma ausencia de casos */
+.dashboard-page .gkp-helix-cases .rkps-case-empty {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 9px;
+    border-radius: 6px;
+    border: 1px solid #d8e1e7;
+    background: #f2f5f7;
+    color: #657586;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Ocultar únicamente el mensaje original cuando
+   exista la ficha de Sin casos */
+.dashboard-page .gkp-helix-cases:has(.rkps-case-empty) {
+    font-size: 0;
+}
+
+.dashboard-page .gkp-helix-cases .rkps-case-empty {
+    font-size: 11px;
+}
+
+/* =====================================================
+   FICHAS DE CASOS HELIX
+   ===================================================== */
+
+.dashboard-page .rkps-case-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+}
+
+.dashboard-page .rkps-case-count {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 7px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.dashboard-page .rkps-case-count--inc {
+    color: #b42335;
+    background: #fff0f1;
+    border-color: #ffc1ca;
+}
+
+.dashboard-page .rkps-case-count--wo {
+    color: #175ca4;
+    background: #eaf4ff;
+    border-color: #b5d9fa;
+}
+
+.dashboard-page .rkps-case-count--tas {
+    color: #087d59;
+    background: #e9f9f0;
+    border-color: #b8e8cf;
+}
+
+/* Ocultar los identificadores originales en la tabla */
+.dashboard-page .gkp-helix-cases:has(.rkps-case-summary)
+.gkp-helix-case {
+    display: none !important;
+}
+
+.dashboard-page .gkp-helix-cases:has(.rkps-case-summary) {
+    font-size: 0;
+}
+
+.dashboard-page .gkp-helix-cases .rkps-case-summary {
+    font-size: 12px;
+}
+
+/* =====================================================
+   PANEL LATERAL EMERGENTE
+   ===================================================== */
+
+.rkps-detail-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1090;
+    background: rgba(12, 28, 39, 0.38);
+}
+
+.rkps-detail-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(430px, 100vw);
+    height: 100dvh;
+    z-index: 1100;
+    background: #fff;
+    box-shadow: -12px 0 35px rgba(15, 35, 48, 0.18);
+    overflow-y: auto;
+    color: #20384a;
+}
+
+.rkps-detail-overlay[hidden],
+.rkps-detail-panel[hidden] {
+    display: none !important;
+}
+
+.rkps-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px 22px;
+    border-bottom: 1px solid #e1eae6;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+}
+
+.rkps-detail-header h2 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.rkps-detail-close {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid #dbe6e0;
+    border-radius: 8px;
+    background: #fff;
+    color: #34495e;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.rkps-detail-body {
+    padding: 22px;
+}
+
+.rkps-detail-body h3 {
+    margin: 0 0 22px;
+    font-size: 16px;
+    overflow-wrap: anywhere;
+}
+
+.rkps-detail-body h4 {
+    margin: 26px 0 12px;
+    font-size: 14px;
+}
+
+.rkps-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.rkps-detail-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 14px;
+    border: 1px solid #e2eae7;
+    border-radius: 9px;
+    background: #fafcfc;
+    min-width: 0;
+}
+
+.rkps-detail-field span {
+    font-size: 11px;
+    color: #728394;
+}
+
+.rkps-detail-field strong {
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.rkps-detail-casos {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rkps-detail-case {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #e2eae7;
+    border-radius: 8px;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.rkps-detail-casos p {
+    color: #718096;
+    font-size: 12px;
+}
+
+/* Indicar que las filas permiten abrir detalles */
+.dashboard-page .gkp-table tbody tr {
+    cursor: pointer;
+}
+
+@media (max-width: 480px) {
+    .rkps-detail-panel {
+        width: 100vw;
+    }
+
+    .rkps-detail-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* =====================================================
+   RKPS - PANEL LATERAL CON PESTAÑAS
+   ===================================================== */
+
+.rkps-detail-panel {
+    width: min(390px, 100vw);
+}
+
+.rkps-detail-identity {
+    padding: 20px 20px 16px;
+}
+
+.rkps-detail-identity h3 {
+    margin: 0 0 7px;
+    color: #18334c;
+    font-size: 15px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.rkps-detail-identity p {
+    margin: 0;
+    color: #73879b;
+    font-size: 12px;
+}
+
+/* Pestañas Resumen, Casos Helix y Gráficas */
+.rkps-detail-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 0 12px;
+    border-bottom: 1px solid #e1eae6;
+}
+
+.rkps-detail-tabs button {
+    padding: 14px 4px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: #63788a;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.rkps-detail-tabs button.is-active {
+    color: #087d59;
+    border-bottom-color: #0b996e;
+}
+
+.rkps-detail-tabs button:hover {
+    color: #087d59;
+}
+
+/* Contenido */
+.rkps-detail-body {
+    padding: 18px 15px 28px;
+}
+
+.rkps-detail-body [data-rkps-detail-section][hidden] {
+    display: none !important;
+}
+
+.rkps-detail-body h4 {
+    margin: 25px 0 13px;
+    color: #18334c;
+    font-size: 13px;
+}
+
+.rkps-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+}
+
+.rkps-detail-field {
+    min-width: 0;
+    min-height: 80px;
+    padding: 13px;
+    border: 1px solid #e2eae7;
+    border-radius: 9px;
+    background: #fafcfc;
+}
+
+/* Contadores INC, WO y TAS */
+.rkps-detail-counts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.rkps-detail-count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px 6px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+}
+
+.rkps-detail-count span {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.rkps-detail-count strong {
+    font-size: 23px;
+    line-height: 1;
+}
+
+.rkps-detail-count--inc {
+    color: #c5273c;
+    background: #fff0f2;
+    border-color: #ffe1e5;
+}
+
+.rkps-detail-count--wo {
+    color: #2673b8;
+    background: #eef6ff;
+    border-color: #dcecff;
+}
+
+.rkps-detail-count--tas {
+    color: #0c9866;
+    background: #eaf9f1;
+    border-color: #d9f1e5;
+}
+
+/* Información adicional del equipo */
+.rkps-detail-extra-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 11px 12px;
+    border-bottom: 1px solid #fff;
+    border-radius: 5px;
+    background: #f7faf9;
+    font-size: 12px;
+}
+
+.rkps-detail-extra-row span {
+    color: #718599;
+}
+
+.rkps-detail-extra-row strong {
+    color: #213d54;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+/* Botón Grafana */
+.rkps-detail-grafana {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #aac7dc;
+    border-radius: 7px;
+    background: #fff;
+    color: #234860;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.rkps-detail-grafana:hover {
+    background: #eff8f5;
+    border-color: #0b996e;
+}
+
+.rkps-detail-grafana[hidden] {
+    display: none !important;
+}
+
+#rkps-detail-grafana-msg {
+    color: #718599;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* Adaptación a pantallas pequeñas */
+@media (max-width: 480px) {
+    .rkps-detail-panel {
+        width: 100vw;
+    }
+
+    .rkps-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .rkps-detail-identity {
+        padding: 16px;
+    }
+}
+
+/* Estados visuales de consulta Helix */
+
+.dashboard-page .gkp-helix-cases .rkps-case-empty--loading {
+    color: #1767a6;
+    background: #eaf4ff;
+    border-color: #bfdcf5;
+}
+
+.dashboard-page .gkp-helix-cases .rkps-case-empty--empty {
+    color: #657586;
+    background: #f2f5f7;
+    border-color: #d8e1e7;
+}
+
+.dashboard-page .gkp-helix-cases .rkps-case-empty--error {
+    color: #a65b11;
+    background: #fff7e8;
+    border-color: #f2d6a4;
+}
+
+/* =====================================================
+   RKPS - OPTIMIZACIÓN DE ANCHOS DE TABLAS
+   ===================================================== */
+
+/* Mantener el scroll dentro de cada panel */
+.dashboard-page .gkp-table-scroll {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+}
+
+/* Evitar que los mensajes de Helix ensanchen la tabla */
+.dashboard-page .gkp-helix-cases {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* Fichas compactas */
+.dashboard-page .rkps-case-summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    width: max-content;
+    max-width: 100%;
+}
+
+/* Tabla principal */
+@media (min-width: 1101px) {
+    .dashboard-page #alarmas .gkp-table {
+        min-width: 750px;
+        width: 100%;
+    }
+
+    .dashboard-page #alarmas .gkp-table th,
+    .dashboard-page #alarmas .gkp-table td {
+        padding-inline: 9px;
+    }
+}
+
+/* Tabla Pérdida y latencia */
+.dashboard-page #perdida-latencia-panel .gkp-table {
+    min-width: 620px;
+    width: 100%;
+}
+
+.dashboard-page #perdida-latencia-panel .gkp-table th,
+.dashboard-page #perdida-latencia-panel .gkp-table td {
+    padding-inline: 8px;
+}
+
+/* Tabla Temperatura OLT */
+.dashboard-page #temperatura-panel .gkp-table {
+    min-width: 580px;
+    width: 100%;
+}
+
+.dashboard-page #temperatura-panel .gkp-table th,
+.dashboard-page #temperatura-panel .gkp-table td {
+    padding-inline: 8px;
+}
+
+/* Conservar legibles los identificadores */
+.dashboard-page .gkp-table td:first-child {
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+/* =====================================================
+   RKPS - DISTRIBUCIÓN DE COLUMNAS
+   ===================================================== */
+
+/* Configuración común */
+.dashboard-page .gkp-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.dashboard-page .gkp-table th,
+.dashboard-page .gkp-table td {
+    box-sizing: border-box;
+    vertical-align: middle;
+}
+
+/* Permitir desplazar las tablas cuando sea necesario */
+.dashboard-page .gkp-table-scroll {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+}
+
+/* =====================================================
+   ESTADO ACTUAL DE RED
+   ===================================================== */
+
+.dashboard-page #alarmas .gkp-table th:nth-child(1) {
+    width: 30%;
+}
+
+.dashboard-page #alarmas .gkp-table th:nth-child(2) {
+    width: 16%;
+}
+
+.dashboard-page #alarmas .gkp-table th:nth-child(3) {
+    width: 10%;
+}
+
+.dashboard-page #alarmas .gkp-table th:nth-child(4) {
+    width: 16%;
+}
+
+.dashboard-page #alarmas .gkp-table th:nth-child(5) {
+    width: 21%;
+}
+
+.dashboard-page #alarmas .gkp-table th:nth-child(6) {
+    width: 7%;
+}
+
+/* =====================================================
+   PÉRDIDA Y LATENCIA
+   ===================================================== */
+
+.dashboard-page #perdida-latencia-panel
+.gkp-table th:nth-child(1) {
+    width: 36%;
+}
+
+.dashboard-page #perdida-latencia-panel
+.gkp-table th:nth-child(2) {
+    width: 18%;
+}
+
+.dashboard-page #perdida-latencia-panel
+.gkp-table th:nth-child(3) {
+    width: 25%;
+}
+
+.dashboard-page #perdida-latencia-panel
+.gkp-table th:nth-child(4) {
+    width: 21%;
+}
+
+/* =====================================================
+   TEMPERATURA OLT
+   ===================================================== */
+
+.dashboard-page #temperatura-panel
+.gkp-table th:nth-child(1) {
+    width: 38%;
+}
+
+.dashboard-page #temperatura-panel
+.gkp-table th:nth-child(2) {
+    width: 20%;
+}
+
+.dashboard-page #temperatura-panel
+.gkp-table th:nth-child(3) {
+    width: 30%;
+}
+
+.dashboard-page #temperatura-panel
+.gkp-table th:nth-child(4) {
+    width: 12%;
+}
+
+/* =====================================================
+   PROTECCIÓN DE CONTENIDO
+   ===================================================== */
+
+/* Los nombres de equipos no se parten */
+.dashboard-page .gkp-table td:first-child {
+    white-space: nowrap;
+}
+
+/* Los casos mantienen sus fichas compactas */
+.dashboard-page .gkp-helix-cases {
+    min-width: 0;
+    white-space: normal;
+}
+
+/* Evitar que el botón Detalle se comprima */
+.dashboard-page #alarmas .gkp-table td:last-child,
+.dashboard-page #temperatura-panel .gkp-table td:last-child {
+    text-align: center;
+}
+/* Filtros del dashboard */
+
+.dashboard-page .rkps-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #fff;
+    border-bottom: 1px solid #dce8e3;
+}
+
+.dashboard-page .rkps-filters input,
+.dashboard-page .rkps-filters select {
+    min-width: 0;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #d1dfd9;
+    border-radius: 7px;
+    background: #fff;
+    color: #263d50;
+    font-size: 12px;
+}
+
+.dashboard-page .rkps-filters input {
+    flex: 1 1 180px;
+}
+
+.dashboard-page .rkps-filters select {
+    flex: 1 1 140px;
+}
+
+.dashboard-page .rkps-clear-filter {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid #b8dfcd;
+    border-radius: 7px;
+    background: #eaf8f1;
+    color: #087d59;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+@media (max-width: 600px) {
+    .dashboard-page .rkps-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard-page .rkps-filters input,
+    .dashboard-page .rkps-filters select,
+    .dashboard-page .rkps-clear-filter {
+        width: 100%;
+        flex: none;
+    }
+}
