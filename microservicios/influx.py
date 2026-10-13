@@ -11,8 +11,30 @@ except ImportError:
     from config import settings
 
 
+def _crear_cliente_influx(**kwargs) -> InfluxDBClient:
+    """Lee el origen de .env y lo aplica antes de abrir conexiones."""
+    from ipaddress import IPv4Address
+    from pathlib import Path
+    archivo = Path(__file__).resolve().parent.parent / ".env"
+    origen = ""
+    for linea in archivo.read_text(encoding="utf-8-sig").splitlines():
+        clave, separador, valor = linea.strip().partition("=")
+        if separador and clave.strip() == "INFLUX_SOURCE_IP":
+            origen = valor.strip().strip("\"'")
+    if origen:
+        IPv4Address(origen)
+    client = InfluxDBClient(**kwargs)
+    try:
+        if origen:
+            pool = client.api_client.rest_client.pool_manager
+            pool.connection_pool_kw["source_address"] = (origen, 0)
+        return client
+    except Exception:
+        client.close()
+        raise
+
 def crear_cliente_temp() -> InfluxDBClient:
-    return InfluxDBClient(
+    return _crear_cliente_influx(
         url=settings.influx_temp_url,
         token=settings.influx_temp_token,
         org=settings.influx_temp_org,
@@ -22,7 +44,7 @@ def crear_cliente_temp() -> InfluxDBClient:
 
 
 def crear_cliente_cmts() -> InfluxDBClient:
-    return InfluxDBClient(
+    return _crear_cliente_influx(
         url=settings.influx_cmts_url,
         token=settings.influx_cmts_token,
         org=settings.influx_cmts_org,
@@ -45,7 +67,7 @@ def consultar_flux_temp(
         cliente = crear_cliente_temp
         org = settings.influx_temp_org
     elif fuente == "red":
-        cliente = lambda: InfluxDBClient(
+        cliente = lambda: _crear_cliente_influx(
             url=settings.influx_red_url,
             token=settings.influx_red_token,
             org=settings.influx_red_org,
@@ -89,7 +111,7 @@ def iterar_flux_temp(consulta: str, *, fuente: str = "temp"):
         cliente = crear_cliente_temp
         org = settings.influx_temp_org
     elif fuente == "red":
-        cliente = lambda: InfluxDBClient(
+        cliente = lambda: _crear_cliente_influx(
             url=settings.influx_red_url,
             token=settings.influx_red_token,
             org=settings.influx_red_org,
