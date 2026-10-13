@@ -240,9 +240,9 @@
     "semantic_hash": ""
   },
   "frontend/components/sidebar.php": {
-    "mtime": 1791489009.371326,
-    "seen": 1791490169.7127857,
-    "ast_hash": "be700073af4473ad37e1d10f41b4073a",
+    "mtime": 1791897680.0830255,
+    "seen": 1791899386.876794,
+    "ast_hash": "be26acb4a85b87fc970c50197ad69ccb",
     "semantic_hash": ""
   },
   "frontend/configuracion.php": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "microservicios/app.py": {
-    "mtime": 1791488968.413898,
-    "seen": 1791490169.7127957,
-    "ast_hash": "8f86ecdad2d6c5c6e7a1b4a8412c54a4",
+    "mtime": 1791898993.6200683,
+    "seen": 1791899386.8768227,
+    "ast_hash": "7c81f071beef1e316fef56ea6b51450c",
     "semantic_hash": ""
   },
   "microservicios/cmts/intermitencias/queries.py": {
@@ -924,9 +924,9 @@
     "semantic_hash": ""
   },
   "frontend/assets/js/gkp-casos-helix.js": {
-    "mtime": 1791573963.469532,
-    "seen": 1791575593.0815485,
-    "ast_hash": "9c4eecb6f6337466f03562669f022fb5",
+    "mtime": 1791899205.3021624,
+    "seen": 1791899386.876743,
+    "ast_hash": "077e6edf852094785ed6e6524aec697e",
     "semantic_hash": ""
   },
   "frontend/cmts-inits.php": {
@@ -954,21 +954,21 @@
     "semantic_hash": ""
   },
   "microservicios/olt/casos_helix/router.py": {
-    "mtime": 1791573963.4726224,
-    "seen": 1791575593.0951815,
-    "ast_hash": "10de7bb0db3fd3da49e644b2ce80fd7b",
+    "mtime": 1791898993.619064,
+    "seen": 1791899386.8769038,
+    "ast_hash": "dafe67565769587f4311a30d80db2129",
     "semantic_hash": ""
   },
   "microservicios/olt/casos_helix/service.py": {
-    "mtime": 1791573963.4736257,
-    "seen": 1791575593.0951862,
-    "ast_hash": "b3b7faaa511bf48c12e4d505801b26c7",
+    "mtime": 1791898993.6145203,
+    "seen": 1791899386.8769064,
+    "ast_hash": "27a4b41351b1ca1314581bfc1fc15955",
     "semantic_hash": ""
   },
   "microservicios/olt/casos_helix/worker.py": {
-    "mtime": 1791573963.4748583,
-    "seen": 1791575593.095189,
-    "ast_hash": "73dff4c06f44012f2d0055acd6e46721",
+    "mtime": 1791898993.6165204,
+    "seen": 1791899386.876909,
+    "ast_hash": "144ba41194408dab85dfecb3edfd8346",
     "semantic_hash": ""
   },
   "tests/test_casos_helix_async.py": {
@@ -1107,6 +1107,18 @@
     "mtime": 1791576540.9418123,
     "seen": 1791577151.1840587,
     "ast_hash": "55a505d05877855c4b559bf1d1c33dac",
+    "semantic_hash": ""
+  },
+  "frontend/assets/img/rkps-logo.png": {
+    "mtime": 1791897680.0764775,
+    "seen": 1791899386.8771749,
+    "ast_hash": "d345a9c22c8f5657aa733c63db7ce6c8",
+    "semantic_hash": ""
+  },
+  "frontend/assets/img/rkps_logo.png": {
+    "mtime": 1791897680.0815103,
+    "seen": 1791899386.877178,
+    "ast_hash": "5dd9f4302bb85ddb0e06b9d2aa1d5ba0",
     "semantic_hash": ""
   }
 }
