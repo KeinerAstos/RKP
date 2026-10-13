@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "frontend/index.php": {
-    "mtime": 1791577095.0959249,
-    "seen": 1791577151.1840162,
-    "ast_hash": "3efc784f4565fd148108f02cda3d6575",
+    "mtime": 1791901058.49492,
+    "seen": 1791902606.9275973,
+    "ast_hash": "b97f54b3d2a4c965e87e94447fe575a2",
     "semantic_hash": ""
   },
   "frontend/intermitencias.php": {
