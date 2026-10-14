@@ -1,4 +1,0 @@
-# RKP_ENV_UNIFICADO_V1: deny direct access to private configuration/Git metadata
-<IfModule mod_alias.c>
-    RedirectMatch 404 "(^|/)\.(git|env)(/|\.|$)"
-</IfModule>

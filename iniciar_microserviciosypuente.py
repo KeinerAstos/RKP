@@ -125,12 +125,8 @@ def start_service(prefix: str, module: str, expected: str, health_path: str):
         stop(process);raise
 
 
-def validate(expected_profile: str | None = None):
+def validate():
     load_env()
-    profile=required('RKP_PROFILE').lower()
-    if profile not in ('local','servidor'): raise RuntimeError('RKP_PROFILE debe ser local o servidor')
-    if expected_profile and profile != expected_profile:
-        raise RuntimeError('Este iniciador requiere RKP_PROFILE='+expected_profile+'; el .env activo es '+profile)
     for prefix in ['API','GRAFANA']:
         if prefix=='GRAFANA' and not boolean('GRAFANA_START_ENABLED',True): continue
         required(prefix+'_HOST');port(prefix+'_PORT');client_host(prefix)
@@ -149,21 +145,21 @@ def validate(expected_profile: str | None = None):
         value=env(name).strip()
         if boolean(flag) and not value:raise RuntimeError('Falta '+name+' requerido por el perfil')
         if value:ipaddress.ip_address(value)
-    print('Perfil:',profile,'| .env:',ROOT/'.env')
+    print('Configuración:', ROOT/'.env')
     print('MySQL:', 'túnel SSH' if boolean('MYSQL_TUNNEL_ENABLED') else 'conexión directa')
     print('Oracle:', 'túnel SSH' if boolean('ORACLE_TUNNEL_ENABLED') else 'destino configurado directamente')
     print('Origen Influx:', 'fijado por .env' if env('INFLUX_SOURCE_IP') else 'selección del sistema')
     print('Origen MySQL:', 'fijado por .env' if env('MYSQL_SOURCE_ADDRESS') else 'selección del sistema')
-    return profile
+    return None
 
 
-def main(expected_profile: str | None = None) -> int:
+def main() -> int:
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check',action='store_true',help='Valida configuración sin conectar ni iniciar servicios')
     args=parser.parse_args()
     processes=[]
     try:
-        os.chdir(ROOT);profile=validate(expected_profile)
+        os.chdir(ROOT);validate()
         if args.check:
             print('CHECK OK: validación de configuración; no prueba credenciales ni conectividad');return 0
         for prefix in ['ORACLE','MYSQL']:
