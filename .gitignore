@@ -82,3 +82,11 @@ data/cache/*.json
 /backend/storage/_backups/
 /backend/lib/_backups/
 REGISTRAR_CMTS_KNOWN_HOSTS.py
+
+
+# Dashboard HFC (microservicios/cmts/dashboard_hfc): catálogos SNMP, known_hosts,
+# salidas CLI crudas, CSV de comparación y logs. Contiene credenciales: nunca subir.
+/data/dashboard_hfc/
+
+# Lanzador iniciar_rutinas.py: logs y candado de ejecución
+/data/rutinas/
