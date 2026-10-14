@@ -1,18 +1,59 @@
-"""Proxy local cerrado para embeber un Grafana autenticado en la vista HFC."""
+"""Proxy local para embeber Grafana autenticado.
 
+La configuración se obtiene del .env raíz.
+GRAFANA_SOURCE_IP permite fijar la interfaz de salida.
+Si está vacía, el sistema selecciona la interfaz.
+"""
+
+import ipaddress
 from threading import RLock
 from urllib.parse import urljoin, urlsplit
 
 import requests
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response
+from requests.adapters import HTTPAdapter
 from starlette.concurrency import run_in_threadpool
 
 from microservicios.config import settings
+from microservicios.entorno import env
 
-app = FastAPI(title="Grafana Proxy Local", version="1.0.0")
+app = FastAPI(title="Grafana Proxy Local", version="1.1.0")
+
+
+class GrafanaSourceAdapter(HTTPAdapter):
+    """Fija la IP local de origen de las conexiones HTTP."""
+
+    def __init__(self, source_ip: str):
+        self.source_ip = source_ip
+        super().__init__()
+
+    def init_poolmanager(
+        self,
+        connections,
+        maxsize,
+        block=False,
+        **kwargs,
+    ):
+        kwargs["source_address"] = (self.source_ip, 0)
+        return super().init_poolmanager(
+            connections,
+            maxsize,
+            block=block,
+            **kwargs,
+        )
+
 
 _session = requests.Session()
+_session.trust_env = False
+
+_source_ip = env("GRAFANA_SOURCE_IP").strip()
+
+if _source_ip:
+    ipaddress.ip_address(_source_ip)
+    _session.mount("http://", GrafanaSourceAdapter(_source_ip))
+    _session.mount("https://", GrafanaSourceAdapter(_source_ip))
+
 _session_lock = RLock()
 _authenticated = False
 
@@ -30,6 +71,7 @@ _REQUEST_HEADER_DENYLIST = {
     "cookie",
     "authorization",
 }
+
 _RESPONSE_HEADER_DENYLIST = {
     "x-frame-options",
     "content-security-policy",
@@ -40,11 +82,12 @@ _RESPONSE_HEADER_DENYLIST = {
     "transfer-encoding",
     "connection",
 }
+
 _REDIRECT_STATUSES = {301, 302, 303, 307, 308}
 
 
 class ProxyUnavailable(RuntimeError):
-    """Indica que el proxy no puede atender la solicitud de forma segura."""
+    """El proxy no puede atender la solicitud."""
 
 
 def _configuration_ready() -> bool:
@@ -70,6 +113,7 @@ def _login_locked() -> None:
 
     _authenticated = False
     _session.cookies.clear()
+
     try:
         response = _session.post(
             urljoin(_upstream_base(), "login"),
@@ -80,7 +124,7 @@ def _login_locked() -> None:
             headers={
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "User-Agent": "Backend-Datos-Grafana-Proxy/1.0",
+                "User-Agent": "Backend-Datos-Grafana-Proxy/1.1",
             },
             timeout=settings.grafana_timeout_seconds,
             verify=settings.grafana_verify_ssl,
@@ -95,6 +139,7 @@ def _login_locked() -> None:
         or not _session.cookies
     ):
         raise ProxyUnavailable("No fue posible autenticar con Grafana")
+
     _authenticated = True
 
 
@@ -110,7 +155,7 @@ def _request_headers(request: Request) -> dict[str, str]:
         if name.lower() not in _REQUEST_HEADER_DENYLIST
     }
 
-    headers["User-Agent"] = "Backend-Datos-Grafana-Proxy/1.0"
+    headers["User-Agent"] = "Backend-Datos-Grafana-Proxy/1.1"
     headers["Accept-Encoding"] = "identity"
 
     origin = _upstream_origin()
@@ -131,20 +176,31 @@ def _request_headers(request: Request) -> dict[str, str]:
 def _is_login_redirect(response: requests.Response) -> bool:
     if response.status_code not in _REDIRECT_STATUSES:
         return False
+
     location = response.headers.get("Location", "")
-    return urlsplit(urljoin(_upstream_base(), location)).path.startswith("/login")
+    resolved = urlsplit(urljoin(_upstream_base(), location))
+
+    return resolved.path.startswith("/login")
 
 
 def _rewrite_location(location: str) -> str:
     resolved = urlsplit(urljoin(_upstream_base(), location))
     upstream = urlsplit(_upstream_base())
-    if (resolved.scheme, resolved.netloc) != (upstream.scheme, upstream.netloc):
+
+    if (resolved.scheme, resolved.netloc) != (
+        upstream.scheme,
+        upstream.netloc,
+    ):
         raise ProxyUnavailable("Grafana devolvió una redirección no permitida")
+
     rewritten = resolved.path or "/"
+
     if resolved.query:
         rewritten += "?" + resolved.query
+
     if resolved.fragment:
         rewritten += "#" + resolved.fragment
+
     return rewritten
 
 
@@ -155,8 +211,10 @@ def _send_upstream(
     body: bytes,
 ) -> requests.Response:
     target = _upstream_base() + path.lstrip("/")
+
     if query:
         target += "?" + query
+
     return _session.request(
         method=request.method,
         url=target,
@@ -178,18 +236,31 @@ def _proxy_locked(
 
     with _session_lock:
         _ensure_authenticated_locked()
+
         try:
-            upstream = _send_upstream(request, path, query, body)
+            upstream = _send_upstream(
+                request,
+                path,
+                query,
+                body,
+            )
         except requests.RequestException as exc:
             raise ProxyUnavailable("Grafana no está disponible") from exc
 
         if upstream.status_code == 401 or _is_login_redirect(upstream):
             _authenticated = False
             _login_locked()
+
             try:
-                upstream = _send_upstream(request, path, query, body)
+                upstream = _send_upstream(
+                    request,
+                    path,
+                    query,
+                    body,
+                )
             except requests.RequestException as exc:
                 raise ProxyUnavailable("Grafana no está disponible") from exc
+
             if upstream.status_code == 401 or _is_login_redirect(upstream):
                 _authenticated = False
                 raise ProxyUnavailable("La sesión de Grafana no está disponible")
@@ -199,8 +270,10 @@ def _proxy_locked(
             for name, value in upstream.headers.items()
             if name.lower() not in _RESPONSE_HEADER_DENYLIST
         }
+
         if "Location" in headers:
             headers["Location"] = _rewrite_location(headers["Location"])
+
         return Response(
             content=upstream.content,
             status_code=upstream.status_code,
@@ -210,6 +283,7 @@ def _proxy_locked(
 
 @app.get("/__proxy_health")
 def proxy_health() -> dict[str, object]:
+    # Comprueba el listener; no prueba la conexión con Grafana.
     return {
         "ok": True,
         "service": "grafana-proxy",
@@ -225,16 +299,23 @@ async def proxy(path: str, request: Request) -> Response:
     if not _configuration_ready():
         return JSONResponse(
             status_code=503 if settings.grafana_proxy_enabled else 404,
-            content={"ok": False, "error": "Proxy Grafana no disponible"},
+            content={
+                "ok": False,
+                "error": "Proxy Grafana no disponible",
+            },
         )
 
     if path.strip("/").lower() in {"login", "logout"}:
         return JSONResponse(
             status_code=404,
-            content={"ok": False, "error": "Ruta no disponible"},
+            content={
+                "ok": False,
+                "error": "Ruta no disponible",
+            },
         )
 
     body = await request.body()
+
     try:
         return await run_in_threadpool(
             _proxy_locked,
@@ -246,5 +327,8 @@ async def proxy(path: str, request: Request) -> Response:
     except ProxyUnavailable:
         return JSONResponse(
             status_code=502,
-            content={"ok": False, "error": "Proxy Grafana no disponible"},
+            content={
+                "ok": False,
+                "error": "Proxy Grafana no disponible",
+            },
         )
