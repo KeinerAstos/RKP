@@ -1,12 +1,8 @@
+from microservicios.influx_resultados import leer_resultado
 """Rutas HTTP de caídas e intermitencias OLT."""
 
 from fastapi import APIRouter, Query
 
-from microservicios.olt.caidas.service import (
-    obtener_caidas,
-    obtener_caidas_actuales,
-    obtener_intermitencias,
-)
 
 router = APIRouter(
     tags=["OLT - Caídas"],
@@ -37,7 +33,7 @@ def caidas(
 
     return {
         "ok": True,
-        "data": obtener_caidas(periodo),
+        "data": leer_resultado('olt_caidas_' + str(dias)),
     }
 
 
@@ -46,7 +42,7 @@ def caidas_actuales() -> dict:
 
     return {
         "ok": True,
-        "data": obtener_caidas_actuales(),
+        "data": leer_resultado('olt_caidas_actuales'),
     }
 
 
@@ -74,5 +70,6 @@ def intermitencias(
 
     return {
         "ok": True,
-        "data": obtener_intermitencias(periodo),
+        "data": leer_resultado('olt_intermitencias_' + str(dias)),
     }
+

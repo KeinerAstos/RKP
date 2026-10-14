@@ -2,11 +2,12 @@
 
 from fastapi import APIRouter
 
-from microservicios.olt.recursos_zte.service import obtener_licencias_bajas
+from microservicios.influx_resultados import leer_resultado
 
 router = APIRouter(tags=["OLT - Recursos ZTE"])
 
 
 @router.get("/recursos-zte/licencias-bajas")
 def licencias_bajas() -> dict:
-    return {"ok": True, "data": obtener_licencias_bajas()}
+    return {"ok": True, "data": leer_resultado('zte_licencias')}
+

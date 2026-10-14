@@ -7,7 +7,9 @@ from tempfile import NamedTemporaryFile
 from typing import Any
 
 RAIZ_PROYECTO = Path(__file__).resolve().parents[3]
-DIRECTORIO_CACHE = RAIZ_PROYECTO / "data" / "cache"
+from microservicios.entorno import path_value
+DIRECTORIO_CACHE = path_value("INFLUX_RESULTADOS_DIR", "backend/storage/influx")
+DIRECTORIO_LEGACY = RAIZ_PROYECTO / "data" / "cache"
 ARCHIVO_SATURACION = DIRECTORIO_CACHE / "hfc_saturacion.json"
 ARCHIVO_ESTADO = DIRECTORIO_CACHE / "hfc_estado.json"
 
@@ -31,6 +33,8 @@ ESTADO_INICIAL: dict[str, Any] = {
 
 def _leer(ruta: Path, predeterminado: dict[str, Any]) -> dict[str, Any]:
     try:
+        if not ruta.exists():
+            ruta = DIRECTORIO_LEGACY / ruta.name
         contenido = json.loads(ruta.read_text(encoding="utf-8"))
     except (FileNotFoundError, OSError, json.JSONDecodeError):
         return dict(predeterminado)
@@ -74,3 +78,4 @@ def leer_estado() -> dict[str, Any]:
 
 def guardar_estado(contenido: dict[str, Any]) -> None:
     _guardar_atomico(ARCHIVO_ESTADO, contenido)
+

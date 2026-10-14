@@ -47,11 +47,22 @@ RAIZ = Path(__file__).resolve().parent
 # =====================================================================
 RUTINAS = [
     {
+        "nombre": "influx",
+        "descripcion": "Consultas Influx centralizadas -> resultados compartidos",
+        "modulo": "microservicios.rutina_influx",
+        "argumentos": ["--ciclo"],
+        "cada_minutos": 1,
+        "cada_segundos": 30,
+        "desfase_minutos": 0,
+        "timeout_minutos": 120,
+        "habilitada": True,
+    },
+    {
         "nombre": "dashboard_hfc",
         "descripcion": "Dashboard HFC: CASA + ARRIS por SSH -> MySQL rkp_hfc",
         "modulo": "microservicios.cmts.dashboard_hfc.rutina",
         "argumentos": ["--ciclo"],
-        "cada_minutos": 30,
+        "cada_minutos": 10,
         "desfase_minutos": 0,
         "timeout_minutos": 25,
         "habilitada": True,
@@ -112,6 +123,7 @@ class Rutina:
     desfase_minutos: int
     timeout_minutos: int
     habilitada: bool
+    cada_segundos: int = 0
     proceso: subprocess.Popen | None = None
     inicio: float = 0.0
     proxima: datetime | None = None
@@ -124,6 +136,9 @@ class Rutina:
 
     def calcular_proxima(self, desde: datetime) -> datetime:
         """Siguiente marca alineada al reloj, estrictamente posterior a 'desde'."""
+        if self.cada_segundos:
+            siguiente = (int(desde.timestamp()) // self.cada_segundos + 1) * self.cada_segundos
+            return datetime.fromtimestamp(siguiente)
         base = desde.replace(second=0, microsecond=0)
         minutos_dia = base.hour * 60 + base.minute
         paso = self.cada_minutos
@@ -162,6 +177,7 @@ def cargar_rutinas(env: dict[str, str]) -> list[Rutina]:
             cada_minutos=entero("CADA_MINUTOS", int(d["cada_minutos"]), 1),
             desfase_minutos=entero("DESFASE_MINUTOS", int(d.get("desfase_minutos", 0)), 0),
             timeout_minutos=entero("TIMEOUT_MINUTOS", int(d.get("timeout_minutos", d["cada_minutos"])), 1),
+            cada_segundos=entero("CADA_SEGUNDOS", int(d.get("cada_segundos", 0)), 0),
             habilitada=habilitada.strip().lower() in ("1", "true", "yes", "on", "si", "sí"),
         )
         if r.desfase_minutos >= r.cada_minutos:
@@ -354,3 +370,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+

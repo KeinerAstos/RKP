@@ -1,17 +1,18 @@
+from microservicios.influx_resultados import leer_resultado
 """Rutas HTTP de errores CRC OLT."""
 
 from fastapi import APIRouter
 
-from microservicios.olt.crc.service import obtener_crc, obtener_crc_actual
 
 router = APIRouter(tags=["OLT - CRC"])
 
 
 @router.get("/crc")
 def crc() -> dict:
-    return {"ok": True, "data": obtener_crc()}
+    return {"ok": True, "data": leer_resultado('olt_crc')}
 
 
 @router.get("/crc/actual")
 def crc_actual() -> dict:
-    return {"ok": True, "data": obtener_crc_actual()}
+    return {"ok": True, "data": leer_resultado('olt_crc_actual')}
+

@@ -341,6 +341,12 @@
             const endpoint = new URL('../backend/api/hfc_actualizar.php', window.location.href);
             const response = await fetch(endpoint, { method: 'POST', cache: 'no-store' });
             const payload = await response.json();
+            if (response.ok && payload.ok && payload.estado === 'programado') {
+                updating = false;
+                await load();
+                status.textContent = 'Datos compartidos; la rutina central realiza la actualización.';
+                return;
+            }
             if (!response.ok || !payload.ok || payload.estado !== 'procesando') {
                 throw new Error(payload.error || 'No se pudo iniciar la actualización HFC.');
             }
@@ -442,3 +448,4 @@
     });
     load();
 })();
+
