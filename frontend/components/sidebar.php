@@ -18,6 +18,7 @@ $routinesActive = array_key_exists(
 );
 
 $hfcRoutinePages = [
+    'dashboard-hfc.php' => 'Dashboard HFC',
     'puertos-docsis.php' => 'Puertos DOCSIS',
     'intermitencias.php' => 'Intermitencias y puertos duplicados',
     'cmts-inits.php' => 'Monitoreo de INIT',
