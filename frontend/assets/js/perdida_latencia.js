@@ -92,9 +92,19 @@
                 throw new Error('Respuesta inválida');
             }
             render(payload.data.datos);
+
+            const fechaActualizacion = new Date();
+
+            rows.querySelectorAll('tr').forEach(fila => {
+                fila.dataset.ultimaActualizacion = fechaActualizacion.toISOString();
+            });
+
             hasValidData = true;
             status.textContent = '';
-            updated.textContent = `Última actualización: ${new Date().toLocaleString('es-CO')}`;
+
+            updated.textContent =
+                `Última actualización: ${fechaActualizacion.toLocaleString('es-CO')}`;
+
         } catch (error) {
             if (!hasValidData) {
                 rows.replaceChildren();

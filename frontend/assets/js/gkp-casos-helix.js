@@ -98,8 +98,21 @@
                 cell.classList.add('gkp-helix-cases--error');
                 return;
             }
-            unique.set(number, { type, number, status });
-        }
+        const grupoSoporte = type === 'TAS'
+            ? String(item?.grupo_soporte ?? '').trim()
+            : '';
+
+        unique.set(`${type}:${number}`, {
+            type,
+            number,
+            status,
+            grupoSoporte,
+            regional: type === 'INC' ? String(item?.regional ?? '').trim() : '',
+            aliado: type === 'INC' ? String(item?.aliado ?? '').trim() : '',
+            departamento: type === 'INC' ? String(item?.departamento ?? '').trim() : '',
+            ciudad: type === 'INC' ? String(item?.ciudad ?? '').trim() : ''
+        });}
+
         const cases = Array.from(unique.values()).sort((a, b) =>
             order[a.type] - order[b.type] || a.number.localeCompare(b.number, 'en', { numeric: true })
         );
@@ -111,6 +124,16 @@
         for (const item of cases) {
             const line = document.createElement('span');
             line.className = 'gkp-helix-case';
+            if (item.tipo === 'INC') {
+                line.dataset.regional = item.regional;
+                line.dataset.aliado = item.aliado;
+                line.dataset.departamento = item.departamento;
+                line.dataset.ciudad = item.ciudad;
+}
+            if (item.type === 'TAS') {
+                line.dataset.grupoSoporte = item.grupoSoporte;
+            }
+
             line.textContent = `${item.number} - ${item.status}`;
             cell.append(line);
         }
@@ -284,6 +307,11 @@
                 for (const item of state.casos) {
                     const line = document.createElement('span');
                     line.className = 'gkp-helix-case';
+
+                    if (item.tipo === 'TAS') {
+                        line.dataset.grupoSoporte = item.grupoSoporte ?? '';
+                    }
+
                     line.textContent = `${item.numero} - ${item.estado}`;
                     cell.appendChild(line);
                 }
@@ -316,7 +344,20 @@
             if (!Object.hasOwn(order, tipo) || !numero || !estado) {
                 throw new Error('Caso Helix inválido');
             }
-            unique.set(`${tipo}:${numero}`, { tipo, numero, estado });
+        const grupoSoporte = tipo === 'TAS'
+            ? String(item?.grupo_soporte ?? '').trim()
+            : '';
+
+        unique.set(`${tipo}:${numero}`, {
+            tipo,
+            numero,
+            estado,
+            grupoSoporte,
+            regional: tipo === 'INC' ? String(item?.regional ?? '').trim() : '',
+            aliado: tipo === 'INC' ? String(item?.aliado ?? '').trim() : '',
+            departamento: tipo === 'INC' ? String(item?.departamento ?? '').trim() : '',
+            ciudad: tipo === 'INC' ? String(item?.ciudad ?? '').trim() : ''
+        });
         }
         return Array.from(unique.values()).sort((a, b) =>
             order[a.tipo] - order[b.tipo] || a.numero.localeCompare(b.numero, 'en', { numeric: true })

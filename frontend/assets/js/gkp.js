@@ -255,6 +255,13 @@
         rows.forEach((row) => {
             const tr = document.createElement('tr');
 
+        /* Datos disponibles para el panel lateral RKPS */
+        tr.dataset.unidad = String(row.unidad ?? '');
+        tr.dataset.regional = String(row.regional ?? '');
+        tr.dataset.aliado = String(row.aliado ?? '');
+        tr.dataset.departamento = String(row.departamento ?? '');
+        tr.dataset.ciudad = String(row.ciudad ?? '');
+
             if (row === rows[0]) {
                 tr.classList.add('gkp-row--latest-alert');
                 tr.title = 'Alerta activa más reciente';
@@ -476,6 +483,13 @@
             currentAlertIds = nextAlertIds;
 
             render(rows);
+            /* Registrar la hora del último refresco exitoso */
+            const fechaActualizacionRKPS = new Date().toISOString();
+
+            body.querySelectorAll('tr').forEach(fila => {
+                fila.dataset.ultimaActualizacion = fechaActualizacionRKPS;
+            });
+
 
             if (newRows.length > 0 && monitorMode) {
                 window.GKPTableAutoScroll?.scrollToTop('gkp-table-region');

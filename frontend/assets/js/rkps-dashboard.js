@@ -2,75 +2,60 @@
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
-    // =====================================================
-    // CONFIGURACIÓN DE LAS TRES TABLAS
-    // =====================================================
-
     const tablas = [
-        {
-            id: 'gkp-rows',
-            buscador: 'rkps-search-red',
-            selector: 'rkps-filter-red',
-            columnaEstado: 3,
-            tipo: 'red'
-        },
-        {
-            id: 'perdida-latencia-rows',
-            buscador: 'rkps-search-perdida',
-            selector: 'rkps-filter-perdida',
-            columnaEstado: 2,
-            tipo: 'perdida'
-        },
-        {
-            id: 'temperatura-rows',
-            buscador: 'rkps-search-temperatura',
-            selector: 'rkps-filter-temperatura',
-            columnaEstado: 1,
-            tipo: 'temperatura'
-        }
+        { id: 'gkp-rows', buscador: 'rkps-search-red',
+          selector: 'rkps-filter-red', limpiar: 'rkps-clear-red',
+          estado: 3, tipo: 'red' },
+        { id: 'perdida-latencia-rows', buscador: 'rkps-search-perdida',
+          selector: 'rkps-filter-perdida', limpiar: 'rkps-clear-perdida',
+          estado: 2, tipo: 'perdida' },
+        { id: 'temperatura-rows', buscador: 'rkps-search-temperatura',
+          selector: 'rkps-filter-temperatura', limpiar: 'rkps-clear-temperatura',
+          estado: 1, tipo: 'temperatura' }
     ];
 
+    const nombres = {
+        red: 'Estado actual de red',
+        perdida: 'Pérdida y latencia',
+        temperatura: 'Temperatura OLT'
+    };
+
+    const niveles = {
+        amarillo: 'Elevada',
+        naranja: 'Alta',
+        rojo: 'Crítica'
+    };
+
     // =====================================================
-    // FILTROS DE BÚSQUEDA Y ESTADO
+    // ESTADOS Y FILTROS
     // =====================================================
 
     function obtenerEstado(fila, config) {
-        if (config.tipo === 'temperatura') {
-            const elemento = fila.cells[1];
-            if (!elemento) return '';
-
-            const clases = elemento.innerHTML.toLowerCase();
-
-            if (
-                clases.includes('rojo') ||
-                clases.includes('red')
-            ) return 'rojo';
-
-            if (
-                clases.includes('naranja') ||
-                clases.includes('orange')
-            ) return 'naranja';
-
-            if (
-                clases.includes('amarillo') ||
-                clases.includes('yellow')
-            ) return 'amarillo';
-
-            const valor = parseFloat(
-                elemento.textContent.replace(',', '.')
-            );
-
-            if (!Number.isFinite(valor)) return '';
-            if (valor >= 90) return 'rojo';
-            if (valor >= 80) return 'naranja';
-            if (valor >= 70) return 'amarillo';
-
-            return '';
+        if (config.tipo !== 'temperatura') {
+            return fila.cells[config.estado]?.textContent.trim() || '';
         }
 
-        return (
-            fila.cells[config.columnaEstado]?.textContent || ''
-        ).trim();
+        const celda = fila.cells[1];
+        if (!celda) return '';
+
+        const html = celda.innerHTML.toLowerCase();
+
+        for (const [nivel, palabras] of Object.entries({
+            rojo: ['rojo', 'red'],
+            naranja: ['naranja', 'orange'],
+            amarillo: ['amarillo', 'yellow']
+        })) {
+            if (palabras.some(palabra => html.includes(palabra))) {
+                return nivel;
+            }
+        }
+
+        const valor = parseFloat(celda.textContent.replace(',', '.'));
+        if (!Number.isFinite(valor)) return '';
+        if (valor >= 90) return 'rojo';
+        if (valor >= 80) return 'naranja';
+        if (valor >= 70) return 'amarillo';
+        return '';
     }
 
     function iniciarFiltros(config) {
@@ -80,79 +65,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!tbody || !buscador || !selector) return;
 
+        const filas = () => [...tbody.querySelectorAll('tr')]
+            .filter(fila => fila.cells.length > 0);
+
         function actualizarOpciones() {
-            const seleccionado = selector.value;
-            const estados = new Set();
+            const anterior = selector.value;
+            const estados = [...new Set(
+                filas().map(fila => obtenerEstado(fila, config)).filter(Boolean)
+            )];
 
-            tbody.querySelectorAll('tr').forEach(fila => {
-                if (!fila.cells.length) return;
-
-                const estado = obtenerEstado(fila, config);
-
-                if (estado) {
-                    estados.add(estado);
-                }
-            });
+            selector.replaceChildren(new Option(
+                config.tipo === 'temperatura'
+                    ? 'Todos los niveles'
+                    : 'Todos los estados',
+                ''
+            ));
 
             if (config.tipo === 'temperatura') {
-                const niveles = {
-                    amarillo: 'Elevada',
-                    naranja: 'Alta',
-                    rojo: 'Crítica'
-                };
-
-                selector.replaceChildren(
-                    new Option('Todos los niveles', '')
-                );
-
                 Object.entries(niveles).forEach(([valor, etiqueta]) => {
-                    if (estados.has(valor)) {
+                    if (estados.includes(valor)) {
                         selector.add(new Option(etiqueta, valor));
                     }
                 });
             } else {
-                selector.replaceChildren(
-                    new Option('Todos los estados', '')
-                );
-
-                [...estados].sort().forEach(estado => {
+                estados.sort().forEach(estado => {
                     selector.add(new Option(estado, estado));
                 });
             }
 
-            selector.value = estados.has(seleccionado)
-                ? seleccionado
-                : '';
+            selector.value = estados.includes(anterior) ? anterior : '';
         }
 
         function aplicarFiltros() {
             const texto = buscador.value.trim().toLowerCase();
-            const estadoSeleccionado = selector.value.toLowerCase();
+            const seleccionado = selector.value.toLowerCase();
 
-            tbody.querySelectorAll('tr').forEach(fila => {
-                if (!fila.cells.length) return;
-
-                const equipo =
-                    fila.cells[0]?.textContent.toLowerCase() || '';
-
+            filas().forEach(fila => {
+                const equipo = fila.cells[0]?.textContent.toLowerCase() || '';
                 const puerto = config.tipo === 'red'
                     ? fila.cells[1]?.textContent.toLowerCase() || ''
                     : '';
-
-                const estado = obtenerEstado(
-                    fila,
-                    config
-                ).toLowerCase();
-
-                const coincideBusqueda = !texto ||
-                    equipo.includes(texto) ||
-                    puerto.includes(texto);
-
-                const coincideEstado = !estadoSeleccionado ||
-                    estado === estadoSeleccionado;
+                const estado = obtenerEstado(fila, config).toLowerCase();
 
                 fila.hidden = !(
-                    coincideBusqueda && coincideEstado
+                    (!texto || equipo.includes(texto) || puerto.includes(texto)) &&
+                    (!seleccionado || estado === seleccionado)
                 );
             });
         }
@@ -160,27 +117,16 @@ document.addEventListener('DOMContentLoaded', () => {
         buscador.addEventListener('input', aplicarFiltros);
         selector.addEventListener('change', aplicarFiltros);
 
-        const botonesLimpiar = {
-            red: 'rkps-clear-red',
-            perdida: 'rkps-clear-perdida',
-            temperatura: 'rkps-clear-temperatura'
-        };
-
-        document.getElementById(botonesLimpiar[config.tipo])
-            ?.addEventListener('click', () => {
-                buscador.value = '';
-                selector.value = '';
-                aplicarFiltros();
-            });
-
-        const observador = new MutationObserver(() => {
-            actualizarOpciones();
+        document.getElementById(config.limpiar)?.addEventListener('click', () => {
+            buscador.value = '';
+            selector.value = '';
             aplicarFiltros();
         });
 
-        observador.observe(tbody, {
-            childList: true
-        });
+        new MutationObserver(() => {
+            actualizarOpciones();
+            aplicarFiltros();
+        }).observe(tbody, { childList: true });
 
         actualizarOpciones();
         aplicarFiltros();
@@ -189,114 +135,55 @@ document.addEventListener('DOMContentLoaded', () => {
     tablas.forEach(iniciarFiltros);
 
     // =====================================================
-    // FICHAS COMPACTAS DE CASOS HELIX
+    // CASOS HELIX
     // =====================================================
 
-    function compactarCasos() {
-        tablas.forEach(config => {
-            const tbody = document.getElementById(config.id);
-            if (!tbody) return;
+    function obtenerCasos(fila) {
+        const grupos = { INC: new Map(), WO: new Map(), TAS: new Map() };
 
-            tbody.querySelectorAll('.gkp-helix-cases').forEach(celda => {
-                const casos = celda.querySelectorAll('.gkp-helix-case');
+        fila.querySelectorAll('.gkp-helix-cases .gkp-helix-case')
+            .forEach(elemento => {
+                const texto = elemento.textContent.trim();
+                const coincidencia = texto.match(/^(INC|WO|TAS)[0-9_-]+/i);
 
-                const grupos = {
-                    INC: new Set(),
-                    WO: new Set(),
-                    TAS: new Set()
-                };
+                if (!coincidencia) return;
 
-                casos.forEach(caso => {
-                    const texto = caso.textContent.trim();
+                const tipo = coincidencia[1].toUpperCase();
+                const numero = coincidencia[0].toUpperCase();
 
-                    const identificador = texto
-                        .split(/\s+-\s+/)[0]
-                        .trim();
+        grupos[tipo].set(numero, {
+            texto,
+            grupoSoporte: tipo === 'TAS'
+                ? elemento.dataset.grupoSoporte || ''
+                : ''
+        });
+                elemento.classList.add('rkps-case-original');
+            });
 
-                    const coincidencia = identificador.match(
-                        /^(INC|WO|TAS)(?=\d)/i
-                    );
+        return grupos;
+    }
 
-                    if (!coincidencia) return;
+   function compactarCasos() {
+    tablas.forEach(config => {
+        const tbody = document.getElementById(config.id);
+        if (!tbody) return;
 
-                    const tipo = coincidencia[1].toUpperCase();
+        tbody.querySelectorAll('.gkp-helix-cases').forEach(celda => {
+            const grupos = obtenerCasos(celda);
+            const total = Object.values(grupos)
+                .reduce((suma, grupo) => suma + grupo.size, 0);
 
-                    grupos[tipo].add(
-                        identificador.toUpperCase()
-                    );
+            let resumen = celda.querySelector('.rkps-case-summary');
+            let ficha = celda.querySelector('.rkps-case-empty');
 
-                    caso.classList.add('rkps-case-original');
-                });
+            // Los elementos originales permanecen en el DOM
+            // para conservar casos, grupos de soporte y ubicación.
+            celda.querySelectorAll('.gkp-helix-case').forEach(elemento => {
+                elemento.classList.add('rkps-case-original');
+            });
 
-                const total = Object.values(grupos)
-                    .reduce((suma, grupo) => suma + grupo.size, 0);
-
-                let resumen = celda.querySelector(
-                    '.rkps-case-summary'
-                );
-
-                if (total === 0) {
-                    resumen?.remove();
-
-                    const fichaAnterior = celda.querySelector(
-                        '.rkps-case-empty'
-                    );
-
-                    const texto = [...celda.childNodes]
-                        .filter(nodo =>
-                            nodo !== fichaAnterior &&
-                            !(
-                                nodo.nodeType === Node.ELEMENT_NODE &&
-                                nodo.classList?.contains('rkps-case-summary')
-                            )
-                        )
-                        .map(nodo => nodo.textContent || '')
-                        .join(' ')
-                        .trim();
-
-                    let mensaje = '';
-                    let estado = '';
-
-                    if (
-                        /actualizando|consultando|cargando|pendiente/i
-                            .test(texto)
-                    ) {
-                        mensaje = 'Actualizando...';
-                        estado = 'loading';
-                    } else if (
-                        /sin\s+inc,\s*wo\s+o\s+tas\s+abiertos|sin casos/i
-                            .test(texto)
-                    ) {
-                        mensaje = 'Sin casos';
-                        estado = 'empty';
-                    } else if (
-                        /error|fall[oó]|no disponible/i.test(texto)
-                    ) {
-                        mensaje = 'Consulta no disponible';
-                        estado = 'error';
-                    }
-
-                    if (!mensaje) {
-                        fichaAnterior?.remove();
-                        return;
-                    }
-
-                    const ficha = fichaAnterior ||
-                        document.createElement('span');
-
-                    ficha.className =
-                        `rkps-case-empty rkps-case-empty--${estado}`;
-
-                    ficha.textContent = mensaje;
-
-                    if (!fichaAnterior) {
-                        celda.prepend(ficha);
-                    }
-
-                    return;
-                }
-
-                celda.querySelector('.rkps-case-empty')?.remove();
+            if (total > 0) {
+                ficha?.remove();
 
                 if (!resumen) {
                     resumen = document.createElement('div');
@@ -304,24 +191,72 @@ document.addEventListener('DOMContentLoaded', () => {
                     celda.prepend(resumen);
                 }
 
-                resumen.replaceChildren();
+                const cantidades = ['INC', 'WO', 'TAS']
+                    .filter(tipo => grupos[tipo].size > 0)
+                    .map(tipo => {
+                        const elemento = document.createElement('span');
+                        elemento.className =
+                            `rkps-case-count rkps-case-count--${tipo.toLowerCase()}`;
+                        elemento.textContent = `${tipo} ${grupos[tipo].size}`;
+                        return elemento;
+                    });
 
-                ['INC', 'WO', 'TAS'].forEach(tipo => {
-                    const cantidad = grupos[tipo].size;
-                    if (!cantidad) return;
+                resumen.replaceChildren(...cantidades);
+                return;
+            }
 
-                    const ficha = document.createElement('span');
+            resumen?.remove();
 
-                    ficha.className =
-                        `rkps-case-count rkps-case-count--${tipo.toLowerCase()}`;
+            // Leer únicamente los mensajes originales de Helix.
+            const texto = [...celda.childNodes]
+                .filter(nodo =>
+                    nodo !== ficha &&
+                    nodo.nodeType === Node.TEXT_NODE
+                )
+                .map(nodo => nodo.textContent || '')
+                .join(' ')
+                .concat(' ', [...celda.querySelectorAll('.gkp-helix-case')]
+                    .map(elemento => elemento.textContent || '')
+                    .join(' '))
+                .trim();
 
-                    ficha.textContent = `${tipo} ${cantidad}`;
+            let mensaje = 'Consultando...';
+            let estado = 'loading';
 
-                    resumen.appendChild(ficha);
-                });
-            });
+            if (/datos anteriores/i.test(texto)) {
+                mensaje = /no se pudo actualizar/i.test(texto)
+                    ? 'No se pudo actualizar · datos anteriores'
+                    : 'Actualizando datos anteriores...';
+
+                estado = /no se pudo actualizar/i.test(texto)
+                    ? 'error'
+                    : 'loading';
+
+            } else if (
+                /sin\s+inc,\s*wo\s+o\s+tas\s+abiertos|sin casos/i.test(texto)
+            ) {
+                mensaje = 'Sin casos';
+                estado = 'empty';
+
+            } else if (
+                /no se pudo consultar|consulta.*fall|error/i.test(texto) ||
+                celda.classList.contains('gkp-helix-cases--error')
+            ) {
+                mensaje = 'Consulta no disponible';
+                estado = 'error';
+            }
+
+            if (!ficha) {
+                ficha = document.createElement('span');
+                ficha.className = 'rkps-case-empty';
+                celda.prepend(ficha);
+            }
+
+            ficha.className = `rkps-case-empty rkps-case-empty--${estado}`;
+            ficha.textContent = mensaje;
         });
-    }
+    });
+}
 
     const observadorHelix = new MutationObserver(() => {
         observadorHelix.disconnect();
@@ -332,13 +267,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function observarHelix() {
         tablas.forEach(config => {
             const tbody = document.getElementById(config.id);
-            if (!tbody) return;
-
-            observadorHelix.observe(tbody, {
-                childList: true,
-                characterData: true,
-                subtree: true
-            });
+            if (tbody) {
+                observadorHelix.observe(tbody, {
+                    childList: true,
+                    characterData: true,
+                    subtree: true
+                });
+            }
         });
     }
 
@@ -346,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
     observarHelix();
 
     // =====================================================
-    // PANEL LATERAL - RESUMEN, CASOS HELIX Y GRÁFICAS
+    // CREACIÓN DEL PANEL LATERAL
     // =====================================================
 
     const overlay = document.createElement('div');
@@ -356,7 +291,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const panel = document.createElement('aside');
     panel.className = 'rkps-detail-panel';
     panel.hidden = true;
-
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
     panel.setAttribute('aria-label', 'Detalle del equipo');
@@ -364,11 +298,8 @@ document.addEventListener('DOMContentLoaded', () => {
     panel.innerHTML = `
         <header class="rkps-detail-header">
             <h2>Detalle del equipo</h2>
-            <button
-                type="button"
-                class="rkps-detail-close"
-                aria-label="Cerrar detalle"
-            >×</button>
+            <button type="button" class="rkps-detail-close"
+                    aria-label="Cerrar detalle">×</button>
         </header>
 
         <div class="rkps-detail-identity">
@@ -376,23 +307,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <p id="rkps-detail-subtitle"></p>
         </div>
 
-        <nav class="rkps-detail-tabs"
-             aria-label="Secciones del detalle">
-            <button
-                type="button"
-                class="is-active"
-                data-rkps-detail-tab="resumen"
-            >Resumen</button>
-
-            <button
-                type="button"
-                data-rkps-detail-tab="casos"
-            >Casos Helix</button>
-
-            <button
-                type="button"
-                data-rkps-detail-tab="graficas"
-            >Gráficas</button>
+        <nav class="rkps-detail-tabs" aria-label="Secciones del detalle">
+            <button type="button" class="is-active"
+                    data-rkps-detail-tab="resumen">Resumen</button>
+            <button type="button"
+                    data-rkps-detail-tab="casos">Casos Helix</button>
+            <button type="button"
+                    data-rkps-detail-tab="graficas">Gráficas</button>
         </nav>
 
         <div class="rkps-detail-body">
@@ -402,43 +323,34 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span>Estado actual</span>
                         <strong id="rkps-detail-estado"></strong>
                     </div>
-
                     <div class="rkps-detail-field">
-                        <span>Valor</span>
+                        <span id="rkps-detail-valor-label">Valor</span>
                         <strong id="rkps-detail-valor"></strong>
                     </div>
-
                     <div class="rkps-detail-field">
                         <span>Puerto / Interfaz</span>
                         <strong id="rkps-detail-puerto"></strong>
                     </div>
-
                     <div class="rkps-detail-field">
-                        <span>Origen</span>
-                        <strong id="rkps-detail-origen"></strong>
+                        <span>Última actualización</span>
+                        <strong id="rkps-detail-actualizacion">No disponible</strong>
                     </div>
                 </div>
 
                 <h4>Casos abiertos</h4>
-
                 <div class="rkps-detail-counts">
                     <div class="rkps-detail-count rkps-detail-count--inc">
-                        <span>INC</span>
-                        <strong id="rkps-detail-inc">0</strong>
+                        <span>INC</span><strong id="rkps-detail-inc">0</strong>
                     </div>
-
                     <div class="rkps-detail-count rkps-detail-count--wo">
-                        <span>WO</span>
-                        <strong id="rkps-detail-wo">0</strong>
+                        <span>WO</span><strong id="rkps-detail-wo">0</strong>
                     </div>
-
                     <div class="rkps-detail-count rkps-detail-count--tas">
-                        <span>TAS</span>
-                        <strong id="rkps-detail-tas">0</strong>
+                        <span>TAS</span><strong id="rkps-detail-tas">0</strong>
                     </div>
                 </div>
 
-                <div id="rkps-detail-extra" hidden>
+                <div id="rkps-detail-extra">
                     <h4>Detalles adicionales</h4>
                     <div id="rkps-detail-extra-rows"></div>
                 </div>
@@ -446,75 +358,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <section data-rkps-detail-section="casos" hidden>
                 <h4>Casos Helix asociados</h4>
-                <div
-                    id="rkps-detail-casos"
-                    class="rkps-detail-casos"
-                ></div>
+                <div id="rkps-detail-casos" class="rkps-detail-casos"></div>
             </section>
 
             <section data-rkps-detail-section="graficas" hidden>
                 <h4>Gráficas del equipo</h4>
-
                 <p id="rkps-detail-grafana-msg"></p>
-
-                <button
-                    type="button"
-                    class="rkps-detail-grafana"
-                    id="rkps-detail-grafana"
-                >Ver en Grafana</button>
             </section>
         </div>
+
+        <button type="button" class="rkps-detail-grafana"
+                id="rkps-detail-grafana" hidden>Ver en Grafana</button>
     `;
 
     document.body.append(overlay, panel);
 
-    // =====================================================
-    // REFERENCIAS DEL PANEL
-    // =====================================================
+    const obtener = id => panel.querySelector(`#rkps-detail-${id}`);
 
     const campos = {
-        equipo: panel.querySelector('#rkps-detail-equipo'),
-        subtitulo: panel.querySelector('#rkps-detail-subtitle'),
-        estado: panel.querySelector('#rkps-detail-estado'),
-        valor: panel.querySelector('#rkps-detail-valor'),
-        puerto: panel.querySelector('#rkps-detail-puerto'),
-        origen: panel.querySelector('#rkps-detail-origen'),
-        inc: panel.querySelector('#rkps-detail-inc'),
-        wo: panel.querySelector('#rkps-detail-wo'),
-        tas: panel.querySelector('#rkps-detail-tas'),
-        casos: panel.querySelector('#rkps-detail-casos'),
-        extra: panel.querySelector('#rkps-detail-extra'),
-        extraRows: panel.querySelector('#rkps-detail-extra-rows'),
-        grafana: panel.querySelector('#rkps-detail-grafana'),
-        grafanaMsg: panel.querySelector('#rkps-detail-grafana-msg')
+        equipo: obtener('equipo'),
+        subtitulo: obtener('subtitle'),
+        estado: obtener('estado'),
+        valor: obtener('valor'),
+        valorLabel: obtener('valor-label'),
+        puerto: obtener('puerto'),
+        actualizacion: obtener('actualizacion'),
+        inc: obtener('inc'),
+        wo: obtener('wo'),
+        tas: obtener('tas'),
+        casos: obtener('casos'),
+        extraRows: obtener('extra-rows'),
+        grafana: obtener('grafana'),
+        grafanaMsg: obtener('grafana-msg')
     };
+
+    // El subtítulo usa un identificador distinto al prefijo común.
+    campos.subtitulo = panel.querySelector('#rkps-detail-subtitle');
 
     let elementoAnterior = null;
     let botonGrafanaOriginal = null;
 
     // =====================================================
-    // NAVEGACIÓN DEL PANEL
+    // NAVEGACIÓN Y DATOS DEL PANEL
     // =====================================================
 
-    function cambiarTabDetalle(nombre) {
-        panel.querySelectorAll('[data-rkps-detail-tab]')
-            .forEach(boton => {
-                const activo =
-                    boton.dataset.rkpsDetailTab === nombre;
+    function cambiarTab(nombre) {
+        panel.querySelectorAll('[data-rkps-detail-tab]').forEach(boton => {
+            const activo = boton.dataset.rkpsDetailTab === nombre;
+            boton.classList.toggle('is-active', activo);
+            boton.setAttribute('aria-current', String(activo));
+        });
 
-                boton.classList.toggle('is-active', activo);
-
-                boton.setAttribute(
-                    'aria-current',
-                    activo ? 'true' : 'false'
-                );
-            });
-
-        panel.querySelectorAll('[data-rkps-detail-section]')
-            .forEach(seccion => {
-                seccion.hidden =
-                    seccion.dataset.rkpsDetailSection !== nombre;
-            });
+        panel.querySelectorAll('[data-rkps-detail-section]').forEach(seccion => {
+            seccion.hidden = seccion.dataset.rkpsDetailSection !== nombre;
+        });
     }
 
     function cerrarDetalle() {
@@ -525,102 +422,124 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elementoAnterior?.isConnected) {
             elementoAnterior.focus();
         }
-
         elementoAnterior = null;
     }
 
-    // =====================================================
-    // DETALLE DE CASOS HELIX
-    // =====================================================
+function mostrarCasos(fila) {
+    campos.casos.replaceChildren();
 
-    function mostrarCasos(fila) {
-        campos.casos.replaceChildren();
+    const grupos = obtenerCasos(fila);
+    const total = ['INC', 'WO', 'TAS'].reduce(
+        (suma, tipo) => suma + grupos[tipo].size, 0
+    );
 
-        const grupos = {
-            INC: new Set(),
-            WO: new Set(),
-            TAS: new Set()
-        };
+    ['INC', 'WO', 'TAS'].forEach(tipo => {
+        campos[tipo.toLowerCase()].textContent = String(grupos[tipo].size);
 
-        const casos = fila.querySelectorAll(
-            '.gkp-helix-cases .gkp-helix-case'
-        );
+        grupos[tipo].forEach(caso => {
+            const item = document.createElement('article');
+            item.className = `rkps-detail-case rkps-detail-case--${tipo.toLowerCase()}`;
 
-        casos.forEach(caso => {
-            const texto = caso.textContent.trim();
+            const cabecera = document.createElement('div');
+            cabecera.className = 'rkps-detail-case__head';
 
-            const coincidencia = texto.match(
-                /^(INC|WO|TAS)[0-9_-]+/i
-            );
+            const badge = document.createElement('span');
+            badge.className = `rkps-detail-case__badge rkps-detail-case__badge--${tipo.toLowerCase()}`;
+            badge.textContent = tipo;
 
-            if (!coincidencia) return;
+            const identidad = document.createElement('div');
+            identidad.className = 'rkps-detail-case__identity';
 
-            const tipo = coincidencia[1].toUpperCase();
-            const numero = coincidencia[0].toUpperCase();
+            const numero = document.createElement('strong');
+            numero.className = 'rkps-detail-case__number';
 
-            if (grupos[tipo].has(numero)) return;
-
-            grupos[tipo].add(numero);
-
-            const item = document.createElement('div');
-            item.className = 'rkps-detail-case';
-
-            const ficha = document.createElement('span');
-
-            ficha.className =
-                `rkps-case-count rkps-case-count--${tipo.toLowerCase()}`;
-
-            ficha.textContent = tipo;
+            const separador = caso.texto.indexOf(' - ');
+            numero.textContent = separador >= 0
+                ? caso.texto.slice(0, separador)
+                : caso.texto;
 
             const descripcion = document.createElement('span');
-            descripcion.textContent = texto;
+            descripcion.className = 'rkps-detail-case__type';
+            descripcion.textContent = {
+                INC: 'Tipo de caso: Incidente',
+                WO: 'Tipo de caso: Work Order',
+                TAS: 'Tipo de caso: Task'
+            }[tipo];
 
-            item.append(ficha, descripcion);
-            campos.casos.append(item);
+            identidad.append(numero, descripcion);
+
+            const estado = document.createElement('span');
+            estado.className = 'rkps-detail-case__status';
+            estado.textContent = separador >= 0
+                ? caso.texto.slice(separador + 3)
+                : 'Sin estado';
+
+            cabecera.append(badge, identidad, estado);
+            item.appendChild(cabecera);
+
+            if (tipo === 'TAS' && caso.grupoSoporte) {
+                const grupo = document.createElement('div');
+                grupo.className = 'rkps-detail-case__group';
+
+                const etiqueta = document.createElement('strong');
+                etiqueta.textContent = 'Grupo de soporte:';
+
+                const valor = document.createElement('span');
+                valor.textContent = caso.grupoSoporte;
+
+                grupo.append(etiqueta, valor);
+                item.appendChild(grupo);
+            }
+
+            campos.casos.appendChild(item);
         });
+    });
 
-        campos.inc.textContent = String(grupos.INC.size);
-        campos.wo.textContent = String(grupos.WO.size);
-        campos.tas.textContent = String(grupos.TAS.size);
+    if (!total) {
+        const aviso = document.createElement('p');
+        const estado = fila.querySelector('.rkps-case-empty');
 
-        const total =
-            grupos.INC.size +
-            grupos.WO.size +
-            grupos.TAS.size;
+        aviso.textContent = estado?.classList.contains('rkps-case-empty--empty')
+            ? 'Sin casos abiertos asociados.'
+            : 'No hay casos identificados. La consulta de Helix puede estar pendiente.';
 
-        if (total === 0) {
-            const aviso = document.createElement('p');
-            const ficha = fila.querySelector('.rkps-case-empty');
-
-            aviso.textContent =
-                ficha?.classList.contains('rkps-case-empty--empty')
-                    ? 'Sin casos abiertos asociados.'
-                    : 'No hay casos identificados. La consulta de Helix puede estar pendiente.';
-
-            campos.casos.append(aviso);
-        }
+        campos.casos.appendChild(aviso);
     }
-
-    // =====================================================
-    // DATOS ADICIONALES
-    // =====================================================
-
+}
     function mostrarDatosAdicionales(fila) {
         campos.extraRows.replaceChildren();
 
-        const datos = [
-            ['ID beneficiario', fila.dataset.idBeneficiario],
-            ['Regional', fila.dataset.regional],
-            ['Aliado', fila.dataset.aliado],
-            ['Departamento', fila.dataset.departamento],
-            ['Ciudad', fila.dataset.ciudad]
-        ].filter(([, valor]) =>
-            typeof valor === 'string' && valor.trim()
+        const incidentes = [...fila.querySelectorAll(
+            '.gkp-helix-cases .gkp-helix-case[data-regional], ' +
+            '.gkp-helix-cases .gkp-helix-case[data-aliado], ' +
+            '.gkp-helix-cases .gkp-helix-case[data-departamento], ' +
+            '.gkp-helix-cases .gkp-helix-case[data-ciudad]'
+        )].filter(elemento =>
+            /^INC\d+/i.test(elemento.textContent.trim())
         );
 
-        campos.extra.hidden = datos.length === 0;
+        const camposUbicacion = [
+            ['Regional', 'regional'],
+            ['Aliado', 'aliado'],
+            ['Departamento', 'departamento'],
+            ['Ciudad', 'ciudad']
+        ];
 
-        datos.forEach(([nombre, valor]) => {
+        camposUbicacion.forEach(([nombre, clave]) => {
+            const valores = [...new Set(
+                incidentes
+                    .map(inc => (inc.dataset[clave] || '').trim())
+                    .filter(Boolean)
+            )];
+
+            let valor = 'No disponible';
+
+            if (valores.length === 1) {
+                valor = valores[0];
+            } else if (valores.length > 1) {
+                valor = 'Por verificar';
+            }
+
             const linea = document.createElement('div');
             linea.className = 'rkps-detail-extra-row';
 
@@ -634,38 +553,82 @@ document.addEventListener('DOMContentLoaded', () => {
             campos.extraRows.append(linea);
         });
     }
+    function formatearActualizacion(valor) {
+        if (!valor) return 'No disponible';
 
-    // =====================================================
-    // ABRIR DETALLE DEL EQUIPO
-    // =====================================================
+        const fecha = new Date(valor);
+        if (Number.isNaN(fecha.getTime())) return 'No disponible';
+
+        return fecha.toLocaleString('es-CO', {
+            timeZone: 'America/Bogota',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+    }
 
     function abrirDetalle(fila, config) {
-        const celdas = fila.cells;
-        if (!celdas.length) return;
+        if (!fila.cells.length) return;
 
-        const nombres = {
-            red: 'Estado actual de red',
-            perdida: 'Pérdida y latencia',
-            temperatura: 'Temperatura OLT'
-        };
+        const celdas = fila.cells;
+        const estado = obtenerEstado(fila, config) || 'No disponible';
+        const normalizado = estado.toLowerCase();
 
         campos.equipo.textContent =
             celdas[0]?.textContent.trim() || 'Equipo desconocido';
-
         campos.subtitulo.textContent = nombres[config.tipo];
-        campos.origen.textContent = nombres[config.tipo];
 
         campos.puerto.textContent = config.tipo === 'red'
             ? celdas[1]?.textContent.trim() || '—'
             : 'No aplica';
 
-        const indiceValor = config.tipo === 'red' ? 2 : 1;
+        if (config.tipo === 'perdida') {
+            const valores = celdas[1]?.querySelectorAll(
+                '.gestion-value-stack > span'
+            );
 
-        campos.valor.textContent =
-            celdas[indiceValor]?.textContent.trim() || '—';
+            const textos = valores
+                ? [...valores]
+                    .map(elemento => elemento.textContent.trim())
+                    .filter(Boolean)
+                : [];
 
-        campos.estado.textContent =
-            obtenerEstado(fila, config) || 'No disponible';
+            campos.valor.textContent = textos.length
+                ? textos.join(' · ')
+                : celdas[1]?.textContent.trim() || '—';
+        } else {
+            campos.valor.textContent =
+                celdas[config.tipo === 'red' ? 2 : 1]?.textContent.trim() || '—';
+        }
+
+        campos.valorLabel.textContent =
+            config.tipo === 'red' && fila.dataset.unidad === 'min'
+                ? 'Tiempo'
+                : 'Valor';
+
+        campos.actualizacion.textContent =
+            formatearActualizacion(fila.dataset.ultimaActualizacion);
+
+        campos.estado.textContent = config.tipo === 'temperatura'
+            ? niveles[estado] || estado
+            : estado;
+
+        let tono = 'danger';
+
+        if (/normal|operativo|activo|estable|recuperado/.test(normalizado)) {
+            tono = 'success';
+        } else if (
+            /latencia|amarillo|naranja|elevada|alta/.test(normalizado) &&
+            !/pérdida|perdida|caída|caida|crítica|critica|rojo/.test(normalizado)
+        ) {
+            tono = 'warning';
+        }
+
+        panel.dataset.rkpsTone = tono;
 
         mostrarCasos(fila);
         mostrarDatosAdicionales(fila);
@@ -675,54 +638,43 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
         campos.grafana.hidden = !botonGrafanaOriginal;
-
         campos.grafanaMsg.textContent = botonGrafanaOriginal
-            ? 'Abre la gráfica original de este equipo.'
+            ? 'Utiliza el botón inferior para abrir la gráfica original.'
             : 'No hay una acción de Grafana disponible en esta tabla.';
 
-        cambiarTabDetalle('resumen');
+        cambiarTab('resumen');
 
         elementoAnterior = document.activeElement;
-
         overlay.hidden = false;
         panel.hidden = false;
-
         panel.querySelector('.rkps-detail-close').focus();
     }
 
     // =====================================================
-    // EVENTOS DE LAS TRES TABLAS
+    // EVENTOS
     // =====================================================
 
     tablas.forEach(config => {
-        const tbody = document.getElementById(config.id);
-        if (!tbody) return;
-
-        tbody.addEventListener('click', evento => {
+        document.getElementById(config.id)?.addEventListener('click', evento => {
             if (evento.target.closest(
                 'button, a, input, select, textarea'
             )) return;
 
             const fila = evento.target.closest('tr');
-
-            if (!fila || !tbody.contains(fila)) return;
+            if (!fila || !fila.cells.length || fila.hidden) return;
 
             abrirDetalle(fila, config);
         });
     });
 
-    panel.querySelectorAll('[data-rkps-detail-tab]')
-        .forEach(boton => {
-            boton.addEventListener('click', () => {
-                cambiarTabDetalle(
-                    boton.dataset.rkpsDetailTab
-                );
-            });
+    panel.querySelectorAll('[data-rkps-detail-tab]').forEach(boton => {
+        boton.addEventListener('click', () => {
+            cambiarTab(boton.dataset.rkpsDetailTab);
         });
+    });
 
     campos.grafana.addEventListener('click', () => {
         const original = botonGrafanaOriginal;
-
         if (!original?.isConnected) return;
 
         cerrarDetalle();
@@ -744,28 +696,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (evento.key !== 'Tab') return;
 
-        const botones = [
-            ...panel.querySelectorAll('button')
-        ].filter(boton =>
-            !boton.hidden &&
-            boton.getClientRects().length > 0
-        );
+        const botones = [...panel.querySelectorAll('button')]
+            .filter(boton =>
+                !boton.hidden &&
+                boton.getClientRects().length > 0
+            );
 
         if (!botones.length) return;
 
         const primero = botones[0];
         const ultimo = botones[botones.length - 1];
 
-        if (
-            evento.shiftKey &&
-            document.activeElement === primero
-        ) {
+        if (evento.shiftKey && document.activeElement === primero) {
             evento.preventDefault();
             ultimo.focus();
-        } else if (
-            !evento.shiftKey &&
-            document.activeElement === ultimo
-        ) {
+        } else if (!evento.shiftKey && document.activeElement === ultimo) {
             evento.preventDefault();
             primero.focus();
         }
