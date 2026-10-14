@@ -1,4 +1,13 @@
+# Backups de parches
+/backend/storage/_backups/
 
+# Datos y cache de Dashboard HFC
+/backend/storage/dashboard_hfc/*
+!/backend/storage/dashboard_hfc/.htaccess
+!/backend/storage/dashboard_hfc/catalogo_nodos_comunidad_aliado.json
+
+# Locks de ejecución
+/data/cmts_inits/*.lock
 # ==========================================
 # PYTHON
 # ==========================================
