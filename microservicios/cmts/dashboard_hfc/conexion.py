@@ -8,9 +8,14 @@ from __future__ import annotations
 
 import configparser
 import ipaddress
+import os
+import queue
 import random
 import re
+import shutil
 import socket
+import subprocess
+import sys
 import threading
 import time
 from contextlib import contextmanager
@@ -76,6 +81,12 @@ class Config:
         self.aceptar_hostkeys = _booleano("HFC_ACEPTAR_HOSTKEYS_NUEVAS", True)
         self.known_hosts = _ruta("HFC_KNOWN_HOSTS", "data/dashboard_hfc/known_hosts_hfc")
         self.cmts_known_hosts = _texto("CMTS_KNOWN_HOSTS")
+        # HFC_SSH_EXE_V1: cliente SSH. ARRIS solo ofrece ssh-dss (paramiko 4 lo eliminó).
+        self.ssh_puerto = _entero("HFC_SSH_PUERTO", 22, 1, 65535)
+        self.arris_cliente = _texto("HFC_ARRIS_CLIENTE", "auto").lower()
+        if self.arris_cliente not in ("auto", "paramiko", "ssh_exe"):
+            raise RuntimeError("HFC_ARRIS_CLIENTE debe ser auto, paramiko o ssh_exe")
+        self.ssh_exe = _texto("HFC_SSH_EXE") or shutil.which("ssh") or ""
         # Salto SSH opcional (por ejemplo vía noc_cable) si el servidor no llega directo.
         self.salto = _booleano("HFC_SALTO_HABILITADO", False)
         self.salto_host = _texto("HFC_SALTO_HOST")
@@ -180,14 +191,106 @@ def limpiar(texto: str) -> str:
     return ANSI_RE.sub("", texto.replace("\r", "")).replace("\x08", "")
 
 
-class SesionCLI:
-    """with SesionCLI(ip, "CASA") as s: salida = s.ejecutar("show ...")"""
+class _LectorCLI:
+    """Lectura de CLI común a paramiko y a ssh.exe (prompt, paginación, eco)."""
+
+    prompt = ""
+    etapa = ""
+
+    # Cada cliente implementa estas tres operaciones.
+    def _recibir(self) -> str:
+        raise NotImplementedError
+
+    def _enviar(self, texto: str) -> None:
+        raise NotImplementedError
+
+    def _cerrado(self) -> bool:
+        raise NotImplementedError
+
+    def _leer(self, timeout: float, fin_alterno: re.Pattern | None = None) -> str:
+        """Lee hasta ver el prompt; responde paginación con espacio.
+        fin_alterno: si aparece y el equipo queda en silencio 2 s, también termina
+        (la fila Total de ARRIS en el colector original)."""
+        fin = time.monotonic() + timeout
+        bruto = ""
+        visto_alterno = None
+        while time.monotonic() < fin:
+            parte = self._recibir()
+            if parte:
+                bruto += parte
+                if len(bruto) > 8 * 1024 * 1024:
+                    raise ValueError("Salida supera 8 MiB")
+                texto = limpiar(bruto)
+                if PAGER_RE.search(texto[-200:]):
+                    bruto = PAGER_RE.sub("", texto)
+                    self._enviar(" ")
+                    continue
+                if fin_alterno is not None and visto_alterno is None and fin_alterno.search(texto):
+                    visto_alterno = time.monotonic()
+                ultima = next((l.strip() for l in reversed(texto.splitlines()) if l.strip()), "")
+                if (self.prompt and ultima == self.prompt) or (not self.prompt and PROMPT_RE.match(ultima)):
+                    time.sleep(0.2)
+                    resto = self._recibir()
+                    if not resto:
+                        return texto
+                    bruto += resto
+                continue
+            if self._cerrado():
+                raise ConnectionError(self._motivo_cierre(limpiar(bruto)))
+            if visto_alterno is not None and time.monotonic() - visto_alterno > 2:
+                return limpiar(bruto)
+            time.sleep(0.03)
+        raise TimeoutError(f"Sin prompt en {timeout}s")
+
+    def _motivo_cierre(self, texto: str) -> str:
+        return "El CMTS cerró la sesión"
+
+    def _esperar_prompt(self, timeout: float) -> None:
+        texto = self._leer(timeout)
+        lineas = [l.strip() for l in texto.splitlines() if l.strip()]
+        if not lineas or not PROMPT_RE.match(lineas[-1]):
+            raise TimeoutError("No apareció el prompt del CMTS")
+        self.prompt = lineas[-1].rstrip()
+
+    def ejecutar(self, comando: str, timeout: int | None = None, fin_alterno: re.Pattern | None = None) -> str:
+        c = config()
+        self.etapa = f"COMANDO:{comando[:40]}"
+        try:
+            while self._recibir():
+                pass
+            self._enviar(comando + "\n")
+            texto = self._leer(timeout or c.command_timeout, fin_alterno)
+        except Exception as exc:
+            raise RuntimeError(f"[{self.etapa}] {type(exc).__name__}: {c.ocultar(str(exc))}"[:400]) from None
+        lineas = texto.splitlines()
+        # Quita el eco del comando (algunas terminales lo repiten) y el prompt final.
+        while lineas and (not lineas[0].strip() or lineas[0].strip().endswith(comando.strip())):
+            lineas.pop(0)
+        salida = [linea.rstrip() for linea in lineas]
+        while salida and (not salida[-1].strip() or salida[-1].strip() == self.prompt):
+            salida.pop()
+        return "\n".join(salida)
+
+
+class SesionCLI(_LectorCLI):
+    """Cliente paramiko. with SesionCLI(ip, "CASA") as s: salida = s.ejecutar("show ...")"""
 
     def __init__(self, ip: str, fabricante: str):
         self.ip, self.fabricante = ip, fabricante
         self.client = self.salto = self.tunel = self.canal = None
         self.prompt = ""
         self.etapa = "CONEXION_SSH"
+
+    def _recibir(self) -> str:
+        if self.canal.recv_ready():
+            return self.canal.recv(65536).decode("utf-8", errors="replace")
+        return ""
+
+    def _enviar(self, texto: str) -> None:
+        self.canal.send(texto)
+
+    def _cerrado(self) -> bool:
+        return self.canal.closed
 
     # ---- claves de host: accept-new como en noc_cable, nunca acepta una clave cambiada.
     def _preparar(self, client, paramiko) -> None:
@@ -218,7 +321,7 @@ class SesionCLI:
         if self.fabricante == "ARRIS" and not hasattr(paramiko, "DSSKey"):
             raise RuntimeError(
                 f"[DEPENDENCIA] ARRIS E6000 solo ofrece ssh-dss y paramiko {paramiko.__version__} ya no lo "
-                'soporta. Instale: pip install "paramiko>=3.4,<4"')
+                'soporta. Use HFC_ARRIS_CLIENTE=ssh_exe o instale paramiko 3.x')
         usuario, clave = (c.arris_user, c.arris_password) if self.fabricante == "ARRIS" else (c.cmts_user, c.cmts_password)
         if not usuario or not clave:
             raise RuntimeError("[CONFIG] Falta CMTS_USER / CMTS_PASSWORD en .env")
@@ -233,78 +336,23 @@ class SesionCLI:
                                    password=c.salto_password, timeout=t, banner_timeout=t, auth_timeout=t,
                                    look_for_keys=False, allow_agent=False)
                 self.tunel = self.salto.get_transport().open_channel(
-                    "direct-tcpip", (self.ip, 22), ("127.0.0.1", 0), timeout=t)
+                    "direct-tcpip", (self.ip, c.ssh_puerto), ("127.0.0.1", 0), timeout=t)
                 extra["sock"] = self.tunel
             self.etapa = "CONEXION_CMTS"
             self.client = paramiko.SSHClient()
             self._preparar(self.client, paramiko)
-            self.client.connect(self.ip, port=22, username=usuario, password=clave, timeout=t,
+            self.client.connect(self.ip, port=c.ssh_puerto, username=usuario, password=clave, timeout=t,
                                 banner_timeout=t, auth_timeout=t, look_for_keys=False, allow_agent=False, **extra)
             self.etapa = "APERTURA_CLI"
             self.canal = self.client.invoke_shell(width=240, height=1000)
             self.etapa = "PROMPT_INICIAL"
-            texto = self._leer(c.connect_timeout + 10)
-            lineas = [l.strip() for l in texto.splitlines() if l.strip()]
-            if not lineas or not PROMPT_RE.match(lineas[-1]):
-                raise TimeoutError("No apareció el prompt del CMTS")
-            self.prompt = lineas[-1].rstrip()
+            self._esperar_prompt(c.connect_timeout + 10)
             return self
         except Exception as exc:
             self.__exit__()
             if str(exc).startswith("["):
                 raise
             raise RuntimeError(f"[{self.etapa}] {type(exc).__name__}: {c.ocultar(str(exc))}"[:400]) from None
-
-    def _leer(self, timeout: float, fin_alterno: re.Pattern | None = None) -> str:
-        """Lee hasta ver el prompt; responde paginación con espacio.
-        fin_alterno: si aparece y el equipo queda en silencio 2 s, también termina
-        (la fila Total de ARRIS en el colector original)."""
-        fin = time.monotonic() + timeout
-        bruto = ""
-        visto_alterno = None
-        while time.monotonic() < fin:
-            if self.canal.recv_ready():
-                bruto += self.canal.recv(65536).decode("utf-8", errors="replace")
-                if len(bruto) > 8 * 1024 * 1024:
-                    raise ValueError("Salida supera 8 MiB")
-                texto = limpiar(bruto)
-                if PAGER_RE.search(texto[-200:]):
-                    bruto = PAGER_RE.sub("", texto)
-                    self.canal.send(" ")
-                    continue
-                if fin_alterno is not None and visto_alterno is None and fin_alterno.search(texto):
-                    visto_alterno = time.monotonic()
-                ultima = next((l.strip() for l in reversed(texto.splitlines()) if l.strip()), "")
-                if (self.prompt and ultima == self.prompt) or (not self.prompt and PROMPT_RE.match(ultima)):
-                    time.sleep(0.2)
-                    if not self.canal.recv_ready():
-                        return texto
-                continue
-            if self.canal.closed:
-                raise ConnectionError("El CMTS cerró la sesión")
-            if visto_alterno is not None and time.monotonic() - visto_alterno > 2:
-                return limpiar(bruto)
-            time.sleep(0.03)
-        raise TimeoutError(f"Sin prompt en {timeout}s")
-
-    def ejecutar(self, comando: str, timeout: int | None = None, fin_alterno: re.Pattern | None = None) -> str:
-        c = config()
-        self.etapa = f"COMANDO:{comando[:40]}"
-        try:
-            while self.canal.recv_ready():
-                self.canal.recv(65536)
-            self.canal.send(comando + "\n")
-            texto = self._leer(timeout or c.command_timeout, fin_alterno)
-        except Exception as exc:
-            raise RuntimeError(f"[{self.etapa}] {type(exc).__name__}: {c.ocultar(str(exc))}"[:400]) from None
-        lineas = texto.splitlines()
-        # Quita el eco del comando (algunas terminales lo repiten) y el prompt final.
-        while lineas and (not lineas[0].strip() or lineas[0].strip().endswith(comando.strip())):
-            lineas.pop(0)
-        salida = [linea.rstrip() for linea in lineas]
-        while salida and (not salida[-1].strip() or salida[-1].strip() == self.prompt):
-            salida.pop()
-        return "\n".join(salida)
 
     def __exit__(self, *_):
         for recurso in (self.client, self.tunel, self.salto):
@@ -314,6 +362,176 @@ class SesionCLI:
                 except Exception:
                     pass
         return False
+
+
+class SesionSSHExe(_LectorCLI):
+    """Cliente OpenSSH del sistema (ssh.exe en Windows) para equipos que solo
+    ofrecen ssh-dss, como el colector ARRIS original (ssh -tt +ssh-dss).
+
+    La contraseña se entrega por SSH_ASKPASS: un pequeño script la lee de una
+    variable de entorno del proceso hijo; no queda en disco ni en la línea de
+    comandos. Las claves de host usan el mismo known_hosts de la rutina.
+    """
+
+    _lock_askpass = threading.Lock()
+
+    def __init__(self, ip: str, fabricante: str):
+        self.ip, self.fabricante = ip, fabricante
+        self.proc = None
+        self.cola: queue.Queue = queue.Queue()
+        self.fin_lectura = False
+        self.prompt = ""
+        self.etapa = "CONEXION_SSH_EXE"
+
+    @classmethod
+    def _askpass(cls) -> str:
+        """Crea (una vez) el ayudante SSH_ASKPASS junto a los datos de la rutina."""
+        c = config()
+        codigo = "import os,sys;sys.stdout.write(os.environ.get('HFC_ASKPASS_SECRET',''));sys.stdout.flush()"
+        if os.name == "nt":
+            ruta = c.salida_dir / "askpass_hfc.cmd"
+            contenido = f'@"{sys.executable}" -I -c "{codigo}"\r\n'
+        else:
+            ruta = c.salida_dir / "askpass_hfc.sh"
+            contenido = f"#!/bin/sh\nexec '{sys.executable}' -I -c \"{codigo}\"\n"
+        with cls._lock_askpass:
+            if not ruta.is_file() or ruta.read_text(encoding="utf-8", errors="replace") != contenido:
+                ruta.parent.mkdir(parents=True, exist_ok=True)
+                ruta.write_text(contenido, encoding="utf-8", newline="")
+                if os.name != "nt":
+                    ruta.chmod(0o700)
+        return str(ruta)
+
+    def _lector(self) -> None:
+        try:
+            while True:
+                datos = self.proc.stdout.read1(65536)
+                if not datos:
+                    break
+                self.cola.put(datos)
+        except (OSError, ValueError):
+            pass
+        finally:
+            self.fin_lectura = True
+
+    def _recibir(self) -> str:
+        partes = []
+        while True:
+            try:
+                partes.append(self.cola.get_nowait())
+            except queue.Empty:
+                break
+        return b"".join(partes).decode("utf-8", errors="replace") if partes else ""
+
+    def _enviar(self, texto: str) -> None:
+        self.proc.stdin.write(texto.encode("utf-8"))
+        self.proc.stdin.flush()
+
+    def _cerrado(self) -> bool:
+        return self.fin_lectura and self.cola.empty()
+
+    def _motivo_cierre(self, texto: str) -> str:
+        bajo = texto.lower()
+        if "host identification has changed" in bajo or "host key verification failed" in bajo:
+            return "La clave de host del CMTS cambió o no está registrada (known_hosts)"
+        if "permission denied" in bajo or "authentication failed" in bajo:
+            return "Autenticación rechazada (usuario/clave CMTS)"
+        if "no matching host key type" in bajo:
+            return "El ssh del sistema no acepta ssh-dss"
+        for patron in ("timed out", "no route to host", "connection refused", "could not resolve",
+                       "network is unreachable", "connection closed", "connection reset"):
+            if patron in bajo:
+                return f"Conexión fallida: {patron}"
+        ultima = next((l.strip() for l in reversed(texto.splitlines()) if l.strip()), "")
+        return f"ssh terminó sin prompt: {ultima[:150]}" if ultima else "ssh terminó sin respuesta"
+
+    def __enter__(self) -> "SesionSSHExe":
+        c = config()
+        usuario, clave = (c.arris_user, c.arris_password) if self.fabricante == "ARRIS" else (c.cmts_user, c.cmts_password)
+        if not usuario or not clave:
+            raise RuntimeError("[CONFIG] Falta CMTS_USER / CMTS_PASSWORD en .env")
+        if not c.ssh_exe:
+            raise RuntimeError("[DEPENDENCIA] No se encontró ssh.exe; configure HFC_SSH_EXE")
+        if c.salto:
+            raise RuntimeError("[CONFIG] HFC_SALTO_HABILITADO no está soportado con HFC_ARRIS_CLIENTE=ssh_exe")
+        c.known_hosts.parent.mkdir(parents=True, exist_ok=True)
+        args = [
+            c.ssh_exe, "-tt", "-p", str(c.ssh_puerto),
+            "-o", "HostKeyAlgorithms=+ssh-dss",
+            "-o", "PubkeyAcceptedAlgorithms=+ssh-dss",
+            "-o", f"UserKnownHostsFile={c.known_hosts.as_posix()}",
+            "-o", "GlobalKnownHostsFile=" + (Path(c.cmts_known_hosts).as_posix() if c.cmts_known_hosts else "none"),
+            "-o", "StrictHostKeyChecking=" + ("accept-new" if c.aceptar_hostkeys else "yes"),
+            "-o", f"ConnectTimeout={c.connect_timeout}",
+            "-o", "ConnectionAttempts=1",
+            "-o", "NumberOfPasswordPrompts=1",
+            "-o", "PreferredAuthentications=keyboard-interactive,password",
+            "-o", "PubkeyAuthentication=no",
+            "-o", "ServerAliveInterval=10",
+            "-o", "ServerAliveCountMax=2",
+            "-o", "LogLevel=ERROR",
+            f"{usuario}@{self.ip}",
+        ]
+        entorno = dict(os.environ)
+        entorno.update({"SSH_ASKPASS": self._askpass(), "SSH_ASKPASS_REQUIRE": "force",
+                        "DISPLAY": entorno.get("DISPLAY", "hfc:0"), "HFC_ASKPASS_SECRET": clave,
+                        "OPENSSL_ENABLE_SHA1_SIGNATURES": "1"})
+        try:
+            self.etapa = "CONEXION_CMTS"
+            self.proc = subprocess.Popen(
+                args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=entorno,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+            threading.Thread(target=self._lector, daemon=True).start()
+            self.etapa = "PROMPT_INICIAL"
+            self._esperar_prompt(c.connect_timeout + 15)
+            return self
+        except Exception as exc:
+            self.__exit__()
+            raise RuntimeError(f"[{self.etapa}] {type(exc).__name__}: {c.ocultar(str(exc))}"[:400]) from None
+
+    def __exit__(self, *_):
+        if self.proc is None:
+            return False
+        try:
+            if self.proc.poll() is None:
+                self._enviar("exit\n")
+                self.proc.wait(timeout=3)
+        except Exception:
+            pass
+        if self.proc.poll() is None:
+            try:
+                self.proc.kill()
+                self.proc.wait(timeout=3)
+            except Exception:
+                pass
+        for flujo in (self.proc.stdin, self.proc.stdout):
+            try:
+                flujo.close()
+            except Exception:
+                pass
+        return False
+
+
+def abrir_sesion(ip: str, fabricante: str) -> _LectorCLI:
+    """Elige el cliente SSH. ARRIS (solo ssh-dss) usa ssh.exe si paramiko ya no soporta DSS.
+
+    HFC_ARRIS_CLIENTE = auto (por defecto) | paramiko | ssh_exe
+    """
+    if fabricante != "ARRIS":
+        return SesionCLI(ip, fabricante)
+    modo = config().arris_cliente
+    if modo == "paramiko":
+        return SesionCLI(ip, fabricante)
+    if modo == "ssh_exe":
+        return SesionSSHExe(ip, fabricante)
+    try:
+        import paramiko
+
+        if hasattr(paramiko, "DSSKey"):
+            return SesionCLI(ip, fabricante)
+    except ImportError:
+        pass
+    return SesionSSHExe(ip, fabricante)
 
 
 # ============================================================ SNMP v2c (GET)

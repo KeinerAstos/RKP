@@ -13,7 +13,7 @@ import re
 from collections import defaultdict
 from datetime import timedelta
 
-from microservicios.cmts.dashboard_hfc.conexion import SesionCLI, ahora, config, snmp_get
+from microservicios.cmts.dashboard_hfc.conexion import SesionCLI, abrir_sesion, ahora, config, snmp_get
 
 # ===================================================================== CASA
 CASA_PAGINACION = "page off"  # como HFC_ANALYTICS/collect_cmts_fast.py
@@ -137,7 +137,7 @@ def arris_parse(nombre: str, ip: str, texto: str) -> list[dict]:
 
 
 def consultar_arris(nombre: str, ip: str) -> tuple[list[dict], str]:
-    with SesionCLI(ip, "ARRIS") as s:
+    with abrir_sesion(ip, "ARRIS") as s:  # HFC_SSH_EXE_V1
         crudo = s.ejecutar(ARRIS_CMD, fin_alterno=ARRIS_TOTAL_RE)
     filas = arris_parse(nombre, ip, crudo)
     if not filas:
