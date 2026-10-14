@@ -12,22 +12,17 @@ except ImportError:
 
 
 def _crear_cliente_influx(**kwargs) -> InfluxDBClient:
-    """Lee el origen de .env y lo aplica antes de abrir conexiones."""
-    from ipaddress import IPv4Address
-    from pathlib import Path
-    archivo = Path(__file__).resolve().parent.parent / ".env"
-    origen = ""
-    for linea in archivo.read_text(encoding="utf-8-sig").splitlines():
-        clave, separador, valor = linea.strip().partition("=")
-        if separador and clave.strip() == "INFLUX_SOURCE_IP":
-            origen = valor.strip().strip("\"'")
-    if origen:
-        IPv4Address(origen)
+    """Aplica la interfaz de salida configurada, si este equipo la necesita."""
+    from ipaddress import ip_address
+    origen = settings.influx_source_ip.strip()
+    if settings.influx_source_required and not origen:
+        raise RuntimeError('Falta INFLUX_SOURCE_IP requerido por este equipo')
+    if origen: ip_address(origen)
     client = InfluxDBClient(**kwargs)
     try:
         if origen:
             pool = client.api_client.rest_client.pool_manager
-            pool.connection_pool_kw["source_address"] = (origen, 0)
+            pool.connection_pool_kw['source_address'] = (origen, 0)
         return client
     except Exception:
         client.close()

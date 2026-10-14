@@ -17,17 +17,9 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def settings():
-    values = {}
-    for path in [ROOT / 'microservicios/.env', ROOT / '.env']:
-        if not path.is_file():
-            continue
-        for line in path.read_text(encoding='utf-8-sig').splitlines():
-            line = line.strip()
-            if not line or line.startswith('#') or '=' not in line:
-                continue
-            key, value = line.split('=', 1)
-            values[key.strip().removeprefix('export ')] = value.strip().strip('"\'')
-    values.update(os.environ)
+    sys.path.insert(0,str(ROOT))
+    from microservicios.entorno import read_env
+    values=dict(read_env());values.update(os.environ)
     return values
 
 

@@ -2,6 +2,13 @@
 
 from functools import lru_cache
 
+try:
+    from .entorno import ENV_FILE, load_env
+except ImportError:
+    from entorno import ENV_FILE, load_env
+
+load_env()
+
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -40,14 +47,18 @@ class Settings(BaseSettings):
     influx_cmts_token: str = ""
     influx_cmts_bucket: str = ""
     influx_cmts_timeout_ms: int = 60000
+    influx_source_ip: str = ""
+    influx_source_required: bool = False
 
     # ==========================================
     # MySQL
     # ==========================================
 
-    mysql_host: str = "127.0.0.1"
+    mysql_host: str = ""
     mysql_port: int = 3306
     mysql_unix_socket: str = ""
+    mysql_source_address: str = ""
+    mysql_source_required: bool = False
     mysql_user: str = ""
     mysql_password: str = ""
     mysql_database: str = ""
@@ -81,13 +92,13 @@ class Settings(BaseSettings):
     grafana_timeout_seconds: int = 30
 
     # Topologias OLT (servidor de archivos remoto)
-    topologias_ssh_host: str = "100.66.80.175"
+    topologias_ssh_host: str = ""
     topologias_ssh_port: int = 22
     topologias_ssh_user: str = ""
     topologias_ssh_password: str = ""
     topologias_ssh_timeout_seconds: int = 15
-    topologias_base_path: str = "/data/filebrowser/files/TOPOLOGIAS/TOPOLOGIAS OLTS"
-    topologias_cache_path: str = "/data/AdminBOA/topologias_api_cache"
+    topologias_base_path: str = ""
+    topologias_cache_path: str = ""
     topologias_local_dir: str = "data/topologias"
     topologias_public_base: str = "/api/olt/topologias/media"
     topologias_cache_ttl_horas: int = 24
@@ -106,6 +117,7 @@ class Settings(BaseSettings):
     cmts_init_retention_days: int = 90
     cmts_init_inventory_path: str = ""
     # Salto SSH exclusivo de CMTS INIT; credenciales privadas en .env.
+    cmts_init_channel_source_host: str = ""
     cmts_init_jump_enabled: bool = False
     cmts_init_jump_host: str = ""
     cmts_init_jump_port: int = Field(default=22, ge=1, le=65535)
@@ -115,8 +127,8 @@ class Settings(BaseSettings):
     cmts_init_threshold_risk_max: int = 49
 
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
+        env_file=str(ENV_FILE),
+        env_file_encoding="utf-8-sig",
         case_sensitive=False,
         extra="ignore",
     )

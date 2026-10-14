@@ -819,13 +819,15 @@ def query(item: dict[str, str]) -> dict:
                 look_for_keys=False, allow_agent=False,
             )
             stage = "CANAL_NOC_CABLE_CMTS"
+            if not settings.cmts_init_channel_source_host:
+                raise ValueError("Falta CMTS_INIT_CHANNEL_SOURCE_HOST en .env")
             transport = jump_client.get_transport()
             if transport is None or not transport.is_active():
                 raise ConnectionError("Sesión SSH de noc_cable inactiva")
             transport.set_keepalive(20)
             tunnel = transport.open_channel(
                 "direct-tcpip", (item["ip"], settings.cmts_init_ssh_port),
-                ("127.0.0.1", 0),
+                (settings.cmts_init_channel_source_host, 0),
                 timeout=settings.cmts_init_connect_timeout_seconds,
             )
             connect_options["sock"] = tunnel

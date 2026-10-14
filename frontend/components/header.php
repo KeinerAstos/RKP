@@ -2,6 +2,18 @@
 $resolvedHeaderTitle = $headerTitle ?? 'Estado operacional de red';
 $resolvedHeaderDescription = $headerDescription ?? 'Excepciones activas y temperatura OLT';
 ?>
+<?php require_once dirname(__DIR__,2).'/backend/lib/entorno.php'; ?>
+<script>
+window.RKP_CONNECTIONS=<?= json_encode(rkp_public_connections(),JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR) ?>;
+window.rkpGrafanaUrl=function(type){
+    const c=window.RKP_CONNECTIONS;
+    const base=c.grafanaPublicUrl || `${window.location.protocol}//${window.location.hostname}:${c.grafanaProxyPort}`;
+    const dashboard=type==='cmts'?c.grafanaCmtsPath:c.grafanaOltPath;
+    if(!dashboard || (!c.grafanaPublicUrl && !c.grafanaProxyPort))throw new Error('Falta configuración pública de Grafana en .env');
+    return new URL(dashboard,base.replace(/\/$/,'')+'/').toString();
+};
+</script>
+
 <header class="topbar">
     <div class="topbar__main">
         <div class="topbar__left">

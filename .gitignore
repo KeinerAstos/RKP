@@ -70,3 +70,15 @@ graphify-out/
 # ==========================================
 data/topologias/
 data/cache/*.json
+
+# RKP_ENV_UNIFICADO_V1: configurations and operational data stay local
+.env.*
+!.env.local.example
+!.env.servidor.example
+/backend/cache/
+/data/cmts_inits/*.csv
+/data/cmts_inits/*.lock
+/data/cmts_inits/*.tmp
+/backend/storage/_backups/
+/backend/lib/_backups/
+REGISTRAR_CMTS_KNOWN_HOSTS.py

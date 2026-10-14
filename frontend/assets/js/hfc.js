@@ -109,10 +109,10 @@
 
     function grafanaUrl(row) {
         const url = new URL(
-            `${window.location.protocol}//${window.location.hostname}:8002/d-solo/adsfhrn/cmts`
+            window.rkpGrafanaUrl('cmts')
         );
 
-        url.searchParams.set('orgId', '1');
+        url.searchParams.set('orgId', window.RKP_CONNECTIONS.grafanaOrgId);
 
         url.searchParams.set('from', `now-${selectedDays}d`);
         url.searchParams.set('to', 'now');
@@ -442,4 +442,3 @@
     });
     load();
 })();
-

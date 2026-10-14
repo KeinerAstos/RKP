@@ -1,21 +1,9 @@
 <?php declare(strict_types=1);
 // Scoped compatibility helpers for the imported module; RKP config is untouched.
 function rkp_hfc_root(): string { return dirname(__DIR__, 2); }
+require_once __DIR__.'/entorno.php';
 function rkp_hfc_env(string $name, string $default=''): string {
-    static $values=null;
-    if ($values===null) {
-        $values=[];
-        foreach ([rkp_hfc_root().'/microservicios/.env', rkp_hfc_root().'/.env'] as $file) {
-            if (!is_file($file)) continue;
-            foreach (file($file, FILE_IGNORE_NEW_LINES) ?: [] as $line) {
-                if (!preg_match('/^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/', $line, $m)) continue;
-                $v=$m[2];
-                if (strlen($v)>=2 && (($v[0]==='"' && substr($v,-1)==='"') || ($v[0]==="'" && substr($v,-1)==="'"))) $v=substr($v,1,-1);
-                $values[$m[1]]=$v;
-            }
-        }
-    }
-    $v=getenv($name); return $v!==false ? $v : ($values[$name] ?? $default);
+    return rkp_env($name,$default);
 }
 function dh_path(string $key): string {
     $root=rkp_hfc_root();

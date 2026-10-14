@@ -6,3 +6,5 @@ requests==2.32.3
 mysql-connector-python
 paramiko>=3.0,<5
 oracledb>=3.0,<4
+pywin32==312; sys_platform == "win32"
+Pillow>=11,<13
