@@ -1,4 +1,4 @@
-"""Colectores CASA / ARRIS y unificación, portados de HFC_AUTO (noc_cable).
+﻿"""Colectores CASA / ARRIS y unificación, portados de HFC_AUTO (noc_cable).
 
 Origen de cada parte:
   CASA     app/collectors/casa/reporte_nodos_casa_masivo_v3_hilos.py
@@ -13,7 +13,7 @@ import re
 from collections import defaultdict
 from datetime import timedelta
 
-from microservicios.dashboard_hfc.conexion import SesionCLI, ahora, config, snmp_get
+from microservicios.cmts.dashboard_hfc.conexion import SesionCLI, ahora, config, snmp_get
 
 # ===================================================================== CASA
 CASA_PAGINACION = "page off"  # como HFC_ANALYTICS/collect_cmts_fast.py

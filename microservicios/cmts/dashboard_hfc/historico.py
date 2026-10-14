@@ -1,4 +1,4 @@
-"""Validación histórica V2 y retención de 1 mes + 1 día.
+﻿"""Validación histórica V2 y retención de 1 mes + 1 día.
 
 La regla es la de HFC_AUTO/app/processors/validar_hfc_historico.py (noc_cable);
 en lugar de leer los hfc_unificado_*.csv de 7 días, lee hfc_muestras.
@@ -10,7 +10,7 @@ import re
 from datetime import datetime, timedelta
 from statistics import median
 
-from microservicios.dashboard_hfc.conexion import ahora, config
+from microservicios.cmts.dashboard_hfc.conexion import ahora, config
 
 MIN_POSITIVE_SAMPLES = 2
 MIN_CEROS_CONSECUTIVOS = 2
