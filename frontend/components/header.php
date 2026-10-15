@@ -31,30 +31,13 @@ window.rkpGrafanaUrl=function(type){
         </div>
 
         <div class="topbar__status" aria-label="Estado del sistema">
-            <div class="topbar-card topbar-card--monitoring">
-                <span class="monitor-dot" aria-hidden="true"></span>
-                <div>
-                    <span class="topbar-card__label">Monitoreo general</span>
-                    <strong id="header-monitoring">Consultando</strong>
-                    <small id="header-monitoring-detail">Esperando datos</small>
-                </div>
-            </div>
-            <div class="topbar-card topbar-card--connection">
-                <span class="connection-dot offline" aria-hidden="true"></span>
-                <div>
-                    <span class="topbar-card__label">Conexión frontend</span>
-                    <strong id="header-connection">Pendiente</strong>
-                    <small id="header-connection-detail">Esperando primera consulta</small>
-                </div>
-            </div>
             <div class="topbar-card topbar-card--sources">
                 <svg class="topbar-card__icon" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
                 <div>
-                    <span class="topbar-card__label">Fuentes de datos</span>
-                    <strong id="header-sources">Pendiente</strong>
-                    <small id="header-sources-detail">Esperando consulta</small>
+                    <span class="topbar-card__label">Fuentes</span>
+                    <strong id="rkp-header-sources">Pendiente</strong>
                 </div>
             </div>
             <div class="topbar-card topbar-card--time">
@@ -64,9 +47,12 @@ window.rkpGrafanaUrl=function(type){
                 </svg>
                 <div>
                     <span class="topbar-card__label">Última actualización</span>
-                    <strong id="header-datetime">Pendiente</strong>
+                    <strong id="rkp-header-datetime">Pendiente</strong>
                 </div>
             </div>
         </div>
     </div>
 </header>
+
+<?php require __DIR__ . '/header-status.php'; ?>
+

@@ -2,12 +2,15 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/MicroserviceClient.php';
+require_once __DIR__ . '/header-metadata.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
 function jsonResponse(array $payload, int $status = 200): never
 {
+    // Metadata is additive; an unavailable timestamp must never break the API.
+    try { $payload = rkp_response_header_metadata($payload); } catch (Throwable $error) { /* Keep original response. */ }
     http_response_code($status);
     echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
@@ -27,3 +30,4 @@ function datosClient(): MicroserviceClient
     $config = $services['datos'];
     return new MicroserviceClient($config['base_url'], (int) $config['timeout'], (int) $config['connect_timeout']);
 }
+
