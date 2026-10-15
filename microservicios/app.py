@@ -12,6 +12,7 @@ from microservicios.config import settings
 from microservicios.olt.casos_helix import service as casos_helix_service
 from microservicios.olt.casos_helix.worker import start_worker as start_helix_worker
 from microservicios.olt.casos_helix.worker import stop_worker as stop_helix_worker
+from microservicios.olt.casos_helix.worker import get_worker as get_helix_worker
 from microservicios.olt.topologias.router import router as topologias_router
 from microservicios.olt.topologias import service as topologias_service
 from microservicios.cmts.saturacion.router import router as cmts_saturacion_router
@@ -114,6 +115,18 @@ async def error_validacion(
 @app.get("/health")
 def health() -> dict[str, object]:
     return {"ok": True, "service": "Backend Datos API"}
+
+
+# RKP_RECUPERACION_V1: salud del proceso/trabajador; no depende de disponibilidad DB.
+@app.get("/health/recovery")
+def recovery_health():
+    budget = settings.oracle_helix_query_budget_seconds
+    # Sin presupuesto positivo no se adivina un límite para consultas legítimas.
+    limit = float(budget) + 60 if budget > 0 else float("inf")
+    worker = get_helix_worker()
+    state = worker.recovery_status(limit) if worker else {"ok": False, "reason": "worker_missing"}
+    body = {"ok": bool(state["ok"]), "service": "Backend Datos API", "helix": state}
+    return JSONResponse(status_code=200 if body["ok"] else 503, content=body)
 
 
 app.include_router(saturacion_router, prefix="/api/olt")

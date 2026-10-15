@@ -91,6 +91,18 @@ class HelixWorker:
             )
             self._thread.start()
 
+    def recovery_status(self, max_active_seconds: float) -> dict[str, Any]:
+        # No hace consultas Oracle ni crea hilos adicionales de consulta.
+        with self._lock:
+            alive = bool(self._thread and self._thread.is_alive())
+            active = self._states.get(self._active_olt) if self._active_olt else None
+            age = (max(0.0, self._clock() - active.iniciado_at)
+                   if active and active.iniciado_at is not None else 0.0)
+            stuck = active is not None and age > max_active_seconds
+            return {"ok": self._accepting and alive and not stuck,
+                    "thread_alive": alive, "active_seconds": round(age, 1),
+                    "stuck": stuck, "pending": self._reserved_pending}
+
     def stop(self, join_seconds: float = 2.0) -> None:
         cancel: Callable[[], None] | None
         with self._lock:

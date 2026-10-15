@@ -169,16 +169,52 @@ def main() -> int:
             processes.append(('GRAFANA',start_service('GRAFANA','microservicios.grafana_proxy.app:app','grafana-proxy','/__proxy_health')))
         print('\nServicios disponibles. Ctrl+C cierra solamente los procesos creados por este arranque.')
         print('XAMPP se administra por separado.')
-        warned=set();retry_at={}
+        warned=set();retry_at={};health_failures={};health_next={};restart_count={};stable_since={}
         while True:
             for index,(name,process) in enumerate(processes):
                 tunnel=name in ('MYSQL','ORACLE')
                 down=process is not None and process.poll() is not None
                 if tunnel and process is None:
                     down=not tcp_open(required(name+'_TUNNEL_BIND_HOST'),port(name+'_TUNNEL_LOCAL_PORT'))
+                now=time.monotonic()
+                if not tunnel:
+                    # Solo supervisar/reiniciar procesos propios. None es un servicio externo.
+                    if process is None:continue
+                    expected='Backend Datos API' if name=='API' else 'grafana-proxy'
+                    health_path='/health/recovery' if name=='API' else '/__proxy_health'
+                    if not down and now>=health_next.get(name,0):
+                        health_next[name]=now+15
+                        good=healthy(url(client_host(name),port(name+'_PORT'),health_path),expected)
+                        health_failures[name]=0 if good else health_failures.get(name,0)+1
+                        if good:
+                            stable_since.setdefault(name,now)
+                            if now-stable_since[name]>=300:restart_count[name]=0
+                        else:stable_since.pop(name,None)
+                    down=down or health_failures.get(name,0)>=3
+                    if not down:continue
+                    if now<retry_at.get(name,0):continue
+                    if restart_count.get(name,0)>=5:
+                        if name not in warned:
+                            print('[AVISO]',name,'agotó 5 reinicios; revisar y reiniciar el iniciador')
+                            warned.add(name)
+                        continue
+                    restart_count[name]=restart_count.get(name,0)+1
+                    retry_at[name]=now+min(120,10*restart_count[name])
+                    print('[RECUPERACION]',name,'reiniciando proceso propio, intento',restart_count[name])
+                    # No se inicia un reemplazo hasta confirmar que terminó el anterior.
+                    stop(process)
+                    health_failures[name]=0;stable_since.pop(name,None)
+                    try:
+                        module='microservicios.app:app' if name=='API' else 'microservicios.grafana_proxy.app:app'
+                        replacement=start_service(name,module,expected,'/health' if name=='API' else health_path)
+                        processes[index]=(name,replacement)
+                        health_next[name]=time.monotonic()+15
+                        warned.discard(name)
+                    except Exception as exc:print('[REINTENTO]',name,str(exc))
+                    continue
                 if not down:continue
                 if name not in warned:print('[AVISO]',name,'no está disponible');warned.add(name)
-                retry=int(env(name+'_TUNNEL_RETRY_SECONDS','0')) if tunnel else 0
+                retry=int(env(name+'_TUNNEL_RETRY_SECONDS','0'))
                 if retry>0 and time.monotonic()>=retry_at.get(name,0):
                     retry_at[name]=time.monotonic()+retry
                     try:processes[index]=(name,start_tunnel(name));warned.discard(name)

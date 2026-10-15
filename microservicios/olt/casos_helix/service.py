@@ -62,7 +62,7 @@ def _get_pool(dsn):
                 dsn=dsn, min=0, max=1, increment=1,
                 getmode=oracledb.POOL_GETMODE_TIMEDWAIT,
                 wait_timeout=8000, tcp_connect_timeout=8,
-                ping_interval=60, stmtcachesize=20,
+                ping_interval=0, stmtcachesize=20,
             )
         return _pool
 
@@ -629,7 +629,7 @@ def _consultar_puertos_asociaciones(
 # EJECUCIÓN Y FUNCIONES PÚBLICAS
 # ============================================================
 
-def _result(
+def _result_once(
     olt: str,
     deadline: float | None,
     register_cancel: Callable[[Callable[[], None] | None], None] | None = None,
@@ -722,6 +722,33 @@ def _result(
                 olt, alcance, time.monotonic() - started,
                 connection_seconds, not failed, detail,
             )
+
+
+# RKP_RECUPERACION_V1: reintento solo para desconexiones de lecturas.
+def _desconexion(exc):
+    cause = exc.__cause__ or exc
+    detail = cause.args[0] if cause.args else cause
+    code = getattr(detail, "full_code", "")
+    return bool(getattr(detail, "isrecoverable", False)) or code in {
+        "DPY-1001", "DPY-4011", "ORA-03113", "ORA-03114",
+        "ORA-03135", "ORA-01012", "ORA-12537", "ORA-12547",
+        "ORA-12570", "ORA-12571",
+    }
+
+
+def _result(olt, deadline, register_cancel=None, alcance="puertos"):
+    for attempt in range(2):
+        try:
+            return _result_once(olt, deadline, register_cancel, alcance)
+        except HelixQueryError as exc:
+            if not _desconexion(exc):
+                raise
+            # El intento anterior ya devolvió/descartó su conexión en finally.
+            close_oracle_pool()
+            if attempt or (deadline is not None and time.monotonic() >= deadline):
+                raise
+            logger.warning("[HELIX RECUPERACION] Desconexión; nuevo pool y un reintento")
+    raise HelixQueryError("Oracle Helix no disponible")
 
 
 def consultar_olt(
