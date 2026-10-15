@@ -190,13 +190,6 @@ def _filas(cursor, connection, deadline):
 
 
 
-ESTADOS_WO_INCLUIDOS = frozenset({0, 1, 4, 7})
-ESTADOS_TAS_INCLUIDOS = frozenset({2000, 3000, 4000, 8000})
-
-ESTADOS_WO = {
-    0: "Asignado", 1: "Pendiente", 2: "Esperando aprobacion", 3: "Planificacion",
-    4: "En progreso", 5: "Completado", 6: "Rechazado", 7: "Cancelado", 8: "Cerrado",
-}
 ESTADOS_TAS_TODOS = {
     1000: "Preparado", 2000: "Asignado", 3000: "Pendiente", 4000: "En progreso",
     5000: "En espera", 6000: "Cerrado", 7000: "Omitido", 8000: "Cancelado",
@@ -215,40 +208,93 @@ def _por_ids(cursor, connection, deadline, sql, ids):
         yield from _filas(cursor, connection, deadline)
 
 
-def agregar_relaciones(cursor, connection, deadline, incidentes):
+
+def campos_tiempo_estado(inicio, ahora, evidencia=None, motivo=None, fuente=None):
+    """Mismo instante de corte Oracle para INC y todos sus hijos."""
+    datos = {
+        "tiempo_estado_verificable": motivo is None and inicio is not None,
+        "tiempo_estado_motivo": motivo,
+        "fuente_tiempo_estado": fuente,
+        "fecha_entrada_estado": None, "fecha_entrada_estado_epoch": None,
+        "segundos_en_estado": None, "horas_en_estado": None,
+        "dias_en_estado": None, "tiempo_en_estado": None,
+        "worklog_entrada_estado": evidencia,
+    }
+    if not datos["tiempo_estado_verificable"]:
+        return datos
+    segundos = Decimal(str(ahora)) - Decimal(str(inicio))
+    dias, resto = divmod(int(segundos), 86400)
+    horas, resto = divmod(resto, 3600)
+    minutos, segundos_texto = divmod(resto, 60)
+    datos.update({
+        "fecha_entrada_estado": fecha_iso(inicio),
+        "fecha_entrada_estado_epoch": int(inicio),
+        "segundos_en_estado": float(segundos),
+        "horas_en_estado": round(float(segundos / 3600), 4),
+        "dias_en_estado": round(float(segundos / 86400), 6),
+        "tiempo_en_estado": f"{dias}d {horas}h {minutos}min {segundos_texto}s",
+    })
+    return datos
+
+
+def agregar_tiempos_tas(cursor, connection, deadline, tareas, ahora):
+    por_numero = {}
+    for tarea in tareas:
+        por_numero.setdefault(tarea["numero"], []).append(tarea)
+        tarea.update(campos_tiempo_estado(
+            None, ahora, motivo="sin_historial_de_estado",
+            fuente="ARADMIN.TMS_WORKINFO / WORKINFOTYPE=40000",
+        ))
+    sql = """
+        SELECT TASKORTASKGROUPID, WORKINFOSUBMITDATE,
+               DBMS_LOB.SUBSTR(NOTES, 1000, 1), WORK_INFO_ID
+        FROM ARADMIN.TMS_WORKINFO
+        WHERE WORKINFOTYPE = 40000 AND TASKORTASKGROUPID IN ({ids})
+        ORDER BY TASKORTASKGROUPID, WORKINFOSUBMITDATE DESC NULLS LAST,
+                 WORK_INFO_ID DESC
+    """
+    for numero, filas in groupby(
+        _por_ids(cursor, connection, deadline, sql, por_numero),
+        key=lambda row: str(row[0]),
+    ):
+        referencias = por_numero[numero]
+        inicio, evidencia, motivo = evaluar_historial(
+            referencias[0]["estado_codigo"], filas, ahora, CODIGOS_TAS
+        )
+        for tarea in referencias:
+            tarea.update(campos_tiempo_estado(
+                inicio, ahora, evidencia, motivo,
+                "ARADMIN.TMS_WORKINFO / WORKINFOTYPE=40000",
+            ))
+    return {
+        "tas_tiempo_verificable": sum(refs[0]["tiempo_estado_verificable"] for refs in por_numero.values()),
+        "tas_tiempo_no_verificable": sum(not refs[0]["tiempo_estado_verificable"] for refs in por_numero.values()),
+    }
+
+def agregar_relaciones(cursor, connection, deadline, incidentes, ahora):
     """Relaciones por ROOT_INCIDENT y ROOTREQUESTNAME/FORMNAME.
 
     La selección por categoría y >=6h corresponde al INC. Sus hijos se
     incluyen en Asignado/Pendiente/En progreso/Cancelado, sin exigirles antigüedad propia.
     """
     por_inc = {caso["numero"]: caso for caso in incidentes}
-    wos, tareas_por_inc = {}, {numero: {} for numero in por_inc}
+    wo_a_inc = {}
+    tareas_por_inc = {numero: {} for numero in por_inc}
     for caso in incidentes:
-        caso["wos"] = []
         caso["tareas"] = []
+    # Las WO se usan solo como enlaces internos para no perder TAS indirectas.
     sql_wo = """
-        SELECT WORK_ORDER_ID, ROOT_INCIDENT, STATUS, SUMMARY
+        SELECT WORK_ORDER_ID, ROOT_INCIDENT
         FROM ARADMIN.WOI_WORKORDER
         WHERE ROOT_INCIDENT IN ({ids})
     """
-    for numero, padre, estado, titulo in _por_ids(
-        cursor, connection, deadline, sql_wo, por_inc
-    ):
+    for numero, padre in _por_ids(cursor, connection, deadline, sql_wo, por_inc):
         numero, padre = str(numero), str(padre)
         if padre not in por_inc:
-            raise RuntimeError("WO fuera de los INC seleccionados")
-        if numero in wos:
-            if wos[numero]["inc_padre"] != padre:
-                raise RuntimeError("WO con varios INC padre en la vista")
-            continue
-        codigo = int(estado) if estado is not None else -1
-        wo = {
-            "numero": numero, "inc_padre": padre, "estado_codigo": codigo,
-            "estado": ESTADOS_WO.get(codigo, "Desconocido"),
-            "titulo": str(titulo or ""), "tas_relacionadas": [],
-        }
-        wos[numero] = wo
-        por_inc[padre]["wos"].append(wo)
+            raise RuntimeError("Enlace fuera de los INC seleccionados")
+        if numero in wo_a_inc and wo_a_inc[numero] != padre:
+            raise RuntimeError("Enlace con varios INC padre en la vista")
+        wo_a_inc[numero] = padre
     sql_tas_inc = """
         SELECT TASK_ID, ROOTREQUESTNAME, STATUS, SUMMARY, ASSIGNEE_GROUP
         FROM ARADMIN.TMS_TASK
@@ -264,13 +310,13 @@ def agregar_relaciones(cursor, connection, deadline, incidentes):
           AND STATUS IN (2000, 3000, 4000, 8000)
     """
     for relacion, sql, ids in (
-        ("directa", sql_tas_inc, por_inc), ("mediante_wo", sql_tas_wo, wos)
+        ("directa", sql_tas_inc, por_inc), ("indirecta", sql_tas_wo, wo_a_inc)
     ):
         for numero, padre, estado, titulo, grupo in _por_ids(
             cursor, connection, deadline, sql, ids
         ):
             numero, padre = str(numero), str(padre)
-            inc = padre if relacion == "directa" else wos[padre]["inc_padre"]
+            inc = padre if relacion == "directa" else wo_a_inc[padre]
             if inc not in por_inc:
                 raise RuntimeError("TAS fuera de los INC seleccionados")
             codigo = int(estado) if estado is not None else -1
@@ -278,39 +324,31 @@ def agregar_relaciones(cursor, connection, deadline, incidentes):
                 "numero": numero, "estado_codigo": codigo,
                 "estado": ESTADOS_TAS_TODOS.get(codigo, "Desconocido"),
                 "titulo": str(titulo or ""), "grupo_soporte": str(grupo or ""),
-                "relacion": relacion, "wo_padre": padre if relacion == "mediante_wo" else None,
+                "relacion": relacion,
             }
             anterior = tareas_por_inc[inc].get(numero)
             if anterior is not None and anterior != tarea:
                 raise RuntimeError("TAS con relaciones contradictorias en la vista")
             tareas_por_inc[inc][numero] = tarea
-            if relacion == "mediante_wo":
-                wos[padre]["tas_relacionadas"].append(numero)
-    tareas_unicas, wos_visibles = set(), set()
+    tareas_unicas = set()
     for caso in incidentes:
-        # Se recorren todas las WO para encontrar TAS válidas incluso si la
-        # WO padre está cerrada; cada hijo se filtra por su estado propio.
-        caso["wos"] = [wo for wo in caso["wos"] if wo["estado_codigo"] in ESTADOS_WO_INCLUIDOS]
-        wos_visibles.update(wo["numero"] for wo in caso["wos"])
-        caso["wos"].sort(key=lambda row: row["numero"])
         caso["tareas"] = sorted(tareas_por_inc[caso["numero"]].values(), key=lambda row: row["numero"])
-        for wo in caso["wos"]:
-            wo["tas_relacionadas"] = sorted(set(wo["tas_relacionadas"]))
-            wo["cantidad_tareas"] = len(wo["tas_relacionadas"])
-        caso["cantidad_wos"] = len(caso["wos"])
         caso["cantidad_tareas"] = len(caso["tareas"])
         caso["cantidad_tareas_directas"] = sum(t["relacion"] == "directa" for t in caso["tareas"])
-        caso["cantidad_tareas_via_wo"] = caso["cantidad_tareas"] - caso["cantidad_tareas_directas"]
-        caso["wos_por_estado"] = dict(Counter(w["estado"] for w in caso["wos"]))
+        caso["cantidad_tareas_indirectas"] = caso["cantidad_tareas"] - caso["cantidad_tareas_directas"]
         caso["tareas_por_estado"] = dict(Counter(t["estado"] for t in caso["tareas"]))
         tareas_unicas.update(t["numero"] for t in caso["tareas"])
+    cobertura_tas = agregar_tiempos_tas(
+        cursor, connection, deadline,
+        (tarea for caso in incidentes for tarea in caso["tareas"]), ahora,
+    )
     return {
-        "total_wos": len(wos_visibles), "total_tareas": len(tareas_unicas),
-        "inc_con_wos": sum(bool(caso["wos"]) for caso in incidentes),
+        **cobertura_tas,
+        "total_tareas": len(tareas_unicas),
         "inc_con_tareas": sum(bool(caso["tareas"]) for caso in incidentes),
-        "alcance": "WO/TAS en Asignado, Pendiente, En progreso o Cancelado; >=6h y categoria se aplican al INC",
+        "alcance": "Solo INC y TAS; TAS en Asignado, Pendiente, En progreso o Cancelado; >=6h y categoria se aplican al INC",
         "estados_hijos_incluidos": ["Asignado", "Pendiente", "En progreso", "Cancelado"],
-        "fuente": "WOI_WORKORDER.ROOT_INCIDENT y TMS_TASK.ROOTREQUESTNAME/ROOTREQUESTFORMNAME",
+        "fuente": "TMS_TASK y relaciones raiz directas e indirectas",
     }
 
 def consultar_incidentes(tipo="INC"):
@@ -381,11 +419,9 @@ def consultar_incidentes(tipo="INC"):
                     menores += 1
                     continue
                 resultados.append({
-                    **caso, "fecha_entrada_estado": fecha_iso(inicio),
-                    "fecha_entrada_estado_epoch": int(inicio),
-                    "segundos_en_estado": float(segundos),
-                    "horas_en_estado": round(float(segundos / 3600), 4),
-                    "worklog_entrada_estado": evidencia,
+                    **caso, **campos_tiempo_estado(
+                        inicio, ahora, evidencia, fuente=perfil["fuente"]
+                    ),
                 })
             for numero in sorted(incidentes.keys() - vistos):
                 no_verificables.append({
@@ -393,7 +429,7 @@ def consultar_incidentes(tipo="INC"):
                     "motivo": "sin_historial_de_estado",
                 })
             resumen_relaciones = (
-                agregar_relaciones(cursor, connection, deadline, resultados)
+                agregar_relaciones(cursor, connection, deadline, resultados, ahora)
                 if tipo == "INC" else None
             )
     resultados.sort(key=lambda row: (-row["segundos_en_estado"], row["numero"]))
