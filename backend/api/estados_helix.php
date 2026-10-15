@@ -1,40 +1,30 @@
 <?php
 declare(strict_types=1);
-
+// RKP_ESTADOS_HELIX_RUTINA_V1: lectura compartida, sin Oracle por usuario.
 require_once __DIR__ . '/../lib/bootstrap.php';
 requireMethod('GET');
 if ($_GET !== []) {
     jsonResponse(['ok' => false, 'error' => 'Esta consulta no admite parámetros.'], 422);
 }
-if (session_status() === PHP_SESSION_ACTIVE) {
-    session_write_close();
+if (session_status() === PHP_SESSION_ACTIVE) { session_write_close(); }
+header('Cache-Control: no-store');
+$ruta = __DIR__ . '/../storage/estados_helix/actual.json';
+if (!is_file($ruta)) {
+    jsonResponse(['ok' => false, 'error' => 'Estados Helix aún no tiene una lectura publicada. Ejecuta la rutina estados_helix y vuelve a actualizar.'], 503);
 }
 try {
-    $result = datosClient()->get('/api/estados_helix/relaciones');
-    $status = (int) $result['status'];
-    if ($status < 200 || $status >= 300) {
-        // Only known public errors may cross the adapter; never forward traces or DSNs.
-        $detail = $result['body']['detail'] ?? '';
-        $message = match (true) {
-            $status === 503 && $detail === 'Ya hay una consulta de estados Helix en curso' => 'Ya hay una consulta de estados Helix en curso. Intenta actualizar cuando termine.',
-            $status === 504 => 'La consulta superó el tiempo disponible. Intenta actualizar de nuevo.',
-            default => 'El servicio no pudo completar la consulta de Estados Helix.',
-        };
-        jsonResponse(['ok' => false, 'error' => $message], $status >= 400 && $status <= 599 ? $status : 502);
-    }
-    $body = $result['body'];
-    if (($body['ok'] ?? false) !== true || !is_array($body['incidentes'] ?? null)
+    $raw = file_get_contents($ruta);
+    if ($raw === false) { throw new RuntimeException('Lectura no disponible'); }
+    $body = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+    if (!is_array($body) || ($body['ok'] ?? false) !== true
+        || !is_array($body['incidentes'] ?? null)
         || !is_array($body['resumen_relaciones'] ?? null)) {
-        jsonResponse(['ok' => false, 'error' => 'El servicio devolvió una respuesta inesperada.'], 502);
+        throw new RuntimeException('Contrato inválido');
     }
-    // Unverifiable identifiers are deliberately not delivered to the view.
     unset($body['no_verificables']);
-    jsonResponse($body, $status);
+    // fecha_corte conserva la fecha REAL de Oracle: actualizar la página solo relee.
+    header('X-RKP-Data-Source: rutina-estados-helix');
+    jsonResponse($body, 200);
 } catch (Throwable $exception) {
-    $message = $exception->getMessage();
-    $invalid = $exception->getPrevious() instanceof JsonException || str_contains($message, 'respuesta inesperada');
-    $timeout = preg_match('/timed? out|timeout/i', $message) === 1;
-    jsonResponse(['ok' => false, 'error' => $invalid
-        ? 'El servicio devolvió una respuesta JSON inválida.'
-        : ($timeout ? 'Se agotó el tiempo de consulta del servicio.' : 'No fue posible conectar con el servicio de Estados Helix.')], $invalid ? 502 : ($timeout ? 504 : 503));
+    jsonResponse(['ok' => false, 'error' => 'No fue posible leer el último resultado de Estados Helix. Revisa la rutina.'], 503);
 }

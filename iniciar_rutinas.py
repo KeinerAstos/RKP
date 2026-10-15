@@ -67,6 +67,16 @@ RUTINAS = [
         "timeout_minutos": 25,
         "habilitada": True,
     },
+    {
+        "nombre": "estados_helix",
+        "descripcion": "Estados Helix: API existente -> ultima lectura compartida",
+        "modulo": "iniciar_rutinas",
+        "argumentos": ["--ciclo-estados-helix"],
+        "cada_minutos": 5,
+        "desfase_minutos": 1,
+        "timeout_minutos": 25,
+        "habilitada": True,
+    },
     # Ejemplo de la próxima rutina:
     # {
     #     "nombre": "otra_rutina",
@@ -352,12 +362,89 @@ def ahora_una(rutinas: list[Rutina], nombre: str, python: str) -> int:
         return 1
 
 
+def ciclo_estados_helix() -> int:
+    """Publica una única lectura completa; nunca levanta otra API."""
+    import json
+    import tempfile
+    from urllib.parse import urlsplit
+    from urllib.request import Request, build_opener, ProxyHandler, HTTPRedirectHandler
+    from urllib.error import HTTPError, URLError
+
+    class SinRedireccion(HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            return None
+
+    configuracion = _leer_env()
+    def valor(nombre, defecto=""):
+        return os.environ.get(nombre, configuracion.get(nombre, defecto)).strip()
+
+    carpeta = RAIZ / "backend" / "storage" / "estados_helix"
+    carpeta.mkdir(parents=True, exist_ok=True)
+    # Lock del SO compartido por --ahora y el scheduler; queda libre al morir.
+    try:
+        candado = Candado(carpeta / "consulta.lock")
+    except SystemExit:
+        _msg("estados_helix: otra ejecución sigue activa; turno omitido")
+        return 0
+    temporal = None
+    try:
+        base = valor("DATOS_SERVICE_URL")
+        partes = urlsplit(base)
+        if (partes.scheme not in ("http", "https") or not partes.hostname
+                or partes.username is not None or partes.password is not None
+                or partes.query or partes.fragment):
+            raise ValueError("DATOS_SERVICE_URL debe ser HTTP(S) sin credenciales, query ni fragmento")
+        timeout = int(valor("DATOS_SERVICE_TIMEOUT_SECONDS", "180"))
+        if timeout < 0:
+            raise ValueError("DATOS_SERVICE_TIMEOUT_SECONDS debe ser >= 0")
+        opener = build_opener(ProxyHandler({}), SinRedireccion())
+        peticion = Request(base.rstrip("/") + "/api/estados_helix/relaciones",
+                           headers={"Accept": "application/json"})
+        with opener.open(peticion, timeout=timeout or None) as respuesta:
+            datos = json.load(respuesta)
+        if (not isinstance(datos, dict) or datos.get("ok") is not True
+                or not isinstance(datos.get("incidentes"), list)
+                or not isinstance(datos.get("resumen_relaciones"), dict)
+                or not isinstance(datos.get("fecha_corte"), str)):
+            raise ValueError("La API devolvió un contrato inesperado")
+        datos.pop("no_verificables", None)
+        # Un único archivo vigente. Nunca borrar el anterior si falla Oracle/HTTP.
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=carpeta,
+                                         prefix="actual-", suffix=".tmp", delete=False) as salida:
+            temporal = Path(salida.name)
+            json.dump(datos, salida, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+            salida.flush()
+            os.fsync(salida.fileno())
+        os.replace(temporal, carpeta / "actual.json")
+        temporal = None
+        _msg("estados_helix: lectura publicada; INC=" + str(datos.get("total", "?"))
+             + "; TAS=" + str(datos["resumen_relaciones"].get("total_tareas", "?"))
+             + "; corte=" + datos["fecha_corte"])
+        return 0
+    except HTTPError as exc:
+        _msg("estados_helix: HTTP " + str(exc.code) + "; se conserva la lectura anterior")
+        return 1
+    except (URLError, TimeoutError, OSError):
+        _msg("estados_helix: fallo de conexión/escritura; se conserva la lectura anterior")
+        return 1
+    except (ValueError, TypeError):
+        _msg("estados_helix: configuración o respuesta inválida; se conserva la lectura anterior")
+        return 1
+    finally:
+        if temporal is not None:
+            temporal.unlink(missing_ok=True)
+        candado.archivo.close()
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Lanzador de rutinas de RKP")
     g = p.add_mutually_exclusive_group()
     g.add_argument("--listar", action="store_true", help="Muestra las rutinas registradas")
     g.add_argument("--ahora", metavar="NOMBRE", help="Ejecuta una rutina una vez, en primer plano")
+    g.add_argument("--ciclo-estados-helix", action="store_true", help=argparse.SUPPRESS)
     a = p.parse_args()
+    if a.ciclo_estados_helix:
+        return ciclo_estados_helix()
     env = _leer_env()
     python = env.get("RUTINAS_PYTHON", "").strip() or sys.executable
     rutinas = cargar_rutinas(env)
