@@ -226,7 +226,7 @@ def start_service(prefix: str, module: str, expected: str, health_path: str):
     options = process_options(show)
     if show:
         process = subprocess.Popen(command, cwd=ROOT, env=child_env, **options)
-    else:
+    elif boolean('SERVICE_LOG_ENABLED', False):  # RKP_LOGS_OPCIONALES_V1
         log_dir = Path(env('SERVICE_LOG_DIR', 'backend/storage/logs')).expanduser()
         if not log_dir.is_absolute():
             log_dir = ROOT / log_dir
@@ -240,6 +240,12 @@ def start_service(prefix: str, module: str, expected: str, health_path: str):
                 stderr=subprocess.STDOUT, **options,
             )
         print(f'[{prefix}] Log: {log_path}')
+    else:
+        process = subprocess.Popen(
+            command, cwd=ROOT, env=child_env, stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT, **options,
+        )
+        print(f'[{prefix}] Sin escritura de logs en disco')
 
     try:
         deadline=time.monotonic()+positive_setting('SERVICE_READY_TIMEOUT_SECONDS',120)
