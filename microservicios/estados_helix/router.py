@@ -1,4 +1,4 @@
-"""INC con al menos seis horas en su estado actual, según HPD_WORKLOG.
+"""INC y TAS con al menos seis horas en su estado actual, según HPD_WORKLOG.
 
 No usa creación, última modificación ni cambios de responsable como sustitutos.
 Las lecturas comparten una transacción Oracle READ ONLY y un instante de corte.
@@ -32,7 +32,7 @@ CODIGOS = {
     "resolved": 4, "closed": 5, "cancelled": 6, "canceled": 6,
 }
 PATRON = re.compile(
-    r"^\s*Status Marked:\s*(New|Assigned|In Progress|Pending|Resolved|Closed|Cancelled|Canceled)\s+by\s+",
+    r"^\s*Status Marked:\s*(New|Assigned|In Progress|Work In Progress|Pending|Resolved|Closed|Cancelled|Canceled|Staged|Waiting|Bypassed)\s+by\s+",
     re.IGNORECASE,
 )
 UMBRAL_SEGUNDOS = 6 * 60 * 60
@@ -56,17 +56,61 @@ SQL_HISTORIAL = """
 """
 
 
+ESTADOS_TAS = {2000: "Asignado", 3000: "Pendiente", 4000: "En progreso"}
+CODIGOS_TAS = {
+    "staged": 1000, "assigned": 2000, "pending": 3000,
+    "work in progress": 4000, "waiting": 5000, "closed": 6000,
+    "bypassed": 7000, "cancelled": 8000, "canceled": 8000,
+}
+SQL_TAREAS = """
+    SELECT TASK_ID, STATUS, SUMMARY, ASSIGNEE_GROUP,
+           ROOTREQUESTNAME, ROOTREQUESTFORMNAME
+    FROM ARADMIN.TMS_TASK
+    WHERE STATUS IN (2000, 3000, 4000)
+"""
+SQL_HISTORIAL_TAS = """
+    SELECT w.TASKORTASKGROUPID, w.WORKINFOSUBMITDATE,
+           DBMS_LOB.SUBSTR(w.NOTES, 1000, 1), w.WORK_INFO_ID
+    FROM ARADMIN.TMS_WORKINFO w
+    JOIN ARADMIN.TMS_TASK t ON t.TASK_ID = w.TASKORTASKGROUPID
+    WHERE t.STATUS IN (2000, 3000, 4000)
+      AND w.WORKINFOTYPE = 40000
+    ORDER BY w.TASKORTASKGROUPID, w.WORKINFOSUBMITDATE DESC NULLS LAST,
+             w.WORK_INFO_ID DESC
+"""
+PERFILES = {
+    "INC": {
+        "estados": ESTADOS, "codigos": CODIGOS,
+        "sql": SQL_INCIDENTES, "historial": SQL_HISTORIAL,
+        "campos": ("titulo", "grupo_soporte", "responsable", "regional",
+                   "aliado", "departamento", "ciudad"),
+        "fuente": "ARADMIN.HPD_WORKLOG / WORK_LOG_TYPE=40000",
+        "contador": "total_inc_revisados", "coleccion": "incidentes",
+        "cobertura": "todos_los_inc_con_fecha_verificable",
+    },
+    "TAS": {
+        "estados": ESTADOS_TAS, "codigos": CODIGOS_TAS,
+        "sql": SQL_TAREAS, "historial": SQL_HISTORIAL_TAS,
+        "campos": ("titulo", "grupo_soporte", "solicitud_raiz", "formulario_raiz"),
+        "fuente": "ARADMIN.TMS_WORKINFO / WORKINFOTYPE=40000",
+        "contador": "total_tas_revisadas", "coleccion": "tareas",
+        "cobertura": "todas_las_tas_con_fecha_verificable",
+    },
+}
+
+
 def fecha_iso(epoch):
     return datetime.fromtimestamp(float(epoch), timezone.utc).astimezone(BOGOTA).isoformat()
 
 
-def evaluar_historial(estado_actual, filas, ahora):
+def evaluar_historial(estado_actual, filas, ahora, mapa_codigos=None):
     """Filas (INC, epoch, texto, WLG) ordenadas de más nuevas a más antiguas.
 
     Colapsa marcas consecutivas del mismo estado: una repetición o cambio de
     motivo no reinicia el contador. Nunca busca una marca antigua ignorando
     una transición posterior diferente o no interpretable.
     """
+    mapa_codigos = CODIGOS if mapa_codigos is None else mapa_codigos
     inicio = None
     evidencia = None
     for fecha, grupo in groupby(filas, key=lambda row: row[1]):
@@ -79,7 +123,7 @@ def evaluar_historial(estado_actual, filas, ahora):
         ids = []
         for _, _, texto, worklog_id in grupo:
             match = PATRON.match(str(texto or ""))
-            codigos.add(CODIGOS[match.group(1).lower()] if match else -1)
+            codigos.add(mapa_codigos.get(match.group(1).lower(), -1) if match else -1)
             ids.append(str(worklog_id))
         if len(codigos) != 1:
             return None, None, "estados_ambiguos_en_mismo_segundo"
@@ -117,8 +161,10 @@ def _filas(cursor, connection, deadline):
         yield from lote
 
 
-def consultar_incidentes():
+def consultar_incidentes(tipo="INC"):
     """Una conexión nueva por consulta; no comparte el pool de OLT."""
+    perfil = PERFILES[tipo]
+    estados = perfil["estados"]
     if oracledb is None:
         raise HTTPException(503, "Falta instalar oracledb")
     if not all((settings.oracle_helix_host, settings.oracle_helix_service_name,
@@ -147,23 +193,22 @@ def consultar_incidentes():
             """)
             ahora = Decimal(str(cursor.fetchone()[0]))
             _limitar(connection, deadline)
-            cursor.execute(SQL_INCIDENTES)
+            cursor.execute(perfil["sql"])
             incidentes = {}
             for row in _filas(cursor, connection, deadline):
                 numero = str(row[0])
                 if numero in incidentes:
-                    raise RuntimeError("INC duplicado en la vista Oracle")
+                    raise RuntimeError("Identificador duplicado en la vista Oracle")
                 incidentes[numero] = {
                     "numero": numero, "estado_codigo": int(row[1]),
-                    "estado": ESTADOS[int(row[1])],
+                    "estado": estados[int(row[1])],
                     **dict(zip(
-                        ("titulo", "grupo_soporte", "responsable", "regional",
-                         "aliado", "departamento", "ciudad"),
+                        perfil["campos"],
                         (str(value or "") for value in row[2:]),
                     )),
                 }
             _limitar(connection, deadline)
-            cursor.execute(SQL_HISTORIAL)
+            cursor.execute(perfil["historial"])
             resultados, no_verificables, vistos = [], [], set()
             menores = 0
             for numero, filas in groupby(
@@ -172,7 +217,7 @@ def consultar_incidentes():
                 caso = incidentes[numero]
                 vistos.add(numero)
                 inicio, evidencia, motivo = evaluar_historial(
-                    caso["estado_codigo"], filas, ahora
+                    caso["estado_codigo"], filas, ahora, perfil["codigos"]
                 )
                 if motivo:
                     no_verificables.append({
@@ -200,28 +245,27 @@ def consultar_incidentes():
     return {
         "ok": True, "fecha_corte": fecha_iso(ahora),
         "zona_horaria": "America/Bogota", "umbral_horas": 6,
-        "fuente": "ARADMIN.HPD_WORKLOG / WORK_LOG_TYPE=40000",
-        "total_inc_revisados": len(incidentes),
+        "tipo": tipo, "fuente": perfil["fuente"],
+        perfil["contador"]: len(incidentes),
         "total": len(resultados),
-        "por_estado": {estado: conteo[estado] for estado in ESTADOS.values()},
+        "por_estado": {estado: conteo[estado] for estado in estados.values()},
         "menores_de_6h": menores,
-        "todos_los_inc_con_fecha_verificable": not no_verificables,
+        perfil["cobertura"]: not no_verificables,
         "total_no_verificables": len(no_verificables),
         "motivos_no_verificables": dict(Counter(x["motivo"] for x in no_verificables)),
         "no_verificables": no_verificables,
-        "incidentes": resultados,
+        perfil["coleccion"]: resultados,
         "duracion_segundos": round(time.monotonic() - started, 3),
     }
 
 
-@router.get("/incidentes")
-def obtener_incidentes():
+def _obtener(tipo):
     # Endpoint síncrono: FastAPI ejecuta Oracle fuera del event loop.
     # Evita dos barridos simultáneos dentro del mismo proceso.
     if not _consulta_lock.acquire(blocking=False):
         raise HTTPException(503, "Ya hay una consulta de estados Helix en curso")
     try:
-        return consultar_incidentes()
+        return consultar_incidentes() if tipo == "INC" else consultar_incidentes(tipo)
     except HTTPException:
         raise
     except TimeoutError:
@@ -231,3 +275,13 @@ def obtener_incidentes():
         raise HTTPException(503, "No se pudo completar la consulta de estados Helix; revise el log") from None
     finally:
         _consulta_lock.release()
+
+
+@router.get("/incidentes")
+def obtener_incidentes():
+    return _obtener("INC")
+
+
+@router.get("/tareas")
+def obtener_tareas():
+    return _obtener("TAS")
