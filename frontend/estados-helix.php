@@ -529,6 +529,9 @@
                     <label>Estado<select id="hx-state">
                             <option value="">Todos los estados</option>
                         </select></label>
+                    <label>Categoría<select id="hx-category">
+                            <option value="">Todas las categorías</option>
+                        </select></label>
                     <label>Orden<select id="hx-sort">
                             <option value="desc">Mayor tiempo primero</option>
                             <option value="asc">Menor tiempo primero</option>
@@ -644,13 +647,86 @@
                 for (const t of rows) { const row = node('tr'); row.append(titleCell(t), node('td', t.estado), node('td', duration(t.segundos_en_estado), 'hx-time'), node('td', t.grupo_soporte || '—'), node('td', t.relacion || '—')); const td = node('td'); const b = button(`Ver evidencia de ${t.numero}`, () => openEvidence(t, b), true); b.setAttribute('aria-haspopup', 'dialog'); td.append(b); row.append(td); body.append(row); }
                 table.append(head, body); wrap.append(table); return wrap;
             }
+            function categoryValues(record) {
+                return [
+                    record.categoria_operacional_nivel_1,
+                    record.categoria_operacional_nivel_2,
+                    record.categoria_operacional_nivel_3,
+                ]
+                    .map(value => String(value ?? '').trim())
+                    .filter(Boolean);
+            }
+
+            function categories() {
+                const previous = $('category').value;
+                const values = new Map();
+
+                for (const incident of incidents) {
+                    for (const value of categoryValues(incident)) {
+                        const key = normalize(value);
+                        if (!values.has(key)) values.set(key, value);
+                    }
+                }
+
+                const options = [...values.entries()].sort(
+                    (a, b) => a[1].localeCompare(b[1], 'es')
+                );
+
+                $('category').replaceChildren(
+                    new Option('Todas las categorías', ''),
+                    ...options.map(([key, label]) => new Option(label, key))
+                );
+
+                $('category').value = values.has(previous) ? previous : '';
+            }
             function selectRows() {
-                const q = normalize($('search').value.trim()), state = $('state').value;
+                const q = normalize($('search').value.trim());
+                const state = $('state').value;
+                const category = $('category').value;
+
+                const filtered = incidents.filter(incident =>
+                    !category || categoryValues(incident).some(
+                        value => normalize(value) === category
+                    )
+                );
+
                 let rows;
-                if (tab === 'inc') rows = incidents.filter(i => matches(i, q) && (!state || i.estado === state)).map(i => ({ inc: i, tasks: tasks(i), seconds: i.segundos_en_estado }));
-                else rows = incidents.map(i => { const parentMatches = matches(i, q); const children = tasks(i).filter(t => (!state || t.estado === state) && (parentMatches || matches(t, q))); return { inc: i, tasks: children, seconds: children.reduce((max, t) => Math.max(max, t.segundos_en_estado), 0) }; }).filter(r => r.tasks.length);
+
+                if (tab === 'inc') {
+                    rows = filtered
+                        .filter(i => matches(i, q) && (!state || i.estado === state))
+                        .map(i => ({
+                            inc: i,
+                            tasks: tasks(i),
+                            seconds: i.segundos_en_estado,
+                        }));
+                } else {
+                    rows = filtered.map(i => {
+                        const parentMatches = matches(i, q);
+                        const children = tasks(i).filter(t =>
+                            (!state || t.estado === state) &&
+                            (parentMatches || matches(t, q))
+                        );
+
+                        return {
+                            inc: i,
+                            tasks: children,
+                            seconds: children.reduce(
+                                (max, t) => Math.max(max, t.segundos_en_estado),
+                                0
+                            ),
+                        };
+                    }).filter(r => r.tasks.length);
+                }
+
                 const order = $('sort').value;
-                rows.sort((a, b) => (order === 'id' ? 0 : (a.seconds - b.seconds) * (order === 'asc' ? 1 : -1)) || a.inc.numero.localeCompare(b.inc.numero));
+                rows.sort((a, b) =>
+                    (order === 'id'
+                        ? 0
+                        : (a.seconds - b.seconds) * (order === 'asc' ? 1 : -1)
+                    ) || a.inc.numero.localeCompare(b.inc.numero)
+                );
+
                 return rows;
             }
             function render() {
@@ -693,7 +769,16 @@
             }
             function changeTab(next) { tab = next; page = 0; expanded = null; for (const name of ['inc', 'tas']) { const b = $(name + '-tab'); b.setAttribute('aria-selected', String(name === tab)); b.tabIndex = name === tab ? 0 : -1; } $('view').setAttribute('aria-labelledby', `hx-${tab}-tab`); states(); render(); }
             for (const name of ['inc', 'tas']) { $(name + '-tab').addEventListener('click', () => changeTab(name)); $(name + '-tab').addEventListener('keydown', e => { if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) { e.preventDefault(); changeTab(e.key === 'Home' ? 'inc' : e.key === 'End' ? 'tas' : tab === 'inc' ? 'tas' : 'inc'); $(tab + '-tab').focus(); } }); }
-            for (const id of ['search', 'state', 'sort']) $(id).addEventListener(id === 'search' ? 'input' : 'change', () => { page = 0; expanded = null; render(); });
+            for (const id of ['search', 'state', 'category', 'sort']) {
+                $(id).addEventListener(
+                    id === 'search' ? 'input' : 'change',
+                    () => {
+                        page = 0;
+                        expanded = null;
+                        render();
+                    }
+                );
+            }
             $('prev').addEventListener('click', () => { page--; expanded = null; render(); }); $('next').addEventListener('click', () => { page++; expanded = null; render(); });
             const csvCell = value => { let s = String(value ?? ''); if (/^[\s\uFEFF]*[=+@-]/.test(s) || /^[\t\r\n]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
             $('export').addEventListener('click', () => {
@@ -717,7 +802,15 @@
                     let data; try { data = await response.json(); } catch (_) { throw new Error('El adaptador no devolvió una respuesta JSON válida.'); }
                     if (!response.ok || data.ok !== true) throw new Error(data.error || `No se pudo completar la consulta (HTTP ${response.status}).`);
                     if (!Array.isArray(data.incidentes) || !data.resumen_relaciones || typeof data.resumen_relaciones !== 'object') throw new Error('La respuesta no contiene el contrato esperado de Estados Helix.');
-                    incidents = unique(data.incidentes.filter(verified)); delete data.no_verificables; payload = data; page = 0; expanded = null; summary(data); states(); render();
+                    incidents = unique(data.incidentes.filter(verified));
+                    delete data.no_verificables;
+                    payload = data;
+                    page = 0;
+                    expanded = null;
+                    summary(data);
+                    states();
+                    categories();
+                    render();
                     $('status').dataset.state = 'success'; $('status').textContent = 'Consulta completada. Filtros, detalles y exportación utilizan este resultado en memoria.';
                 } catch (error) {
                     $('status').dataset.state = 'error'; $('status').textContent = `${error.message} ${payload ? 'Se conserva el resultado anterior. Corte: ' + date(payload.fecha_corte) + '.' : 'No hay un resultado válido disponible; los contadores permanecen pendientes.'}`;
