@@ -38,18 +38,22 @@ PATRON = re.compile(
 UMBRAL_SEGUNDOS = 6 * 60 * 60
 BOGOTA = timezone(timedelta(hours=-5))
 
-SQL_INCIDENTES = """
-    SELECT INCIDENT_NUMBER, STATUS, SHORT_DESCRIPTION, ASSIGNED_GROUP,
-           ASSIGNEE, REGIONAL, ALIADO, DEPARTAMENTO__ESTADO_PROVINCIA, CIUDAD
-    FROM ARADMIN.HPD_HELP_DESK
-    WHERE STATUS IN (1, 2, 3)
+CATEGORIAS = ("SERVICIOS FIJOS", "REDES NEUTRAS")
+# Coincidencia exacta: no incluye variantes EYN, RC u otras categorías.
+FILTRO_CATEGORIA = "i.CATEGORIZATION_TIER_1 IN ('SERVICIOS FIJOS', 'REDES NEUTRAS')"
+SQL_INCIDENTES = f"""
+    SELECT i.INCIDENT_NUMBER, i.STATUS, i.SHORT_DESCRIPTION, i.ASSIGNED_GROUP,
+           i.ASSIGNEE, i.REGIONAL, i.ALIADO, i.DEPARTAMENTO__ESTADO_PROVINCIA,
+           i.CIUDAD, i.CATEGORIZATION_TIER_1
+    FROM ARADMIN.HPD_HELP_DESK i
+    WHERE i.STATUS IN (1, 2, 3) AND {FILTRO_CATEGORIA}
 """
-SQL_HISTORIAL = """
+SQL_HISTORIAL = f"""
     SELECT w.INCIDENT_NUMBER, w.WORK_LOG_SUBMIT_DATE,
            DBMS_LOB.SUBSTR(w.DETAILED_DESCRIPTION, 1000, 1), w.WORK_LOG_ID
     FROM ARADMIN.HPD_WORKLOG w
     JOIN ARADMIN.HPD_HELP_DESK i ON i.INCIDENT_NUMBER = w.INCIDENT_NUMBER
-    WHERE i.STATUS IN (1, 2, 3)
+    WHERE i.STATUS IN (1, 2, 3) AND {FILTRO_CATEGORIA}
       AND w.WORK_LOG_TYPE = 40000
     ORDER BY w.INCIDENT_NUMBER, w.WORK_LOG_SUBMIT_DATE DESC NULLS LAST,
              w.WORK_LOG_ID DESC
@@ -62,28 +66,51 @@ CODIGOS_TAS = {
     "work in progress": 4000, "waiting": 5000, "closed": 6000,
     "bypassed": 7000, "cancelled": 8000, "canceled": 8000,
 }
-SQL_TAREAS = """
-    SELECT TASK_ID, STATUS, SUMMARY, ASSIGNEE_GROUP,
-           ROOTREQUESTNAME, ROOTREQUESTFORMNAME
-    FROM ARADMIN.TMS_TASK
-    WHERE STATUS IN (2000, 3000, 4000)
+# Las dos ramas son disjuntas por ROOTREQUESTFORMNAME. No se filtra el
+# estado del INC padre: una TAS abierta puede pertenecer a un INC cerrado.
+CTE_TAREAS = f"""
+    WITH tareas_filtradas AS (
+        SELECT t.TASK_ID, t.STATUS, t.SUMMARY, t.ASSIGNEE_GROUP,
+               t.ROOTREQUESTNAME, t.ROOTREQUESTFORMNAME,
+               i.CATEGORIZATION_TIER_1 AS CATEGORIA, i.INCIDENT_NUMBER AS INC_CATEGORIA
+        FROM ARADMIN.TMS_TASK t
+        JOIN ARADMIN.HPD_HELP_DESK i ON i.INCIDENT_NUMBER = t.ROOTREQUESTNAME
+        WHERE t.STATUS IN (2000, 3000, 4000)
+          AND t.ROOTREQUESTFORMNAME = 'HPD:Help Desk'
+          AND {FILTRO_CATEGORIA}
+        UNION ALL
+        SELECT t.TASK_ID, t.STATUS, t.SUMMARY, t.ASSIGNEE_GROUP,
+               t.ROOTREQUESTNAME, t.ROOTREQUESTFORMNAME,
+               i.CATEGORIZATION_TIER_1 AS CATEGORIA, i.INCIDENT_NUMBER AS INC_CATEGORIA
+        FROM ARADMIN.TMS_TASK t
+        JOIN ARADMIN.WOI_WORKORDER o ON o.WORK_ORDER_ID = t.ROOTREQUESTNAME
+        JOIN ARADMIN.HPD_HELP_DESK i ON i.INCIDENT_NUMBER = o.ROOT_INCIDENT
+        WHERE t.STATUS IN (2000, 3000, 4000)
+          AND t.ROOTREQUESTFORMNAME = 'WOI:WorkOrder'
+          AND {FILTRO_CATEGORIA}
+    )
 """
-SQL_HISTORIAL_TAS = """
+SQL_TAREAS = CTE_TAREAS + """
+    SELECT TASK_ID, STATUS, SUMMARY, ASSIGNEE_GROUP,
+           ROOTREQUESTNAME, ROOTREQUESTFORMNAME, CATEGORIA, INC_CATEGORIA
+    FROM tareas_filtradas
+"""
+SQL_HISTORIAL_TAS = CTE_TAREAS + """
     SELECT w.TASKORTASKGROUPID, w.WORKINFOSUBMITDATE,
            DBMS_LOB.SUBSTR(w.NOTES, 1000, 1), w.WORK_INFO_ID
     FROM ARADMIN.TMS_WORKINFO w
-    JOIN ARADMIN.TMS_TASK t ON t.TASK_ID = w.TASKORTASKGROUPID
-    WHERE t.STATUS IN (2000, 3000, 4000)
-      AND w.WORKINFOTYPE = 40000
+    JOIN tareas_filtradas t ON t.TASK_ID = w.TASKORTASKGROUPID
+    WHERE w.WORKINFOTYPE = 40000
     ORDER BY w.TASKORTASKGROUPID, w.WORKINFOSUBMITDATE DESC NULLS LAST,
              w.WORK_INFO_ID DESC
 """
+
 PERFILES = {
     "INC": {
         "estados": ESTADOS, "codigos": CODIGOS,
         "sql": SQL_INCIDENTES, "historial": SQL_HISTORIAL,
         "campos": ("titulo", "grupo_soporte", "responsable", "regional",
-                   "aliado", "departamento", "ciudad"),
+                   "aliado", "departamento", "ciudad", "categoria_operacional_nivel_1"),
         "fuente": "ARADMIN.HPD_WORKLOG / WORK_LOG_TYPE=40000",
         "contador": "total_inc_revisados", "coleccion": "incidentes",
         "cobertura": "todos_los_inc_con_fecha_verificable",
@@ -91,7 +118,8 @@ PERFILES = {
     "TAS": {
         "estados": ESTADOS_TAS, "codigos": CODIGOS_TAS,
         "sql": SQL_TAREAS, "historial": SQL_HISTORIAL_TAS,
-        "campos": ("titulo", "grupo_soporte", "solicitud_raiz", "formulario_raiz"),
+        "campos": ("titulo", "grupo_soporte", "solicitud_raiz", "formulario_raiz",
+                   "categoria_operacional_nivel_1", "inc_fuente_categoria"),
         "fuente": "ARADMIN.TMS_WORKINFO / WORKINFOTYPE=40000",
         "contador": "total_tas_revisadas", "coleccion": "tareas",
         "cobertura": "todas_las_tas_con_fecha_verificable",
@@ -160,6 +188,130 @@ def _filas(cursor, connection, deadline):
             return
         yield from lote
 
+
+
+ESTADOS_WO_INCLUIDOS = frozenset({0, 1, 4, 7})
+ESTADOS_TAS_INCLUIDOS = frozenset({2000, 3000, 4000, 8000})
+
+ESTADOS_WO = {
+    0: "Asignado", 1: "Pendiente", 2: "Esperando aprobacion", 3: "Planificacion",
+    4: "En progreso", 5: "Completado", 6: "Rechazado", 7: "Cancelado", 8: "Cerrado",
+}
+ESTADOS_TAS_TODOS = {
+    1000: "Preparado", 2000: "Asignado", 3000: "Pendiente", 4000: "En progreso",
+    5000: "En espera", 6000: "Cerrado", 7000: "Omitido", 8000: "Cancelado",
+}
+
+
+def _por_ids(cursor, connection, deadline, sql, ids):
+    """Consultas por lotes de hasta 200 IDs, nunca una por INC/WO."""
+    valores = sorted(set(ids))
+    for inicio in range(0, len(valores), 200):
+        lote = valores[inicio:inicio + 200]
+        binds = {f"id{n}": valor for n, valor in enumerate(lote)}
+        nombres = ", ".join(":" + nombre for nombre in binds)
+        _limitar(connection, deadline)
+        cursor.execute(sql.format(ids=nombres), binds)
+        yield from _filas(cursor, connection, deadline)
+
+
+def agregar_relaciones(cursor, connection, deadline, incidentes):
+    """Relaciones por ROOT_INCIDENT y ROOTREQUESTNAME/FORMNAME.
+
+    La selección por categoría y >=6h corresponde al INC. Sus hijos se
+    incluyen en Asignado/Pendiente/En progreso/Cancelado, sin exigirles antigüedad propia.
+    """
+    por_inc = {caso["numero"]: caso for caso in incidentes}
+    wos, tareas_por_inc = {}, {numero: {} for numero in por_inc}
+    for caso in incidentes:
+        caso["wos"] = []
+        caso["tareas"] = []
+    sql_wo = """
+        SELECT WORK_ORDER_ID, ROOT_INCIDENT, STATUS, SUMMARY
+        FROM ARADMIN.WOI_WORKORDER
+        WHERE ROOT_INCIDENT IN ({ids})
+    """
+    for numero, padre, estado, titulo in _por_ids(
+        cursor, connection, deadline, sql_wo, por_inc
+    ):
+        numero, padre = str(numero), str(padre)
+        if padre not in por_inc:
+            raise RuntimeError("WO fuera de los INC seleccionados")
+        if numero in wos:
+            if wos[numero]["inc_padre"] != padre:
+                raise RuntimeError("WO con varios INC padre en la vista")
+            continue
+        codigo = int(estado) if estado is not None else -1
+        wo = {
+            "numero": numero, "inc_padre": padre, "estado_codigo": codigo,
+            "estado": ESTADOS_WO.get(codigo, "Desconocido"),
+            "titulo": str(titulo or ""), "tas_relacionadas": [],
+        }
+        wos[numero] = wo
+        por_inc[padre]["wos"].append(wo)
+    sql_tas_inc = """
+        SELECT TASK_ID, ROOTREQUESTNAME, STATUS, SUMMARY, ASSIGNEE_GROUP
+        FROM ARADMIN.TMS_TASK
+        WHERE ROOTREQUESTFORMNAME = 'HPD:Help Desk'
+          AND ROOTREQUESTNAME IN ({ids})
+          AND STATUS IN (2000, 3000, 4000, 8000)
+    """
+    sql_tas_wo = """
+        SELECT TASK_ID, ROOTREQUESTNAME, STATUS, SUMMARY, ASSIGNEE_GROUP
+        FROM ARADMIN.TMS_TASK
+        WHERE ROOTREQUESTFORMNAME = 'WOI:WorkOrder'
+          AND ROOTREQUESTNAME IN ({ids})
+          AND STATUS IN (2000, 3000, 4000, 8000)
+    """
+    for relacion, sql, ids in (
+        ("directa", sql_tas_inc, por_inc), ("mediante_wo", sql_tas_wo, wos)
+    ):
+        for numero, padre, estado, titulo, grupo in _por_ids(
+            cursor, connection, deadline, sql, ids
+        ):
+            numero, padre = str(numero), str(padre)
+            inc = padre if relacion == "directa" else wos[padre]["inc_padre"]
+            if inc not in por_inc:
+                raise RuntimeError("TAS fuera de los INC seleccionados")
+            codigo = int(estado) if estado is not None else -1
+            tarea = {
+                "numero": numero, "estado_codigo": codigo,
+                "estado": ESTADOS_TAS_TODOS.get(codigo, "Desconocido"),
+                "titulo": str(titulo or ""), "grupo_soporte": str(grupo or ""),
+                "relacion": relacion, "wo_padre": padre if relacion == "mediante_wo" else None,
+            }
+            anterior = tareas_por_inc[inc].get(numero)
+            if anterior is not None and anterior != tarea:
+                raise RuntimeError("TAS con relaciones contradictorias en la vista")
+            tareas_por_inc[inc][numero] = tarea
+            if relacion == "mediante_wo":
+                wos[padre]["tas_relacionadas"].append(numero)
+    tareas_unicas, wos_visibles = set(), set()
+    for caso in incidentes:
+        # Se recorren todas las WO para encontrar TAS válidas incluso si la
+        # WO padre está cerrada; cada hijo se filtra por su estado propio.
+        caso["wos"] = [wo for wo in caso["wos"] if wo["estado_codigo"] in ESTADOS_WO_INCLUIDOS]
+        wos_visibles.update(wo["numero"] for wo in caso["wos"])
+        caso["wos"].sort(key=lambda row: row["numero"])
+        caso["tareas"] = sorted(tareas_por_inc[caso["numero"]].values(), key=lambda row: row["numero"])
+        for wo in caso["wos"]:
+            wo["tas_relacionadas"] = sorted(set(wo["tas_relacionadas"]))
+            wo["cantidad_tareas"] = len(wo["tas_relacionadas"])
+        caso["cantidad_wos"] = len(caso["wos"])
+        caso["cantidad_tareas"] = len(caso["tareas"])
+        caso["cantidad_tareas_directas"] = sum(t["relacion"] == "directa" for t in caso["tareas"])
+        caso["cantidad_tareas_via_wo"] = caso["cantidad_tareas"] - caso["cantidad_tareas_directas"]
+        caso["wos_por_estado"] = dict(Counter(w["estado"] for w in caso["wos"]))
+        caso["tareas_por_estado"] = dict(Counter(t["estado"] for t in caso["tareas"]))
+        tareas_unicas.update(t["numero"] for t in caso["tareas"])
+    return {
+        "total_wos": len(wos_visibles), "total_tareas": len(tareas_unicas),
+        "inc_con_wos": sum(bool(caso["wos"]) for caso in incidentes),
+        "inc_con_tareas": sum(bool(caso["tareas"]) for caso in incidentes),
+        "alcance": "WO/TAS en Asignado, Pendiente, En progreso o Cancelado; >=6h y categoria se aplican al INC",
+        "estados_hijos_incluidos": ["Asignado", "Pendiente", "En progreso", "Cancelado"],
+        "fuente": "WOI_WORKORDER.ROOT_INCIDENT y TMS_TASK.ROOTREQUESTNAME/ROOTREQUESTFORMNAME",
+    }
 
 def consultar_incidentes(tipo="INC"):
     """Una conexión nueva por consulta; no comparte el pool de OLT."""
@@ -240,12 +392,19 @@ def consultar_incidentes(tipo="INC"):
                     "numero": numero, "estado": incidentes[numero]["estado"],
                     "motivo": "sin_historial_de_estado",
                 })
+            resumen_relaciones = (
+                agregar_relaciones(cursor, connection, deadline, resultados)
+                if tipo == "INC" else None
+            )
     resultados.sort(key=lambda row: (-row["segundos_en_estado"], row["numero"]))
     conteo = Counter(row["estado"] for row in resultados)
     return {
         "ok": True, "fecha_corte": fecha_iso(ahora),
         "zona_horaria": "America/Bogota", "umbral_horas": 6,
         "tipo": tipo, "fuente": perfil["fuente"],
+        **({"resumen_relaciones": resumen_relaciones} if tipo == "INC" else {}),
+        "categorias_incluidas": list(CATEGORIAS),
+        "categoria_fuente": "INC actual" if tipo == "INC" else "INC raiz directo o mediante WO",
         perfil["contador"]: len(incidentes),
         "total": len(resultados),
         "por_estado": {estado: conteo[estado] for estado in estados.values()},
@@ -277,6 +436,7 @@ def _obtener(tipo):
         _consulta_lock.release()
 
 
+@router.get("/relaciones")
 @router.get("/incidentes")
 def obtener_incidentes():
     return _obtener("INC")
