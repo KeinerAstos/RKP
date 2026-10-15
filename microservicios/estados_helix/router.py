@@ -52,6 +52,7 @@ SQL_INCIDENTES = f"""
     SELECT i.INCIDENT_NUMBER, i.STATUS, i.SHORT_DESCRIPTION, i.ASSIGNED_GROUP,
            i.ASSIGNEE, i.REGIONAL, i.ALIADO, i.DEPARTAMENTO__ESTADO_PROVINCIA,
            i.CIUDAD, i.CATEGORIZATION_TIER_1
+           i.CATEGORIZATION_TIER_2, i.CATEGORIZATION_TIER_3
     FROM ARADMIN.HPD_HELP_DESK i
     WHERE i.STATUS IN (1, 2, 3) AND {FILTRO_CATEGORIA}
 """
@@ -133,6 +134,8 @@ PERFILES = {
             "departamento",
             "ciudad",
             "categoria_operacional_nivel_1",
+            "categoria_operacional_nivel_2",
+            "categoria_operacional_nivel_3",
         ),
         "fuente": "ARADMIN.HPD_WORKLOG / WORK_LOG_TYPE=40000",
         "contador": "total_inc_revisados",
