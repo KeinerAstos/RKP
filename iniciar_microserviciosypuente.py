@@ -14,8 +14,31 @@ from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 from microservicios.entorno import ROOT, boolean, env, load_env, port, required
+from microservicios.apis_separadas import catalog
 
 RAIZ = ROOT
+SUPERVISOR_VERSION = "RKP_APIS_INDEPENDIENTES_V3"
+INDEPENDENT = {}
+
+
+def service_port(name):
+    return INDEPENDENT[name].port if name in INDEPENDENT else port(name + '_PORT')
+
+
+def service_host(name):
+    return '127.0.0.1' if name in INDEPENDENT else required(name + '_HOST')
+
+
+def service_expected(name):
+    if name in INDEPENDENT:
+        return INDEPENDENT[name].health_name
+    return 'Backend Datos API' if name == 'API' else 'grafana-proxy'
+
+
+def service_module(name):
+    if name in INDEPENDENT:
+        return 'microservicios.apis_separadas:create_service'
+    return 'microservicios.apis_separadas:create_gateway' if name == 'API' else 'microservicios.grafana_proxy.app:app'
 
 
 def url(host: str, number: int, path: str) -> str:
@@ -24,6 +47,7 @@ def url(host: str, number: int, path: str) -> str:
 
 
 def client_host(prefix: str) -> str:
+    if prefix in INDEPENDENT: return '127.0.0.1'
     host = env(prefix + '_CLIENT_HOST').strip()
     if host: return host
     bind = required(prefix + '_HOST')
@@ -41,12 +65,87 @@ def tcp_open(host: str, number: int) -> bool:
     except OSError: return False
 
 
-def healthy(target: str, expected: str) -> bool:
+def positive_setting(name: str, default: int) -> int:
     try:
-        with urlopen(Request(target,headers={'Accept':'application/json'}), timeout=2) as response:
-            data=json.load(response)
-        return data.get('ok') is True and data.get('service') == expected
-    except (OSError, ValueError): return False
+        value = int(env(name, str(default)))
+    except ValueError:
+        raise RuntimeError(name + ' debe ser un entero positivo') from None
+    if value <= 0:
+        raise RuntimeError(name + ' debe ser un entero positivo')
+    return value
+
+
+def health_status(target: str, expected: str) -> tuple[bool, str]:
+    """Salud informativa. Un fallo HTTP no demuestra que el proceso terminó."""
+    timeout = positive_setting('SERVICE_HEALTH_TIMEOUT_SECONDS', 5)
+    try:
+        request = Request(target, headers={'Accept': 'application/json'})
+        with urlopen(request, timeout=timeout) as response:
+            data = json.load(response)
+        if not isinstance(data, dict):
+            return False, 'JSON de salud no es un objeto'
+        if data.get('ok') is not True or data.get('service') != expected:
+            return False, 'respuesta de salud no coincide con el servicio esperado'
+        return True, 'OK'
+    except (OSError, ValueError) as exc:
+        return False, f'{type(exc).__name__}: {exc}'
+
+
+def healthy(target: str, expected: str) -> bool:
+    return health_status(target, expected)[0]
+
+
+def service_health_path(name: str) -> str:
+    # /health/recovery describe al trabajador OLT. No es una condición
+    # válida para matar el servidor completo y sus consultas independientes.
+    return '/__proxy_health' if name == 'GRAFANA' else '/health'
+
+
+class ServiceHealthMonitor:
+    """Observa HTTP y avisa; nunca autoriza reiniciar un proceso vivo."""
+    def __init__(self, interval=30, warning_interval=60, clock=time.monotonic,
+                 probe=health_status, emit=print):
+        self.interval = interval
+        self.warning_interval = warning_interval
+        self.clock = clock
+        self.probe = probe
+        self.emit = emit
+        self.next_check = {}
+        self.failures = {}
+        self.next_warning = {}
+
+    def observe(self, name, process, target, expected):
+        if process is None:
+            return None
+        exit_code = process.poll()
+        if exit_code is not None:
+            return exit_code
+        now = self.clock()
+        if now < self.next_check.get(name, 0):
+            return None
+        good, detail = self.probe(target, expected)
+        now = self.clock()
+        self.next_check[name] = now + self.interval
+        previous = self.failures.get(name, 0)
+        self.failures[name] = 0 if good else previous + 1
+        if good:
+            if previous:
+                self.emit(f'[SALUD] {name} PID={process.pid} vuelve a responder')
+            self.next_warning.pop(name, None)
+        elif now >= self.next_warning.get(name, 0):
+            self.next_warning[name] = now + self.warning_interval
+            self.emit(
+                f'[AVISO SALUD] {name} PID={process.pid} '
+                f'fallos={self.failures[name]}: {detail}. '
+                'El proceso sigue activo; se conserva sin interrumpir consultas.'
+            )
+        # Puede haber terminado mientras se comprobaba HTTP.
+        return process.poll()
+
+    def reset(self, name):
+        self.next_check.pop(name, None)
+        self.failures.pop(name, None)
+        self.next_warning.pop(name, None)
 
 
 def stop(process):
@@ -104,17 +203,46 @@ def start_tunnel(prefix: str):
 
 
 def start_service(prefix: str, module: str, expected: str, health_path: str):
-    bind=required(prefix+'_HOST');number=port(prefix+'_PORT');check_host=client_host(prefix)
+    bind=service_host(prefix);number=service_port(prefix);check_host=client_host(prefix)
     health_url=url(check_host,number,health_path)
     if tcp_open(check_host,number):
         if not healthy(health_url,expected):
             raise RuntimeError(f'{prefix}: puerto {number} ocupado por un servicio que no responde con el health esperado')
+        if prefix == 'API' and module.endswith(':create_gateway'):
+            with urlopen(health_url, timeout=5) as response:
+                mode = json.load(response).get('mode')
+            if mode != 'gateway':
+                raise RuntimeError('El puerto API aún pertenece al backend anterior. Detén su iniciador antes de arrancar el modo separado.')
         print(f'[{prefix}] Servicio existente validado; no se reinicia');return None
     command=[sys.executable,'-m','uvicorn',module,'--host',bind,'--port',str(number)]
+    if module.endswith((':create_service', ':create_gateway')):
+        command.append('--factory')
     print(f'[{prefix}] Iniciando listener {bind}:{number}')
-    process=subprocess.Popen(command,cwd=ROOT,**process_options(boolean('UVICORN_SHOW_CONSOLE')))
+    show = boolean('UVICORN_SHOW_CONSOLE')
+    child_env = os.environ.copy()
+    child_env['PYTHONUNBUFFERED'] = '1'
+    if prefix in INDEPENDENT:
+        child_env['RKP_SERVICE_ID'] = INDEPENDENT[prefix].name
+    options = process_options(show)
+    if show:
+        process = subprocess.Popen(command, cwd=ROOT, env=child_env, **options)
+    else:
+        log_dir = Path(env('SERVICE_LOG_DIR', 'backend/storage/logs')).expanduser()
+        if not log_dir.is_absolute():
+            log_dir = ROOT / log_dir
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_path = log_dir / (prefix.lower() + '.log')
+        with log_path.open('ab', buffering=0) as output:
+            marker = f"\n--- {time.strftime('%Y-%m-%d %H:%M:%S')} inicio {prefix} ---\n"
+            output.write(marker.encode('utf-8'))
+            process = subprocess.Popen(
+                command, cwd=ROOT, env=child_env, stdout=output,
+                stderr=subprocess.STDOUT, **options,
+            )
+        print(f'[{prefix}] Log: {log_path}')
+
     try:
-        deadline=time.monotonic()+int(env('SERVICE_READY_TIMEOUT_SECONDS','45'))
+        deadline=time.monotonic()+positive_setting('SERVICE_READY_TIMEOUT_SECONDS',120)
         while time.monotonic()<deadline:
             if process.poll() is not None: raise RuntimeError(f'{prefix} terminó con código {process.returncode}')
             if healthy(health_url,expected):
@@ -127,6 +255,13 @@ def start_service(prefix: str, module: str, expected: str, health_path: str):
 
 def validate():
     load_env()
+    for key, default in (
+        ('SERVICE_HEALTH_TIMEOUT_SECONDS', 5),
+        ('SERVICE_HEALTH_INTERVAL_SECONDS', 30),
+        ('SERVICE_HEALTH_WARNING_SECONDS', 60),
+        ('SERVICE_READY_TIMEOUT_SECONDS', 120),
+    ):
+        positive_setting(key, default)
     for prefix in ['API','GRAFANA']:
         if prefix=='GRAFANA' and not boolean('GRAFANA_START_ENABLED',True): continue
         required(prefix+'_HOST');port(prefix+'_PORT');client_host(prefix)
@@ -160,16 +295,43 @@ def main() -> int:
     processes=[]
     try:
         os.chdir(ROOT);validate()
+        INDEPENDENT.clear()
+        for spec in catalog():
+            INDEPENDENT[spec.key] = spec
+        reserved = {port('API_PORT')}
+        if boolean('GRAFANA_START_ENABLED', True):
+            reserved.add(port('GRAFANA_PORT'))
+        for spec in INDEPENDENT.values():
+            if spec.port in reserved:
+                raise RuntimeError(f'{spec.name}: puerto {spec.port} coincide con API/Grafana')
+            print(f'[API INDEPENDIENTE] {spec.name}: 127.0.0.1:{spec.port}')
         if args.check:
             print('CHECK OK: validación de configuración; no prueba credenciales ni conectividad');return 0
+        # Rechazar el monolito antes de iniciar rutinas en otros procesos.
+        if tcp_open(client_host('API'), port('API_PORT')):
+            target = url(client_host('API'), port('API_PORT'), '/health')
+            with urlopen(target, timeout=5) as response:
+                existing = json.load(response)
+            if not isinstance(existing, dict) or existing.get('mode') != 'gateway' or existing.get('service') != 'Backend Datos API':
+                raise RuntimeError('Detén el iniciador anterior: el puerto principal todavía no pertenece al gateway.')
         for prefix in ['ORACLE','MYSQL']:
             if boolean(prefix+'_TUNNEL_ENABLED'):processes.append((prefix,start_tunnel(prefix)))
-        processes.append(('API',start_service('API','microservicios.app:app','Backend Datos API','/health')))
+        for name in INDEPENDENT:
+            processes.append((name, start_service(name, service_module(name), service_expected(name), '/health')))
+        processes.append(('API', start_service('API', service_module('API'), service_expected('API'), '/health')))
         if boolean('GRAFANA_START_ENABLED',True):
             processes.append(('GRAFANA',start_service('GRAFANA','microservicios.grafana_proxy.app:app','grafana-proxy','/__proxy_health')))
         print('\nServicios disponibles. Ctrl+C cierra solamente los procesos creados por este arranque.')
         print('XAMPP se administra por separado.')
-        warned=set();retry_at={};health_failures={};health_next={};restart_count={};stable_since={}
+        print(SUPERVISOR_VERSION)
+        print('HTTP lento o trabajador Helix degradado: aviso. Reinicio automático: solo si el proceso termina.')
+        monitor = ServiceHealthMonitor(
+            interval=positive_setting('SERVICE_HEALTH_INTERVAL_SECONDS', 30),
+            warning_interval=positive_setting('SERVICE_HEALTH_WARNING_SECONDS', 60),
+        )
+        warned = set()
+        retry_at, restart_count, stable_since = {}, {}, {}
+
         while True:
             for index,(name,process) in enumerate(processes):
                 tunnel=name in ('MYSQL','ORACLE')
@@ -180,18 +342,19 @@ def main() -> int:
                 if not tunnel:
                     # Solo supervisar/reiniciar procesos propios. None es un servicio externo.
                     if process is None:continue
-                    expected='Backend Datos API' if name=='API' else 'grafana-proxy'
-                    health_path='/health/recovery' if name=='API' else '/__proxy_health'
-                    if not down and now>=health_next.get(name,0):
-                        health_next[name]=now+15
-                        good=healthy(url(client_host(name),port(name+'_PORT'),health_path),expected)
-                        health_failures[name]=0 if good else health_failures.get(name,0)+1
-                        if good:
-                            stable_since.setdefault(name,now)
-                            if now-stable_since[name]>=300:restart_count[name]=0
-                        else:stable_since.pop(name,None)
-                    down=down or health_failures.get(name,0)>=3
-                    if not down:continue
+                    expected = service_expected(name)
+                    exit_code = monitor.observe(
+                        name, process,
+                        url(client_host(name), service_port(name), service_health_path(name)),
+                        expected,
+                    )
+                    now = time.monotonic()
+                    if exit_code is None:
+                        stable_since.setdefault(name, now)
+                        if now - stable_since[name] >= 300:
+                            restart_count[name] = 0
+                        continue
+                    stable_since.pop(name, None)
                     if now<retry_at.get(name,0):continue
                     if restart_count.get(name,0)>=5:
                         if name not in warned:
@@ -200,15 +363,15 @@ def main() -> int:
                         continue
                     restart_count[name]=restart_count.get(name,0)+1
                     retry_at[name]=now+min(120,10*restart_count[name])
-                    print('[RECUPERACION]',name,'reiniciando proceso propio, intento',restart_count[name])
+                    print('[RECUPERACION]',name,'PID='+str(process.pid),'terminó con código',exit_code,'; reinicio',restart_count[name])
                     # No se inicia un reemplazo hasta confirmar que terminó el anterior.
                     stop(process)
-                    health_failures[name]=0;stable_since.pop(name,None)
+                    monitor.reset(name)
                     try:
-                        module='microservicios.app:app' if name=='API' else 'microservicios.grafana_proxy.app:app'
-                        replacement=start_service(name,module,expected,'/health' if name=='API' else health_path)
+                        module=service_module(name)
+                        replacement=start_service(name,module,expected,service_health_path(name))
                         processes[index]=(name,replacement)
-                        health_next[name]=time.monotonic()+15
+                        monitor.reset(name)
                         warned.discard(name)
                     except Exception as exc:print('[REINTENTO]',name,str(exc))
                     continue
