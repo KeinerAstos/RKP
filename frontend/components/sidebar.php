@@ -218,6 +218,11 @@ $hfcRoutinesActive = array_key_exists(
         </span>
 
 
+        <a class="nav__item<?= $sidebarPage === 'estados-helix.php' ? ' active' : '' ?>" href="estados-helix.php"<?= $sidebarPage === 'estados-helix.php' ? ' aria-current="page"' : '' ?>>
+            <span class="nav__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5" /></svg></span>
+            <span class="nav__text">Estados Helix</span>
+        </a>
+
         <a class="nav__item<?= $sidebarPage === 'configuracion.php' ? ' active' : '' ?>" href="configuracion.php"
             <?= $sidebarPage === 'configuracion.php'
                 ? ' aria-current="page"'
