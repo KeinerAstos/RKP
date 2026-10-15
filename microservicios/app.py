@@ -4,12 +4,14 @@ import asyncio
 import os
 from contextlib import asynccontextmanager
 
+from microservicios.cmts.dashboard_hfc.router_helix import (
+    router as hfc_helix_router,)
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from microservicios.config import settings
-from microservicios.estados_helix.router import router as estados_helix_router
 from microservicios.olt.casos_helix import service as casos_helix_service
 from microservicios.olt.casos_helix.worker import start_worker as start_helix_worker
 from microservicios.olt.casos_helix.worker import stop_worker as stop_helix_worker
@@ -144,4 +146,4 @@ app.include_router(cmts_puertos_docsis_router, prefix="/api/cmts")
 app.include_router(cmts_intermitencias_router, prefix="/api/cmts")
 app.include_router(cmts_puertos_duplicados_router, prefix="/api/cmts")
 app.include_router(cmts_inits_router, prefix="/api/cmts")
-app.include_router(estados_helix_router)
+app.include_router(hfc_helix_router, prefix="/api/hfc")

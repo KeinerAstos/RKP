@@ -1,0 +1,1 @@
+{"generado_en": "2026-10-15T20:47:14.390668+00:00", "data": {"consulta": "intermitencias_por_caidas", "periodo": "ultimos_2_dias", "criterio": "mas_de_2_caidas_en_un_mismo_dia", "minimo_caidas_para_intermitencia": 3, "cantidad_olts": 0, "cantidad_puertos_intermitentes": 0, "datos": []}}

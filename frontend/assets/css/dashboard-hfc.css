@@ -476,3 +476,29 @@
 @media(max-width:760px){.dashboard-hfc-page .hfc-app{padding:8px 10px}.dashboard-hfc-page .hfc-sourcebar{align-items:stretch;flex-direction:column}.dashboard-hfc-page .hfc-exec-meta{grid-template-columns:1fr}.dashboard-hfc-page .hfc-exec-meta>div{border:0;display:grid;grid-template-columns:130px 1fr;gap:8px}.dashboard-hfc-page .hfc-kpis{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:12px}.dashboard-hfc-page .kpi{padding:0 12px}.dashboard-hfc-page .kpi strong{font-size:21px}.dashboard-hfc-page .hfc-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-hfc-page .hfc-filters label.grow{grid-column:1/-1}.dashboard-hfc-page .hfc-grid-top{grid-template-columns:1fr}.dashboard-hfc-page .hfc-table-section-head{align-items:stretch;flex-direction:column}.dashboard-hfc-page .hfc-analytics-toolbar{grid-template-columns:1fr 1fr}.dashboard-hfc-page .hfc-analytics-toolbar .grow{grid-column:1/-1}.dashboard-hfc-page .hfc-analytics-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-hfc-page .rf-grid,.dashboard-hfc-page .rf-toolbar{grid-template-columns:1fr}.dashboard-hfc-page .hfc-tab{min-height:44px}.dashboard-hfc-page .hfc-btn{min-height:44px}.dashboard-hfc-page .hfc-regional summary span{display:block;margin:4px 0}}
 @media(pointer:coarse){.dashboard-hfc-page :is(.hfc-btn,.hfc-zone-trigger,.hfc-filter-multi-trigger,input,select){min-height:44px}}
 @media(prefers-reduced-motion:reduce){.dashboard-hfc-page *{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* INC, WO y TAS de Helix en la columna Incidente */
+
+.dashboard-hfc-page .hfc-inc-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.dashboard-hfc-page .hfc-helix-cases {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.dashboard-hfc-page .hfc-helix-cases .badge {
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.dashboard-hfc-page .hfc-helix-status {
+    font-size: 11px;
+    color: #64748b;
+}

@@ -45,6 +45,7 @@ MAX_CASES = 3000
 
 _pool = None
 _pool_lock = threading.Lock()
+oracle_query_lock = threading.RLock()
 _query_metrics = ContextVar("helix_query_metrics", default=None)
 
 
@@ -736,19 +737,33 @@ def _desconexion(exc):
     }
 
 
+
 def _result(olt, deadline, register_cancel=None, alcance="puertos"):
-    for attempt in range(2):
-        try:
-            return _result_once(olt, deadline, register_cancel, alcance)
-        except HelixQueryError as exc:
-            if not _desconexion(exc):
-                raise
-            # El intento anterior ya devolvió/descartó su conexión en finally.
-            close_oracle_pool()
-            if attempt or (deadline is not None and time.monotonic() >= deadline):
-                raise
-            logger.warning("[HELIX RECUPERACION] Desconexión; nuevo pool y un reintento")
-    raise HelixQueryError("Oracle Helix no disponible")
+    with oracle_query_lock:
+        for attempt in range(2):
+            try:
+                return _result_once(
+                    olt, deadline, register_cancel, alcance
+                )
+            except HelixQueryError as exc:
+                if not _desconexion(exc):
+                    raise
+
+                close_oracle_pool()
+
+                if attempt or (
+                    deadline is not None
+                    and time.monotonic() >= deadline
+                ):
+                    raise
+
+                logger.warning(
+                    "[HELIX RECUPERACION] "
+                    "Desconexion; nuevo pool y un reintento"
+                )
+
+        raise HelixQueryError("Oracle Helix no disponible")
+
 
 
 def consultar_olt(
