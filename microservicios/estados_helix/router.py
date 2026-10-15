@@ -1,7 +1,7 @@
 """INC y TAS con al menos seis horas en su estado actual, según HPD_WORKLOG.
 
 No usa creación, última modificación ni cambios de responsable como sustitutos.
-Las lecturas comparten una transacción Oracle READ ONLY y un instante de corte.
+En paralelo, las lecturas comparten un SCN Oracle y un instante de corte.
 """
 from __future__ import annotations
 
@@ -183,7 +183,7 @@ def _limitar(connection, deadline):
 def _filas(cursor, connection, deadline):
     while True:
         _limitar(connection, deadline)
-        lote = cursor.fetchmany(500)
+        lote = cursor.fetchmany(300)
         if not lote:
             return
         yield from lote
@@ -197,10 +197,10 @@ ESTADOS_TAS_TODOS = {
 
 
 def _por_ids(cursor, connection, deadline, sql, ids):
-    """Consultas por lotes de hasta 200 IDs, nunca una por INC/WO."""
+    """Consultas por lotes de hasta estados_helix_batch_size IDs, nunca una por INC/WO."""
     valores = sorted(set(ids))
-    for inicio in range(0, len(valores), 200):
-        lote = valores[inicio:inicio + 200]
+    for inicio in range(0, len(valores), settings.estados_helix_batch_size):
+        lote = valores[inicio:inicio + settings.estados_helix_batch_size]
         binds = {f"id{n}": valor for n, valor in enumerate(lote)}
         nombres = ", ".join(":" + nombre for nombre in binds)
         _limitar(connection, deadline)
@@ -351,7 +351,7 @@ def agregar_relaciones(cursor, connection, deadline, incidentes, ahora):
         "fuente": "TMS_TASK y relaciones raiz directas e indirectas",
     }
 
-def consultar_incidentes(tipo="INC"):
+def _consultar_lote(tipo="INC", _ids=None, _scn=None, _ahora=None, _deadline=None):
     """Una conexión nueva por consulta; no comparte el pool de OLT."""
     perfil = PERFILES[tipo]
     estados = perfil["estados"]
@@ -362,7 +362,7 @@ def consultar_incidentes(tipo="INC"):
         raise HTTPException(503, "Falta configurar Oracle Helix en el .env")
     started = time.monotonic()
     budget = settings.oracle_helix_query_budget_seconds
-    deadline = started + budget if budget > 0 else None
+    deadline = _deadline if _deadline is not None else (started + budget if budget > 0 else None)
     dsn = oracledb.makedsn(
         settings.oracle_helix_host, settings.oracle_helix_port,
         service_name=settings.oracle_helix_service_name,
@@ -374,14 +374,18 @@ def consultar_incidentes(tipo="INC"):
         _limitar(connection, deadline)
         with connection.cursor() as cursor:
             cursor.arraysize = 500
-            cursor.prefetchrows = 500
+            cursor.prefetchrows = 300
+            cursor.arraysize = 300
+            if _scn is not None:
+                cursor = _CursorCorte(cursor, _scn, perfil, _ids)
             cursor.execute("SET TRANSACTION READ ONLY")
             _limitar(connection, deadline)
             cursor.execute("""
                 SELECT ROUND((CAST(SYS_EXTRACT_UTC(SYSTIMESTAMP) AS DATE)
                         - DATE '1970-01-01') * 86400) FROM dual
             """)
-            ahora = Decimal(str(cursor.fetchone()[0]))
+            ahora_leido = Decimal(str(cursor.fetchone()[0]))
+            ahora = _ahora if _ahora is not None else ahora_leido
             _limitar(connection, deadline)
             cursor.execute(perfil["sql"])
             incidentes = {}
@@ -452,6 +456,139 @@ def consultar_incidentes(tipo="INC"):
         perfil["coleccion"]: resultados,
         "duracion_segundos": round(time.monotonic() - started, 3),
     }
+
+
+# RKP_HELIX_WORKERS_300_V1
+class _CursorCorte:
+    """Aplica un SCN comun y restringe las consultas principales al lote."""
+    def __init__(self, cursor, scn, perfil, ids=None):
+        self.cursor, self.scn, self.perfil, self.ids = cursor, int(scn), perfil, ids
+
+    def __getattr__(self, name):
+        return getattr(self.cursor, name)
+
+    def execute(self, sql, binds=None):
+        params = dict(binds or {})
+        if self.ids is not None and sql in (self.perfil['sql'], self.perfil['historial']):
+            names = []
+            for n, value in enumerate(self.ids):
+                key = 'hx_lote_' + str(n)
+                params[key] = value
+                names.append(':' + key)
+            column = ('INCIDENT_NUMBER' if self.perfil is PERFILES['INC'] else 'TASK_ID')
+            if sql == self.perfil['historial']:
+                column = 'INCIDENT_NUMBER' if self.perfil is PERFILES['INC'] else 'TASKORTASKGROUPID'
+            # Insertar el filtro en la tabla fuente para limitar el trabajo Oracle.
+            if sql == self.perfil['historial']:
+                if self.perfil is PERFILES['INC']:
+                    sql = sql.replace('AND w.WORK_LOG_TYPE = 40000', 'AND w.WORK_LOG_TYPE = 40000 AND w.INCIDENT_NUMBER IN (' + (','.join(names) or 'NULL') + ')')
+                else:
+                    sql = sql.replace('WHERE w.WORKINFOTYPE = 40000', 'WHERE w.WORKINFOTYPE = 40000 AND w.TASKORTASKGROUPID IN (' + (','.join(names) or 'NULL') + ')')
+            elif self.perfil is PERFILES['INC']:
+                sql += ' AND i.INCIDENT_NUMBER IN (' + (','.join(names) or 'NULL') + ')'
+            else:
+                sql += ' WHERE TASK_ID IN (' + (','.join(names) or 'NULL') + ')'
+        sql = re.sub(r'\bARADMIN\.([A-Z_][A-Z0-9_]*)\b',
+                     lambda m: m.group(0) + ' AS OF SCN ' + str(self.scn), sql)
+        return self.cursor.execute(sql, params) if params else self.cursor.execute(sql)
+
+
+def _conexion_paralela(deadline):
+    restante = deadline - time.monotonic() if deadline is not None else 8
+    if restante <= 0:
+        raise TimeoutError('Presupuesto de consulta agotado')
+    return oracledb.connect(
+        user=settings.oracle_helix_user, password=settings.oracle_helix_password,
+        dsn=oracledb.makedsn(settings.oracle_helix_host, settings.oracle_helix_port,
+                             service_name=settings.oracle_helix_service_name),
+        tcp_connect_timeout=min(8, restante),
+    )
+
+
+def consultar_incidentes(tipo='INC'):
+    from concurrent.futures import ThreadPoolExecutor
+    from collections import deque
+    workers = settings.estados_helix_max_workers
+    size = settings.estados_helix_batch_size
+    if workers == 1:
+        return _consultar_lote(tipo)
+    if oracledb is None:
+        raise HTTPException(503, 'Falta instalar oracledb')
+    if not all((settings.oracle_helix_host, settings.oracle_helix_service_name,
+                settings.oracle_helix_user, settings.oracle_helix_password)):
+        raise HTTPException(503, 'Falta configurar Oracle Helix en el .env')
+    started = time.monotonic()
+    budget = settings.oracle_helix_query_budget_seconds
+    deadline = started + budget if budget > 0 else None
+    perfil = PERFILES[tipo]
+    with _conexion_paralela(deadline) as connection:
+        _limitar(connection, deadline)
+        with connection.cursor() as raw:
+            raw.arraysize = 300
+            raw.prefetchrows = 300
+            # No se abre una quinta conexion durante el trabajo de los workers.
+            raw.execute('SELECT DBMS_FLASHBACK.GET_SYSTEM_CHANGE_NUMBER, '
+                        "ROUND((CAST(SYS_EXTRACT_UTC(SYSTIMESTAMP) AS DATE) - DATE '1970-01-01') * 86400) FROM dual")
+            scn, ahora = raw.fetchone()
+            ahora = Decimal(str(ahora))
+            cur = _CursorCorte(raw, scn, perfil)
+            _limitar(connection, deadline)
+            cur.execute(perfil['sql'])
+            ids = []
+            seen = set()
+            for row in _filas(cur, connection, deadline):
+                key = str(row[0])
+                if key in seen:
+                    raise RuntimeError('Identificador duplicado en la vista Oracle')
+                seen.add(key)
+                ids.append(key)
+    # Solo cuatro futuros en vuelo; no precargar resultados de todos los lotes.
+    chunks = iter([ids[n:n + size] for n in range(0, len(ids), size)] or [[]])
+    total_batches = max(1, (len(ids) + size - 1) // size)
+    merged = None
+    done = 0
+    print(f'[HELIX] workers={workers}; lote={size}; registros={len(ids)}; lotes={total_batches}; SCN={int(scn)}', flush=True)
+    with ThreadPoolExecutor(max_workers=workers, thread_name_prefix='helix') as pool:
+        pending = deque()
+        def submit():
+            chunk = next(chunks, None)
+            if chunk is not None:
+                pending.append(pool.submit(_consultar_lote, tipo, chunk, scn, ahora, deadline))
+        for _ in range(workers):
+            submit()
+        try:
+            while pending:
+                data = pending.popleft().result()
+                if merged is None:
+                    merged = data
+                else:
+                    for key in (perfil['contador'], 'total', 'menores_de_6h', 'total_no_verificables'):
+                        merged[key] += data[key]
+                    merged[perfil['coleccion']].extend(data[perfil['coleccion']])
+                    merged['no_verificables'].extend(data['no_verificables'])
+                    for key in ('por_estado', 'motivos_no_verificables'):
+                        counter = Counter(merged[key]); counter.update(data[key]); merged[key] = dict(counter)
+                done += 1
+                print(f'[HELIX] lotes completos={done}/{total_batches}', flush=True)
+                submit()
+        except Exception:
+            for future in pending:
+                future.cancel()
+            raise
+    merged[perfil['coleccion']].sort(key=lambda r: (-r['segundos_en_estado'], r['numero']))
+    merged[perfil['cobertura']] = not merged['no_verificables']
+    if tipo == 'INC':
+        casos = merged['incidentes']
+        tasks = {t['numero']: t for caso in casos for t in caso['tareas']}
+        resumen = merged['resumen_relaciones']
+        resumen.update(total_tareas=len(tasks),
+                       inc_con_tareas=sum(bool(c['tareas']) for c in casos),
+                       tas_tiempo_verificable=sum(t['tiempo_estado_verificable'] for t in tasks.values()),
+                       tas_tiempo_no_verificable=sum(not t['tiempo_estado_verificable'] for t in tasks.values()))
+    merged['duracion_segundos'] = round(time.monotonic() - started, 3)
+    merged['ejecucion'] = {'workers_configurados': workers, 'workers_efectivos': min(workers, total_batches),
+                          'tamano_lote': size, 'lotes_totales': total_batches, 'scn': str(int(scn))}
+    return merged
 
 
 def _obtener(tipo):

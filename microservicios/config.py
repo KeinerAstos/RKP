@@ -64,6 +64,10 @@ class Settings(BaseSettings):
     mysql_database: str = ""
     mysql_connect_timeout: int = 10
 
+    # Estados Helix: limites exclusivos para esta consulta.
+    estados_helix_max_workers: int = Field(default=4, ge=1, le=4)
+    estados_helix_batch_size: int = Field(default=300, ge=1, le=300)
+
     # Oracle Helix, conectado mediante el puente local existente.
     oracle_helix_host: str = ""
     oracle_helix_port: int = 12101
