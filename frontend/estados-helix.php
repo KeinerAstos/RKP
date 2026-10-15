@@ -406,7 +406,26 @@
                 font-size: 20px
             }
         }
-    </style>
+    
+/* RKP_HELIX_DOS_TABLAS_V1 */
+.helix-estados #hx-cutoff,
+.helix-estados #hx-cutoff + p.hx-muted,
+.helix-estados #hx-status[data-state=success] {display:none!important}
+.helix-estados tbody tr:hover {background:transparent!important}
+.helix-estados tbody tr:hover td,
+.helix-estados tbody tr:hover td small {font-weight:700}
+.helix-estados tbody tr:hover td strong {font-weight:900}
+.helix-estados .hx-workspace {display:grid;grid-template-columns:minmax(0,1fr);gap:12px;min-width:0;align-items:start}
+.helix-estados .hx-workspace.has-detail {grid-template-columns:repeat(2,minmax(0,1fr))}
+.helix-estados #hx-view {min-width:0}
+.helix-estados #hx-detail {position:static!important;inset:auto!important;margin:0!important;width:auto!important;height:auto!important;min-width:0;max-width:100%!important;max-height:75dvh!important;overflow:auto;padding:14px;border:1px solid var(--gkp-line)!important;border-radius:12px!important;box-shadow:none!important;background:var(--gkp-surface);color:var(--gkp-ink)}
+.helix-estados #hx-detail[hidden] {display:none!important}
+.helix-estados #hx-detail .hx-detail-heading {position:static!important;display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.helix-estados #hx-detail-body>h3 {margin:16px 0 10px}
+.helix-estados #hx-detail .hx-scroll {max-height:48dvh}
+@media(max-width:1000px){.helix-estados .hx-workspace.has-detail{grid-template-columns:repeat(2,minmax(360px,1fr));overflow-x:auto}}
+
+</style>
 </head>
 
 <body class="gkp-page helix-estados-page">
@@ -455,7 +474,8 @@
                     <button type="button" id="hx-export" disabled>Exportar CSV</button><button type="button"
                         id="hx-refresh" class="hx-primary">Actualizar</button>
                 </div>
-                <section id="hx-view" role="tabpanel" aria-labelledby="hx-inc-tab" class="hx-panel hx-results"
+                <div class="hx-workspace" id="hx-workspace">
+<section id="hx-view" role="tabpanel" aria-labelledby="hx-inc-tab" class="hx-panel hx-results"
                     tabindex="0">
                     <div class="hx-scroll" tabindex="0" role="region" aria-label="Resultados; desplazamiento de tabla">
                         <table>
@@ -468,15 +488,12 @@
                             id="hx-prev" disabled>Anterior</button><button type="button" id="hx-next"
                             disabled>Siguiente</button></div>
                 </section>
-                <dialog id="hx-detail" aria-labelledby="hx-detail-title">
-                    <div class="hx-detail-heading">
-                        <h3 id="hx-detail-title">Detalle del incidente</h3>
-                        <button type="button" id="hx-detail-close" autofocus>
-                            Cerrar
-                        </button>
-                    </div>
-                    <div id="hx-detail-body"></div>
-                </dialog>
+<aside id="hx-detail" class="hx-panel" aria-labelledby="hx-detail-title" hidden>
+<div class="hx-detail-heading"><h3 id="hx-detail-title">Detalle del incidente</h3><button type="button" id="hx-detail-close">Cerrar</button></div>
+<div id="hx-detail-body"></div>
+</aside>
+</div>
+                
                 <dialog id="hx-dialog" aria-labelledby="hx-dialog-title">
                     <div class="hx-detail-heading">
                         <h3 id="hx-dialog-title">Evidencia del estado actual</h3><button type="button"
@@ -518,61 +535,41 @@
                 target.append(dl, node('p', 'Evidencia de entrada al estado actual; la API no entrega una secuencia completa de transiciones.', 'hx-muted'));
             }
             function openEvidence(record, b) { trigger = b; evidence(record, $('evidence')); $('dialog').showModal(); }
-            let detailTrigger = null;
-
-            function openDetail(result, b) {
-                detailTrigger = b;
-
-                const incident = result.inc;
-                const body = $('detail-body');
-
-                $('detail-title').textContent = `Detalle de ${incident.numero}`;
-                body.replaceChildren();
-
-                if (tab === 'inc') {
-                    const info = node('div');
-                    evidence(incident, info);
-                    info.prepend(node('h3', 'Evidencia del estado actual'));
-                    body.append(info);
-                } else {
-                    body.append(node('p', incident.titulo || 'Sin título'));
-                }
-
-                body.append(node('h3', `Tareas de ${incident.numero}`));
-
-                if (result.tasks.length) {
-                    body.append(taskTable(result.tasks));
-                } else {
-                    body.append(node(
-                        'p',
-                        'Este INC no tiene TAS verificables relacionadas.',
-                        'hx-muted'
-                    ));
-                }
-
-                if (tab === 'tas' &&
-                    ($('search').value.trim() || $('state').value)) {
-                    body.append(node(
-                        'p',
-                        'Filtro activo: se muestran únicamente las TAS coincidentes.',
-                        'hx-muted'
-                    ));
-                }
-
-                $('detail').showModal();
-                $('detail').scrollTop = 0;
-            }
-
-            $('detail-close').addEventListener('click', () => {
-                $('detail').close();
-            });
-
-            $('detail').addEventListener('close', () => {
-                if (detailTrigger?.isConnected) detailTrigger.focus();
-            });
-            $('dialog-close').addEventListener('click', () => $('dialog').close());
-            $('dialog').addEventListener('close', () => { if (trigger?.isConnected) trigger.focus(); });
-            function titleCell(record) { const td = node('td'); td.append(node('strong', record.numero), node('small', record.titulo || 'Sin título')); return td; }
+    $('dialog-close').addEventListener('click', () => $('dialog').close());
+    $('dialog').addEventListener('close', () => { if (trigger?.isConnected) trigger.focus(); });
+    let detailTrigger = null;
+    function closeDetail(restoreFocus = true) {
+        $('detail').hidden = true;
+        $('workspace').classList.remove('has-detail');
+        if (restoreFocus && detailTrigger?.isConnected) detailTrigger.focus();
+    }
+    function openDetail(result, b) {
+        detailTrigger = b;
+        const i = result.inc, body = $('detail-body');
+        $('detail-title').textContent = `Detalle de ${i.numero}`;
+        body.replaceChildren();
+        const info = node('div');
+        evidence(i, info);
+        info.prepend(node('h3', 'Evidencia del estado actual'));
+        body.append(info, node('h3', `Tareas de ${i.numero}`));
+        if (result.tasks.length) body.append(taskTable(result.tasks));
+        else body.append(node('p', 'Este INC no tiene TAS verificables relacionadas.', 'hx-muted'));
+        if (tab === 'tas' && ($('search').value.trim() || $('state').value)) body.append(node('p', 'Filtro activo: se muestran únicamente las TAS coincidentes.', 'hx-muted'));
+        root.querySelectorAll('#hx-rows .hx-eye').forEach(eyeButton => eyeButton.setAttribute('aria-expanded', String(eyeButton === b)));
+        $('detail').hidden = false;
+        $('workspace').classList.add('has-detail');
+        $('detail').scrollTop = 0;
+    }
+    $('detail-close').addEventListener('click', () => {
+        closeDetail();
+        root.querySelectorAll('#hx-rows .hx-eye').forEach(b => b.setAttribute('aria-expanded', 'false'));
+    });
+    root.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !$('detail').hidden && !$('dialog').open) {
+            $('detail-close').click();
+        }
+    });
+    function titleCell(record) { const td = node('td'); td.append(node('strong', record.numero), node('small', record.titulo || 'Sin título')); return td; }
             function taskTable(rows) {
                 const wrap = node('div', null, 'hx-scroll'); wrap.tabIndex = 0; wrap.setAttribute('role', 'region'); wrap.setAttribute('aria-label', 'Tareas verificables relacionadas');
                 const table = node('table'), head = node('thead'), tr = node('tr'), body = node('tbody');
@@ -590,6 +587,7 @@
                 return rows;
             }
             function render() {
+        closeDetail(false);
                 visible = selectRows(); page = Math.min(page, Math.max(0, Math.ceil(visible.length / pageSize) - 1));
                 const head = node('tr');
                 (tab === 'inc' ? ['INC / título', 'Estado actual', 'Tiempo en estado', 'Grupo de soporte', 'TAS verificables', 'Detalle'] : ['INC / título', 'TAS verificables visibles', 'Estados de TAS visibles', 'Mayor tiempo de TAS', 'Detalle']).forEach(t => { const th = node('th', t); th.scope = 'col'; head.append(th); });
@@ -599,20 +597,11 @@
                     if (tab === 'inc') row.append(node('td', i.estado), node('td', duration(r.seconds), 'hx-time'), node('td', i.grupo_soporte || '—'), node('td', r.tasks.length));
                     else { const counts = new Map(); r.tasks.forEach(t => counts.set(t.estado, (counts.get(t.estado) || 0) + 1)); row.append(node('td', r.tasks.length), node('td', [...counts].map(([s, n]) => `${s}: ${n}`).join(' · ')), node('td', duration(r.seconds), 'hx-time')); }
                     const control = node('td');
-
-                    const b = button(
-                        `Ver ${tab === 'inc' ? 'detalle' : 'tareas'} de ${i.numero}`,
-                        () => openDetail(r, b),
-                        true
-                    );
-
-                    b.setAttribute('aria-haspopup', 'dialog');
-                    b.setAttribute('aria-controls', 'hx-detail');
-
-                    control.append(b);
-                    row.append(control);
-                    $('rows').append(row);
-                });
+            const b = button(`Ver detalle de ${i.numero}`, () => openDetail(r, b), true);
+            b.setAttribute('aria-controls', 'hx-detail');
+            b.setAttribute('aria-expanded', 'false');
+            control.append(b); row.append(control); $('rows').append(row);
+        });
                 $('empty').hidden = visible.length > 0 || !payload;
                 $('empty').textContent = incidents.length === 0 ? 'La consulta no devolvió INC verificables que cumplan el umbral.' : (tab === 'tas' && !incidents.some(i => tasks(i).length) ? 'No hay TAS verificables relacionadas con estos INC.' : 'No hay coincidencias con los filtros actuales.');
                 $('page').textContent = payload ? `${visible.length} ${tab === 'inc' ? 'INC' : 'grupos INC'}${$('search').value.trim() || $('state').value ? ' · Filtro activo' : ''} · Página ${page + 1} de ${Math.max(1, Math.ceil(visible.length / pageSize))}` : 'Sin resultado disponible';
