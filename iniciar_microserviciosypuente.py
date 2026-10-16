@@ -217,6 +217,8 @@ def start_service(prefix: str, module: str, expected: str, health_path: str):
     command=[sys.executable,'-m','uvicorn',module,'--host',bind,'--port',str(number)]
     if module.endswith((':create_service', ':create_gateway')):
         command.append('--factory')
+    if prefix == 'SVC_CMTS_HFC_CASOS_HELIX':
+        command.extend(['--workers', '3'])
     print(f'[{prefix}] Iniciando listener {bind}:{number}')
     show = boolean('UVICORN_SHOW_CONSOLE')
     child_env = os.environ.copy()

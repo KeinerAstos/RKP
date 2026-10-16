@@ -26,6 +26,7 @@ KNOWN = {
         'olt/temperatura', 'olt/topologias',
     ))
 }
+KNOWN['cmts/hfc_casos_helix'] = 31404
 METHODS = {'get', 'post', 'put', 'patch', 'delete', 'head', 'options'}
 
 @dataclass(frozen=True)
@@ -84,7 +85,15 @@ def catalog():
         if any(part.startswith('.') or part in {'__pycache__', 'venv', '.venv'} for part in relative.parts):
             continue
         name = relative.as_posix()
-        mount = '/api/' + relative.parts[0] if relative.parts[0] in {'olt', 'cmts'} else ''
+
+        if name == 'cmts/hfc_casos_helix':
+            mount = ''
+        else:
+            mount = (
+                '/api/' + relative.parts[0]
+                if relative.parts[0] in {'olt', 'cmts'}
+                else ''
+            )
         declared = read_routes(path, mount)
         if not declared:
             continue

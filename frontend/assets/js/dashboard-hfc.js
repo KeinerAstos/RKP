@@ -34,6 +34,10 @@ const PAGE=35;let rows=[],incs=[],filtered=[],page=1,selectedZone="";
 
 /* CATALOGO NODOS COMUNIDAD ALIADO JS V1 */
 let selectedZones=new Set();
+const hfcExtra=window.hfcExtraFilters={
+    vendor:new Set(),
+    cmts:new Set()
+};
 
 /* BEGIN HFC MULTIFILTRO ESTADO INCIDENTE V1 */
 let selectedStates=new Set();
@@ -418,10 +422,48 @@ function hfcDescripcionCorta(valor){
 
 /* HFC HELIX: INC, WO y TAS por nodo */
 
+// Fotografia completa Helix: solo conteos por nodo, no numeros de caso.
+let hfcHelixGlobal = null;
+let hfcHelixGlobalError = null;
+function hfcHelixNodos(valor) {
+  return [...new Set(String(valor ?? "").toUpperCase().split(",")
+    .map(s => s.trim()).filter(s => /^[A-Z0-9._-]{1,120}$/.test(s)))];
+}
+function hfcHelixEstadoGlobalFila(fila) {
+  if (!hfcHelixGlobal?.nodos) return null;
+  const nodos = hfcHelixNodos(fila.service_group);
+  if (!nodos.length) return "PENDIENTE";
+  if (nodos.some(n => !Object.prototype.hasOwnProperty.call(hfcHelixGlobal.nodos, n)))
+    return "PENDIENTE";
+  return nodos.some(n => {
+    const d = hfcHelixGlobal.nodos[n];
+    return Number(d.inc || 0) + Number(d.wo || 0) + Number(d.tas || 0) > 0;
+  }) ? "CON_CASOS" : "SIN_CASOS";
+}
+async function hfcHelixCargarGlobal() {
+  try {
+    const url = window.dhUrl("backend/api/hfc_helix_global.php");
+    const respuesta = await fetch(url, {cache:"no-store", signal:AbortSignal.timeout(15000)});
+    const json = await respuesta.json();
+    if (!respuesta.ok || json.ok !== true || json.data?.estado !== "completo_nodos_validos"
+        || typeof json.data.nodos !== "object" || !json.data.nodos
+        || Object.keys(json.data.nodos).length !== Number(json.data.nodos_consultados)) {
+      throw new Error("Snapshot Helix incompleto");
+    }
+    hfcHelixGlobal = json.data;
+    hfcHelixGlobalError = null;
+  } catch (error) {
+    hfcHelixGlobalError = String(error.message || error);
+    console.warn("[HFC HELIX GLOBAL]", hfcHelixGlobalError);
+    // Conservar la ultima fotografia valida en memoria.
+  }
+}
 const hfcHelixCache = new Map();
 const hfcHelixPendientes = [];
 const hfcHelixEnCola = new Set();
-let hfcHelixProcesando = false;
+const hfcHelixEnCurso = new Set();
+const HFC_HELIX_WORKERS = 3;
+let hfcHelixActivos = 0;
 
 const HFC_HELIX_TTL_OK = 120000;
 const HFC_HELIX_TTL_ERROR = 30000;
@@ -443,8 +485,39 @@ function hfcHelixEstado(nodo) {
     hfcHelixCache.delete(nodo);
     return null;
   }
-
   return dato;
+}
+
+// Permite que el panel lateral reutilice los casos ya consultados.
+window.hfcHelixGetResult = nodo =>
+    hfcHelixEstado(hfcHelixNodo(nodo));
+
+function hfcHelixEstadoFiltro(fila) {
+    if (hfcHelixNodo(fila.observacion) === "ENGANCHADO") {
+        return "NO_APLICA";
+    }
+
+    const global = hfcHelixEstadoGlobalFila(fila);
+    if (global) return global === "PENDIENTE" ? "CONSULTANDO" : global;
+    const nodo = hfcHelixNodo(fila.service_group);
+    const resultado = hfcHelixEstado(nodo);
+
+    if (!resultado) {
+        return "CONSULTANDO";
+    }
+
+    if (resultado.estado !== "ok") {
+        return "NO_DISPONIBLE";
+    }
+
+    const datos = resultado.data || {};
+
+    const total =
+        Number(datos.inc || 0) +
+        Number(datos.wo || 0) +
+        Number(datos.tas || 0);
+
+    return total > 0 ? "CON_CASOS" : "SIN_CASOS";
 }
 
 function hfcHelixHTML(nodo) {
@@ -464,40 +537,78 @@ function hfcHelixHTML(nodo) {
   const tas = Number(d.tas || 0);
 
   if (inc + wo + tas === 0) {
-    return '<small class="hfc-helix-status">Helix: Sin casos</small>';
+    return '<span class="badge hfc-badge-sin-casos">SIN CASOS</span>';
   }
 
   return `
     <div class="hfc-helix-cases">
-      <span class="badge review">INC ${inc}</span>
-      <span class="badge review">WO ${wo}</span>
-      <span class="badge review">TAS ${tas}</span>
+      <span class="badge hfc-badge-inc">INC ${inc}</span>
+      <span class="badge hfc-badge-wo">WO ${wo}</span>
+      <span class="badge hfc-badge-tas">TAS ${tas}</span>
     </div>
   `;
 }
 
+function hfcHelixNoAplica(r) {
+  return String(r?.observacion ?? "")
+    .trim()
+    .toUpperCase() === "ENGANCHADO";
+}
+
+
 function badgeInc(r) {
-  let c = "review";
+  if (hfcHelixNoAplica(r)) {
+    return `
+      <div class="hfc-inc-cell">
+        <span class="badge hfc-badge-no-aplica">NO APLICA</span>
+      </div>
+    `;
+  }
 
-  if (r.inc_status === "CON INCIDENTE") c = "ok";
-  else if (r.inc_status === "SIN INCIDENTE") c = "bad";
-  else if (r.inc_status === "NO APLICA") c = "neutral";
-
+  const nodos = hfcHelixNodos(r.service_group);
+  const global = hfcHelixEstadoGlobalFila(r);
+  if (global && (nodos.length > 1 || !hfcHelixEstado(nodos[0]))) {
+    if (global === "CON_CASOS") return '<div class="hfc-inc-cell"><span class="badge hfc-badge-inc">CON CASOS</span></div>';
+    if (global === "SIN_CASOS") return '<div class="hfc-inc-cell"><span class="badge hfc-badge-sin-casos">SIN CASOS</span></div>';
+    return '<div class="hfc-inc-cell"><span class="badge neutral">PENDIENTE</span></div>';
+  }
+  if (nodos.length > 1 && !global) {
+    return '<div class="hfc-inc-cell"><span class="badge neutral">SIN COBERTURA GLOBAL</span></div>';
+  }
   const nodo = hfcHelixNodo(r.service_group);
+  const resultado = hfcHelixEstado(nodo);
+
+  if (!resultado) {
+    return `
+      <div class="hfc-inc-cell">
+        <span class="badge neutral">CONSULTANDO</span>
+      </div>
+    `;
+  }
+
+  if (resultado.estado !== "ok") {
+    return `
+      <div class="hfc-inc-cell">
+        <span class="badge neutral">NO DISPONIBLE</span>
+      </div>
+    `;
+  }
 
   return `
     <div class="hfc-inc-cell">
-      <span class="badge ${c}">${esc(incText(r))}</span>
-      <div class="hfc-helix-result">
-        ${hfcHelixHTML(nodo)}
-      </div>
+      ${hfcHelixHTML(nodo)}
     </div>
   `;
 }
 
+
 function hfcHelixActualizarFilas(nodo) {
+  const nodoNormalizado = hfcHelixNodo(nodo);
+
   document.querySelectorAll("#networkBody tr[data-node]").forEach(tr => {
-    if (hfcHelixNodo(tr.dataset.node) !== nodo) return;
+    if (hfcHelixNodo(tr.dataset.node) !== nodoNormalizado) {
+      return;
+    }
 
     const fila = window.__HFC_EXEC_CURRENT_ROWS__?.[
       Number(tr.dataset.index)
@@ -506,107 +617,153 @@ function hfcHelixActualizarFilas(nodo) {
     if (!fila) return;
 
     const celda = tr.children[7];
-    if (celda) celda.innerHTML = badgeInc(fila);
-  });
-}
 
-function hfcHelixEsperar(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function hfcHelixProcesarCola() {
-  if (hfcHelixProcesando) return;
-
-  hfcHelixProcesando = true;
-
-  try {
-    while (hfcHelixPendientes.length) {
-      const nodo = hfcHelixPendientes.shift();
-      hfcHelixEnCola.delete(nodo);
-
-      if (hfcHelixEstado(nodo)) {
-        hfcHelixActualizarFilas(nodo);
-        continue;
-      }
-
-      // Evitar consultar nodos que ya no están visibles.
-      const visible = [...document.querySelectorAll(
-        "#networkBody tr[data-node]"
-      )].some(tr => hfcHelixNodo(tr.dataset.node) === nodo);
-
-      if (!visible) continue;
-
-      try {
-        const url = window.dhUrl(
-          "backend/api/hfc_casos_helix.php"
-        );
-
-        const respuesta = await fetch(
-          url + "?nodo=" + encodeURIComponent(nodo),
-          {
-            method: "GET",
-            headers: { Accept: "application/json" },
-            signal: AbortSignal.timeout(40000)
-          }
-        );
-
-        if (!respuesta.ok) {
-          throw new Error("HTTP " + respuesta.status);
-        }
-
-        const json = await respuesta.json();
-
-        if (
-          json.ok !== true ||
-          !json.data ||
-          hfcHelixNodo(json.data.nodo) !== nodo ||
-          !["inc", "wo", "tas"].every(
-            campo => Number.isFinite(Number(json.data[campo]))
-          )
-        ) {
-          throw new Error("Respuesta Helix inválida");
-        }
-
-        hfcHelixCache.set(nodo, {
-          estado: "ok",
-          data: json.data,
-          fecha: Date.now()
-        });
-
-      } catch (error) {
-        console.warn("[HFC HELIX]", nodo, error.message);
-
-        hfcHelixCache.set(nodo, {
-          estado: "error",
-          fecha: Date.now()
-        });
-      }
-
-      hfcHelixActualizarFilas(nodo);
-
-      await hfcHelixEsperar(HFC_HELIX_PAUSA);
+    if (celda) {
+      celda.innerHTML = badgeInc(fila);
     }
-  } finally {
-    hfcHelixProcesando = false;
+  });
+
+  // Actualizar también el panel lateral si está escuchando.
+  document.dispatchEvent(
+    new CustomEvent("hfc-helix-actualizado", {
+      detail: { nodo: nodoNormalizado }
+    })
+  );
+  hfcActualizarKpiHelix();
+}
+
+async function hfcHelixConsultarUno(nodo) {
+  try {
+    const url = window.dhUrl(
+      "backend/api/hfc_casos_helix.php"
+    );
+
+    const respuesta = await fetch(
+      url + "?nodo=" + encodeURIComponent(nodo),
+      {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(40000)
+      }
+    );
+
+    if (!respuesta.ok) {
+      throw new Error("HTTP " + respuesta.status);
+    }
+
+    const json = await respuesta.json();
+
+    if (
+      json.ok !== true ||
+      !json.data ||
+      hfcHelixNodo(json.data.nodo) !== nodo ||
+      !["inc", "wo", "tas"].every(
+        campo => Number.isFinite(Number(json.data[campo]))
+          && Number(json.data[campo]) >= 0
+      )
+    ) {
+      throw new Error("Respuesta Helix inválida");
+    }
+
+    hfcHelixCache.set(nodo, {
+      estado: "ok",
+      data: json.data,
+      fecha: Date.now()
+    });
+
+  } catch (error) {
+    console.warn("[HFC HELIX]", nodo, error.message);
+
+    hfcHelixCache.set(nodo, {
+      estado: "error",
+      fecha: Date.now()
+    });
+  }
+
+  hfcHelixActualizarFilas(nodo);
+}
+
+function hfcHelixProcesarCola() {
+  while (
+    hfcHelixActivos < HFC_HELIX_WORKERS &&
+    hfcHelixPendientes.length > 0
+  ) {
+    const nodo = hfcHelixPendientes.shift();
+    hfcHelixEnCola.delete(nodo);
+
+    if (
+      hfcHelixEstado(nodo) ||
+      hfcHelixEnCurso.has(nodo)
+    ) {
+      continue;
+    }
+
+    // Consultar exclusivamente nodos visibles
+    // que no tengan estado ENGANCHADO.
+    const visible = [...document.querySelectorAll(
+      "#networkBody tr[data-node]"
+    )].some(tr => {
+      if (hfcHelixNodo(tr.dataset.node) !== nodo) {
+        return false;
+      }
+
+      const fila = window.__HFC_EXEC_CURRENT_ROWS__?.[
+        Number(tr.dataset.index)
+      ];
+
+      return fila && !hfcHelixNoAplica(fila);
+    });
+
+    if (!visible) continue;
+
+    hfcHelixActivos++;
+    hfcHelixEnCurso.add(nodo);
+
+    void hfcHelixConsultarUno(nodo).finally(() => {
+      hfcHelixActivos--;
+      hfcHelixEnCurso.delete(nodo);
+      hfcHelixProcesarCola();
+    });
   }
 }
 
 function hfcHelixConsultarVisibles() {
-  // Descartar solicitudes pendientes de páginas anteriores.
+  // Descartar pendientes de páginas anteriores.
+  // No interrumpir consultas ya iniciadas.
   hfcHelixPendientes.length = 0;
   hfcHelixEnCola.clear();
 
-  document.querySelectorAll("#networkBody tr[data-node]").forEach(tr => {
+  document.querySelectorAll(
+    "#networkBody tr[data-node]"
+  ).forEach(tr => {
     const nodo = hfcHelixNodo(tr.dataset.node);
 
-    if (!/^[A-Z0-9._-]{1,120}$/.test(nodo)) return;
-    if (hfcHelixEstado(nodo) || hfcHelixEnCola.has(nodo)) return;
+    const fila = window.__HFC_EXEC_CURRENT_ROWS__?.[
+      Number(tr.dataset.index)
+    ];
+
+    if (!fila || hfcHelixNoAplica(fila)) return;
+
+    if (hfcHelixNodos(nodo).length !== 1 || nodo.includes(",")) {
+      return; // Los compuestos se cubren mediante el snapshot global.
+    }
+    if (hfcHelixEstadoGlobalFila(fila)) {
+      return; // La tabla ya dispone del estado global; el detalle es bajo demanda.
+    }
+
+    if (
+      hfcHelixEstado(nodo) ||
+      hfcHelixEnCola.has(nodo) ||
+      hfcHelixEnCurso.has(nodo)
+    ) {
+      return;
+    }
 
     hfcHelixPendientes.push(nodo);
     hfcHelixEnCola.add(nodo);
   });
 
-  void hfcHelixProcesarCola();
+  hfcHelixProcesarCola();
 }
 
 /* HFC TABLE HEADERS UPDATE V1 */
@@ -779,7 +936,7 @@ async function refresh(){
   if(hfcRefreshing)return;
   hfcRefreshing=true;
   try{
-    const [a,b]=await Promise.all([fetchJSON(API.estado),fetchJSON(API.inc)]);
+    const [a,b]=await Promise.all([fetchJSON(API.estado),fetchJSON(API.inc),hfcHelixCargarGlobal()]);
     rows=a.rows||[];incs=b.rows||[];window.__HFC_EXEC_ALL_ROWS__=rows;loadFilters();apply();renderIncidents();
     $("liveStatus").textContent=`Base cargada · ${fmt(rows.length)} elementos · chequeo de cambios ${window.RKP_HFC_POLL_MS/1000} s`;
     window.dispatchEvent(new CustomEvent('rkp-hfc-data',{detail:{total:rows.length}}));
@@ -803,23 +960,98 @@ function loadFilters(){
   $("fCmts").innerHTML='<option value="">Todos</option>'+cmts.map(x=>`<option>${esc(x)}</option>`).join("");
   $("zoneDetailSelect").innerHTML='<option value="">Seleccionar ciudad...</option>'+zones.map(x=>`<option>${esc(x)}</option>`).join("");
   if(cmts.includes(cv))$("fCmts").value=cv;if(zones.includes(dv))$("zoneDetailSelect").value=dv;
+  $("fInc").innerHTML = `
+    <option value="CON_CASOS">Con casos</option>
+    <option value="SIN_CASOS">Sin casos</option>
+    <option value="NO_APLICA">No aplica</option>
+    <option value="CONSULTANDO">Consultando</option>
+    <option value="NO_DISPONIBLE">No disponible</option>
+`;
   zoneMultiRender();stateMultiRender();incMultiRender();
 }
 function apply(){
   const v=$("fVendor").value,c=$("fCmts").value,q=$("fSearch").value.trim().toUpperCase();
   filtered=rows.filter(r=>{
-    if(selectedZone&&r.zona!==selectedZone)return false;if(v&&vendor(r)!==v)return false;if(selectedZones.size>0&&!selectedZones.has(r.zona))return false;if(c&&r.cmts!==c)return false;if(selectedStates.size>0&&!selectedStates.has(r.observacion))return false;if(selectedIncStatuses.size>0&&!selectedIncStatuses.has(r.inc_status))return false;
+    if(selectedZone&&r.zona!==selectedZone)return false;if(v&&vendor(r)!==v)return false;if(hfcExtra.vendor.size&&!hfcExtra.vendor.has(vendor(r)))return false;if(selectedZones.size>0&&!selectedZones.has(r.zona))return false;if(c&&r.cmts!==c)return false;if(hfcExtra.cmts.size&&!hfcExtra.cmts.has(r.cmts))return false;if(selectedStates.size>0&&!selectedStates.has(r.observacion))return false;if (selectedIncStatuses.size > 0 &&!selectedIncStatuses.has(hfcHelixEstadoFiltro(r))){return false;}
     if(q&&!`${vendor(r)} ${r.zona} ${r.cmts} ${r.service_group} ${r.ip} ${r.descripcion}`.toUpperCase().includes(q))return false;return true;
   });page=1;render();
 }
 function render(){
   renderKpis();renderTop10();renderZoneDetail();renderTable();
 }
+/* HFC - Resumen de casos confirmados en caché Helix */
+function hfcResumenCasosCache() {
+    const filas = filtered.filter(affected);
+    const resumen = {sinCasos: 0, conCasos: 0, pendientes: 0, errores: 0};
+    // Comparar la cantidad del inventario completo evita presentar como vigente
+    // un snapshot de una version HFC con diferente numero de afectados.
+    const afectadosActuales = rows.filter(affected).length;
+    const vigente = hfcHelixGlobal &&
+      afectadosActuales === Number(hfcHelixGlobal.registros_afectados);
+    if (!vigente) {
+      resumen.pendientes = filas.length;
+      return resumen;
+    }
+    for (const fila of filas) {
+      const estado = hfcHelixEstadoGlobalFila(fila);
+      if (estado === "CON_CASOS") resumen.conCasos++;
+      else if (estado === "SIN_CASOS") resumen.sinCasos++;
+      else resumen.pendientes++;
+    }
+    return resumen;
+}
+
+/* Actualizar solamente la segunda tarjeta */
+function hfcActualizarKpiHelix() {
+    const tarjeta = $('kpis')?.children[1];
+    if (!tarjeta) return;
+
+    const resumen = hfcResumenCasosCache();
+
+    const titulo = tarjeta.querySelector(
+        '.hfc-summary-card__label'
+    ) || tarjeta.querySelector('span');
+
+    const valor = tarjeta.querySelector(
+        '.hfc-summary-card__value'
+    ) || tarjeta.querySelector('strong');
+
+    const detalle = tarjeta.querySelector(
+        '.hfc-summary-card__meta'
+    ) || tarjeta.querySelector('small');
+
+    if (titulo) {
+        titulo.textContent = 'Sin casos Helix';
+    }
+
+    if (valor) {
+        valor.textContent = fmt(resumen.sinCasos);
+    }
+
+    if (detalle) {
+        detalle.textContent =
+            `Con casos ${fmt(resumen.conCasos)} · ` +
+            `Pendientes ${fmt(resumen.pendientes)} · ` +
+            `No disponibles ${fmt(resumen.errores)}` +
+            (hfcHelixGlobal ? ` · Foto ${hfcHelixGlobal.calculado_en || "sin fecha"}` :
+            ` · Sin snapshot global${hfcHelixGlobalError ? " (error de carga)" : ""}`);
+    }
+}
 function renderKpis(){
   const aff=filtered.filter(affected),total=aff.filter(r=>totalAffectedState(r.observacion)).length,part=aff.filter(r=>partialAffectedState(r.observacion)).length;
   const without=aff.filter(r=>r.inc_status==='SIN INCIDENTE').length,withInc=aff.filter(r=>r.inc_status==='CON INCIDENTE').length;
   const data=[['Afectados',aff.length,`Total ${fmt(total)} · Parcial ${fmt(part)}`],['Sin incidente',without,`Afectados · con incidente ${fmt(withInc)}`],['Elementos en alcance',filtered.length,`Dataset completo ${fmt(rows.length)}`],['Fabricantes',`${fmt(filtered.filter(r=>vendor(r)==='CASA').length)} / ${fmt(filtered.filter(r=>vendor(r)==='ARRIS').length)}`,'CASA / ARRIS · alcance filtrado']];
-  $('kpis').innerHTML=data.map(([label,value,detail])=>`<article class="kpi"><span>${label}</span><strong>${typeof value==='number'?fmt(value):value}</strong><small>${detail}</small></article>`).join('');
+ $('kpis').innerHTML=data.map(([label,value,detail],i)=>`
+    <article class="kpi hfc-summary-card hfc-summary-card--${["danger","neutral","info","success"][i]}">
+        <div class="hfc-summary-card__accent"></div>
+        <div class="hfc-summary-card__head">
+            <span class="hfc-summary-card__label">${esc(label)}</span>
+        </div>
+        <strong class="hfc-summary-card__value">${typeof value==="number"?fmt(value):esc(value)}</strong>
+        <small class="hfc-summary-card__meta">${esc(detail)}</small>
+    </article>
+`).join('');
+hfcActualizarKpiHelix();
   const context=[$('fVendor').value,...selectedZones,$('fCmts').value,...selectedStates,...selectedIncStatuses,$('fSearch').value].filter(Boolean);
   $('hfcFilterContext').textContent=context.length?`Filtros: ${context.join(' · ')}`:'Sin filtros · dataset completo';
 }
@@ -889,7 +1121,7 @@ async function upload(file,url,resultEl){if(resultEl.dataset.busy)return;resultE
 
 ["fVendor","fCmts"].forEach(id=>$(id).onchange=apply);$("fSearch").oninput=apply;
 $("zoneDetailSelect").onchange=()=>{selectedZone="";renderZoneDetail()};
-$("btnClear").onclick=()=>{selectedZone="";selectedZones.clear();selectedStates.clear();selectedIncStatuses.clear();["fVendor","fCmts","fState","fInc"].forEach(id=>$(id).value="");$("fSearch").value="";zoneMultiRender();stateMultiRender();incMultiRender();apply()};
+$("btnClear").onclick=()=>{selectedZone="";selectedZones.clear();selectedStates.clear();selectedIncStatuses.clear();hfcExtra.vendor.clear();hfcExtra.cmts.clear();window.dispatchEvent(new Event("hfc-filtros-reset"));["fVendor","fCmts","fState","fInc"].forEach(id=>$(id).value="");$("fSearch").value="";zoneMultiRender();stateMultiRender();incMultiRender();apply()};
 $("prev").onclick=()=>{if(page>1){page--;renderTable()}};$("next").onclick=()=>{if(page*PAGE<filtered.length){page++;renderTable()}};
 $("btnExportVista").onclick=()=>exportCSV(filtered,`hfc_vista_${new Date().toISOString().slice(0,10)}.csv`);$("btnExportInc").onclick=()=>exportCSV(incs,`netcool_incidentes_${new Date().toISOString().slice(0,10)}.csv`,true);
 $("btnRefresh").onclick=refresh;
@@ -3879,6 +4111,283 @@ function renderRanking(){
     renderNode(exact);
   }
 
+let hfcPanelNodoActual = null;
+let hfcPanelFilaActual = null;
+
+function hfcPanelCampo(nombre, valor) {
+    const dato = valor === null ||
+        valor === undefined ||
+        String(valor).trim() === ""
+            ? "—"
+            : valor;
+
+    return `
+        <div class="hfc-panel-field">
+            <span>${esc(nombre)}</span>
+            <strong>${esc(dato)}</strong>
+        </div>
+    `;
+}
+
+function hfcPanelMetrica(nombre, valor, tipo) {
+    return `
+        <div class="hfc-panel-metric hfc-panel-${tipo}">
+            <span>${esc(nombre)}</span>
+            <strong>${esc(valor)}</strong>
+        </div>
+    `;
+}
+
+function hfcPanelEstado(estado) {
+    const valor = String(estado || "SIN INFORMACIÓN").toUpperCase();
+
+    let clase = "neutral";
+
+    if (valor === "ENGANCHADO") {
+        clase = "ok";
+    } else if (
+        valor.includes("DESENGANCHE TOTAL") ||
+        valor.includes("CAIDA PROLONGADA")
+    ) {
+        clase = "critical";
+    } else if (
+        valor.includes("DESENGANCHE") ||
+        valor.includes("CAIDA")
+    ) {
+        clase = "warning";
+    }
+
+    return `
+        <span class="hfc-panel-state ${clase}">
+            <span class="hfc-panel-status-dot" aria-hidden="true"></span>
+            ${esc(valor)}
+        </span>
+    `;
+}
+
+function hfcPanelDetalleHelix(fila) {
+    const nodo = String(fila.service_group || "")
+        .trim().toUpperCase();
+
+    if (String(fila.observacion || "")
+        .trim().toUpperCase() === "ENGANCHADO") {
+        return `
+            <div class="hfc-panel-helix" id="hfc-panel-helix">
+                <span class="badge hfc-badge-no-aplica">
+                    NO APLICA
+                </span>
+            </div>
+        `;
+    }
+
+    if (hfcHelixNodos(nodo).length > 1) {
+        const estado = hfcHelixEstadoGlobalFila(fila);
+        const etiqueta = estado === "CON_CASOS" ? "CON CASOS" :
+            estado === "SIN_CASOS" ? "SIN CASOS" : "SIN RESULTADO GLOBAL";
+        return `<div class="hfc-panel-helix" id="hfc-panel-helix">
+            <span class="badge neutral">${etiqueta}</span>
+            <p>Cluster compuesto por ${hfcHelixNodos(nodo).map(esc).join(", ")}.
+            El estado procede del barrido global. El detalle de numeros de caso
+            requiere la consulta individual de cada nodo y deduplicacion.</p>
+        </div>`;
+    }
+    const resultado = window.hfcHelixGetResult?.(nodo);
+
+    if (!resultado) {
+        return `
+            <div class="hfc-panel-helix" id="hfc-panel-helix">
+                <span class="badge neutral">CONSULTANDO</span>
+            </div>
+        `;
+    }
+
+    if (resultado.estado !== "ok") {
+        return `
+            <div class="hfc-panel-helix" id="hfc-panel-helix">
+                <span class="badge neutral">NO DISPONIBLE</span>
+            </div>
+        `;
+    }
+
+    const datos = resultado.data;
+    const inc = Number(datos.inc || 0);
+    const wo = Number(datos.wo || 0);
+    const tas = Number(datos.tas || 0);
+    const total = inc + wo + tas;
+    const casos = Array.isArray(datos.casos)
+        ? datos.casos
+        : [];
+
+    const metricas = `
+        <div class="hfc-panel-metrics">
+            ${hfcPanelMetrica("INC", inc, "inc")}
+            ${hfcPanelMetrica("WO", wo, "wo")}
+            ${hfcPanelMetrica("TAS", tas, "tas")}
+        </div>
+    `;
+
+    if (total === 0) {
+        return `
+            <div class="hfc-panel-helix" id="hfc-panel-helix">
+                <span class="badge hfc-badge-sin-casos">
+                    SIN CASOS
+                </span>
+                ${metricas}
+                <p class="hfc-panel-success">
+                    No se encontraron casos abiertos en Oracle Helix.
+                </p>
+            </div>
+        `;
+    }
+
+    const tipos = [
+        ["INC", "Incidentes", "hfc-badge-inc"],
+        ["WO", "Órdenes de trabajo", "hfc-badge-wo"],
+        ["TAS", "Tareas", "hfc-badge-tas"]
+    ];
+
+    const grupos = tipos.map(([tipo, titulo, clase]) => {
+        const grupo = casos.filter(c =>
+            String(c.tipo || "").toUpperCase() === tipo
+        );
+
+        if (!grupo.length) return "";
+
+        return `
+            <div class="hfc-panel-case-group">
+                <h4>${titulo} (${grupo.length})</h4>
+
+                ${grupo.map(c => {
+                    const referencia = c.inc_padre || c.caso_padre;
+                    const etiqueta = c.inc_padre
+                        ? "INC asociado"
+                        : "Caso asociado";
+
+                    return `
+                        <article class="hfc-panel-case">
+                            <div class="hfc-panel-case-head">
+                                <strong>${esc(c.numero || "—")}</strong>
+                                <span class="badge ${clase}">
+                                    ${tipo}
+                                </span>
+                            </div>
+
+                            <div class="hfc-panel-case-data">
+                                <span>
+                                    <b>Estado:</b>
+                                    ${esc(c.estado || "—")}
+                                </span>
+
+                                ${c.resumen ? `
+                                    <span>
+                                        <b>Resumen:</b>
+                                        ${esc(c.resumen)}
+                                    </span>
+                                ` : ""}
+
+                                ${c.descripcion ? `
+                                    <span>
+                                        <b>Descripción:</b>
+                                        ${esc(c.descripcion)}
+                                    </span>
+                                ` : ""}
+
+                                ${referencia ? `
+                                    <span>
+                                        <b>${etiqueta}:</b>
+                                        ${esc(referencia)}
+                                    </span>
+                                ` : ""}
+
+                                ${c.grupo_soporte ? `
+                                    <span>
+                                        <b>Grupo:</b>
+                                        ${esc(c.grupo_soporte)}
+                                    </span>
+                                ` : ""}
+                            </div>
+                        </article>
+                    `;
+                }).join("")}
+            </div>
+        `;
+    }).join("");
+
+    return `
+        <div class="hfc-panel-helix" id="hfc-panel-helix">
+            <span class="hfc-panel-count">
+                ${total} CASOS ABIERTOS
+            </span>
+
+            ${metricas}
+
+            <div class="hfc-panel-case-list">
+                ${grupos || "Sin detalle de casos disponible."}
+            </div>
+        </div>
+    `;
+}
+
+function hfcPanelRender(fila) {
+    const total = Number(fila.total_modems || 0);
+    const offline = Number(fila.offline || 0);
+    const porcentaje = (
+        Number(fila.porc_offline || 0) * 100
+    ).toFixed(1) + "%";
+
+    const actualizado = document.querySelector("#hfcAutoCmtsTime")
+        ?.textContent?.trim() || "Sin información";
+
+    return `
+        <div class="hfc-panel-redesign">
+
+            <div class="hfc-panel-operational">
+                ${hfcPanelEstado(fila.observacion)}
+            </div>
+
+            <section class="hfc-panel-section">
+                <h3>Estado de la fuente local</h3>
+                <div class="hfc-panel-fields">
+                    ${hfcPanelCampo("Origen", "HFC")}
+                    ${hfcPanelCampo("Última actualización", actualizado)}
+                </div>
+            </section>
+
+            <section class="hfc-panel-section">
+                <h3>Módems</h3>
+                <div class="hfc-panel-metrics">
+                    ${hfcPanelMetrica("Total", total, "modems")}
+                    ${hfcPanelMetrica("Offline", offline, "offline")}
+                    ${hfcPanelMetrica("% Offline", porcentaje, "percent")}
+                </div>
+            </section>
+
+            <section class="hfc-panel-section">
+                <h3>Casos abiertos — Oracle Helix</h3>
+                ${hfcPanelDetalleHelix(fila)}
+            </section>
+
+            <section class="hfc-panel-section">
+                <h3>Ubicación y catálogo</h3>
+                <div class="hfc-panel-fields">
+                    ${hfcPanelCampo("Ciudad", fila.zona)}
+                    ${hfcPanelCampo("IP CMTS", fila.ip)}
+                    ${hfcPanelCampo("Comunidad", fila.comunidad)}
+                    ${hfcPanelCampo("Aliado", fila.aliado)}
+                    ${hfcPanelCampo("Tipo", fila.tipo_elemento || "SERVICE GROUP")}
+                    ${hfcPanelCampo("Fabricante", fila.fabricante || fila.vendor)}
+                </div>
+
+                <div class="hfc-panel-description">
+                    ${hfcPanelCampo("Descripción", fila.descripcion)}
+                </div>
+            </section>
+
+        </div>
+    `;
+}
+
+
   function detectNodeFromRow(row) {
     if (!row) return '';
     if(row.dataset.node)return row.dataset.node;
@@ -3903,16 +4412,34 @@ function renderRanking(){
     const node = detectNodeFromRow(row);
     if (!node || node.length > 120) return;
 
-    if(row.parentElement.id==='networkBody'){
-      const d=window.__HFC_EXEC_CURRENT_ROWS__[Number(row.dataset.index)];
-      if(!d)return;
-      openDrawer();q('#hfc-node-card-title').textContent=d.service_group;
-      q('#hfc-node-card-subtitle').textContent=[d.cmts,d.fabricante||d.vendor,d.ip].filter(Boolean).join(' · ');
-      q('#hfc-node-card-body').innerHTML=section('Estado de la fuente local',item('Origen HFC',esc(q('#hfcAutoCmtsTime').textContent))+item('Estado',esc(d.observacion),'span-2'))+
-        section('Módems',item('Total',esc(d.total_modems))+item('Offline',esc(d.offline))+item('% Offline',(Number(d.porc_offline||0)*100).toFixed(1)+'%'))+
-        section('Incidente',item('Cruce',esc(d.inc_status),'span-2')+item('Identificador',esc(d.incidente||'—'),'span-2'))+
-        section('Ubicación y catálogo',item('Ciudad',esc(d.zona))+item('IP CMTS',esc(d.ip||'—'))+item('Comunidad',esc(d.comunidad||'—'))+item('Aliado',esc(d.aliado||'—'))+item('Tipo',esc(d.tipo_elemento||'SERVICE GROUP'))+item('Descripción',esc(d.descripcion||'—'),'span-2'));
-      return;
+    if (row.parentElement.id === "networkBody") {
+        const fila = window.__HFC_EXEC_CURRENT_ROWS__?.[
+            Number(row.dataset.index)
+        ];
+
+        if (!fila) return;
+
+        hfcPanelNodoActual = String(
+            fila.service_group || ""
+        ).trim().toUpperCase();
+
+        hfcPanelFilaActual = fila;
+
+        openDrawer();
+
+        q("#hfc-node-card-title").textContent =
+            fila.service_group || "Nodo";
+
+        q("#hfc-node-card-subtitle").textContent = [
+            fila.cmts,
+            fila.fabricante || fila.vendor,
+            fila.ip
+        ].filter(Boolean).join(" · ");
+
+        q("#hfc-node-card-body").innerHTML =
+            hfcPanelRender(fila);
+
+        return;
     }
     fetchNode(node).catch(err => {
       openDrawer();
@@ -3922,6 +4449,31 @@ function renderRanking(){
   });
 
   document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('#networkBody tr')){e.preventDefault();e.target.click();}});
+  document.addEventListener("hfc-helix-actualizado", event => {
+    const nodo = String(event.detail?.nodo || "")
+        .trim().toUpperCase();
+
+    const drawer = document.querySelector("#hfc-node-card-drawer");
+
+    if (
+        !drawer?.classList.contains("is-open") ||
+        nodo !== hfcPanelNodoActual ||
+        !hfcPanelFilaActual
+    ) {
+        return;
+    }
+
+    const actual = document.querySelector("#hfc-panel-helix");
+
+    if (!actual) return;
+
+    const temporal = document.createElement("div");
+    temporal.innerHTML = hfcPanelDetalleHelix(hfcPanelFilaActual);
+
+    if (temporal.firstElementChild) {
+        actual.replaceWith(temporal.firstElementChild);
+    }
+});
   ensureDrawer();
   console.info('[HFC Node Card] V51 corregido activo', CFG);
 })();
@@ -3930,3 +4482,236 @@ window.addEventListener('rkp-hfc-data',e=>{
  set('header-monitoring','Dashboard HFC');set('header-connection','Conectado');
  set('header-sources',`${e.detail.total} elementos`);set('header-datetime',new Date().toLocaleString('es-CO'));
 });
+/* HFC - Filtros múltiples RKPS */
+(() => {
+    "use strict";
+
+    const $ = id => document.getElementById(id);
+    const extra = () => window.hfcExtraFilters;
+    const norm = v => String(v || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase();
+
+    function iniciarCiudad() {
+        const menu = $("zoneMultiMenu");
+        const lista = $("zoneMultiOptions");
+        if (!menu || !lista || $("hfcBuscarCiudad")) return;
+
+        const input = document.createElement("input");
+        input.id = "hfcBuscarCiudad";
+        input.type = "search";
+        input.className = "hfc-zone-search";
+        input.placeholder = "Buscar ciudad...";
+        input.setAttribute("aria-label", "Buscar ciudad");
+
+        menu.querySelector(".hfc-zone-actions")?.after(input);
+
+        function buscar() {
+            const texto = norm(input.value.trim());
+            lista.querySelectorAll(".hfc-zone-option").forEach(op => {
+                op.hidden = !norm(op.textContent).includes(texto);
+            });
+        }
+
+        input.addEventListener("input", buscar);
+
+        new MutationObserver(buscar).observe(lista, {
+            childList: true
+        });
+
+        $("zoneSelectAll").textContent = "Seleccionar todos";
+    }
+
+    function crearFiltro(id, tipo) {
+        const select = $(id);
+        if (!select || select.dataset.hfcExtra) return;
+
+        select.dataset.hfcExtra = "1";
+        select.classList.add("hfc-extra-native");
+        select.style.display = "none";
+
+        const wrap = document.createElement("div");
+        wrap.className = "hfc-extra-multi";
+
+        const trigger = document.createElement("button");
+        trigger.type = "button";
+        trigger.className = "hfc-extra-trigger";
+        trigger.setAttribute("aria-expanded", "false");
+
+        const texto = document.createElement("span");
+        const flecha = document.createElement("i");
+        flecha.className = "fas fa-chevron-down";
+        trigger.append(texto, flecha);
+
+        const menu = document.createElement("div");
+        menu.className = "hfc-extra-menu";
+
+        const acciones = document.createElement("div");
+        acciones.className = "hfc-extra-actions";
+
+        const todos = document.createElement("button");
+        todos.type = "button";
+        todos.textContent = "Seleccionar todos";
+
+        const limpiar = document.createElement("button");
+        limpiar.type = "button";
+        limpiar.textContent = "Limpiar";
+
+        acciones.append(todos, limpiar);
+        menu.append(acciones);
+
+        let buscador = null;
+
+        if (tipo === "cmts") {
+            buscador = document.createElement("input");
+            buscador.type = "search";
+            buscador.className = "hfc-extra-search";
+            buscador.placeholder = "Buscar CMTS...";
+            buscador.setAttribute("aria-label", "Buscar CMTS");
+            menu.append(buscador);
+        }
+
+        const lista = document.createElement("div");
+        lista.className = "hfc-extra-options";
+        menu.append(lista);
+        wrap.append(trigger, menu);
+        select.after(wrap);
+
+        const seleccion = extra()[tipo];
+
+        const valores = () => [...select.options]
+            .filter(op => op.value);
+
+        function actualizarTexto() {
+            const n = seleccion.size;
+            texto.textContent = n === 0
+                ? "Todos"
+                : n === 1
+                    ? [...seleccion][0]
+                    : `${n} seleccionados`;
+        }
+
+        function cerrar() {
+            wrap.classList.remove("open");
+            trigger.setAttribute("aria-expanded", "false");
+        }
+
+        function pintar() {
+            lista.replaceChildren();
+            const filtro = norm(buscador?.value || "");
+
+            valores()
+                .filter(op => norm(op.textContent).includes(filtro))
+                .forEach(op => {
+                    const fila = document.createElement("label");
+                    fila.className = "hfc-extra-option";
+
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.value = op.value;
+                    checkbox.checked = seleccion.has(op.value);
+
+                    const nombre = document.createElement("span");
+                    nombre.textContent = op.textContent.trim();
+
+                    checkbox.onchange = () => {
+                        if (checkbox.checked) {
+                            seleccion.add(op.value);
+                        } else {
+                            seleccion.delete(op.value);
+                        }
+
+                        select.value = "";
+                        actualizarTexto();
+                        select.dispatchEvent(
+                            new Event("change", { bubbles: true })
+                        );
+                    };
+
+                    fila.append(checkbox, nombre);
+                    lista.append(fila);
+                });
+        }
+
+        todos.onclick = () => {
+            valores().forEach(op => seleccion.add(op.value));
+            select.value = "";
+            actualizarTexto();
+            pintar();
+            select.dispatchEvent(new Event("change"));
+        };
+
+        limpiar.onclick = () => {
+            seleccion.clear();
+            select.value = "";
+            if (buscador) buscador.value = "";
+            actualizarTexto();
+            pintar();
+            select.dispatchEvent(new Event("change"));
+        };
+
+        trigger.onclick = event => {
+            event.stopPropagation();
+            const abrir = !wrap.classList.contains("open");
+
+            document.querySelectorAll(".hfc-extra-multi.open")
+                .forEach(elemento => {
+                    elemento.classList.remove("open");
+                    elemento.querySelector(".hfc-extra-trigger")
+                        ?.setAttribute("aria-expanded", "false");
+                });
+
+            if (!abrir) return;
+
+            // Mantener solamente opciones existentes.
+            const disponibles = new Set(valores().map(op => op.value));
+            [...seleccion].forEach(valor => {
+                if (!disponibles.has(valor)) seleccion.delete(valor);
+            });
+
+            if (buscador) buscador.value = "";
+            actualizarTexto();
+            pintar();
+
+            wrap.classList.add("open");
+            trigger.setAttribute("aria-expanded", "true");
+            buscador?.focus();
+        };
+
+        buscador?.addEventListener("input", pintar);
+
+        document.addEventListener("click", event => {
+            if (!wrap.contains(event.target)) cerrar();
+        });
+
+        wrap.addEventListener("keydown", event => {
+            if (event.key === "Escape") {
+                cerrar();
+                trigger.focus();
+            }
+        });
+
+        window.addEventListener("hfc-filtros-reset", () => {
+            seleccion.clear();
+            actualizarTexto();
+            pintar();
+        });
+
+        actualizarTexto();
+    }
+
+    function iniciar() {
+        iniciarCiudad();
+        crearFiltro("fVendor", "vendor");
+        crearFiltro("fCmts", "cmts");
+    }
+
+    window.addEventListener("rkp-hfc-data", iniciar);
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", iniciar);
+    } else {
+        iniciar();
+    }
+})();

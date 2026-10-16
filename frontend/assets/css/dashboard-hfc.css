@@ -477,28 +477,919 @@
 @media(pointer:coarse){.dashboard-hfc-page :is(.hfc-btn,.hfc-zone-trigger,.hfc-filter-multi-trigger,input,select){min-height:44px}}
 @media(prefers-reduced-motion:reduce){.dashboard-hfc-page *{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 
-/* INC, WO y TAS de Helix en la columna Incidente */
 
-.dashboard-hfc-page .hfc-inc-cell {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
+/* ==========================================
+   HFC - FICHAS ORACLE HELIX
+   ========================================== */
+
+/* Columna Incidente */
+.dashboard-hfc-page #networkBody td:nth-child(8) {
+    text-align: center;
+    vertical-align: middle;
 }
 
+/* Contenedores de fichas */
+.dashboard-hfc-page .hfc-inc-cell,
 .dashboard-hfc-page .hfc-helix-cases {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
 }
 
+/* Fichas INC, WO, TAS y estados */
+.dashboard-hfc-page .hfc-inc-cell .badge,
 .dashboard-hfc-page .hfc-helix-cases .badge {
-    font-size: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
     white-space: nowrap;
 }
 
+/* Estado de la consulta */
 .dashboard-hfc-page .hfc-helix-status {
     font-size: 11px;
     color: #64748b;
+}
+
+/* INC - Rojo */
+.dashboard-hfc-page .hfc-badge-inc {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* WO - Naranja */
+.dashboard-hfc-page .hfc-badge-wo {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* TAS - Azul */
+.dashboard-hfc-page .hfc-badge-tas {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+/* SIN CASOS - Verde */
+.dashboard-hfc-page .hfc-badge-sin-casos {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* NO APLICA - Violeta */
+.dashboard-hfc-page .hfc-badge-no-aplica {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+/* CONSULTANDO - Gris */
+.dashboard-hfc-page .hfc-badge-consultando {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+/* NO DISPONIBLE - Gris oscuro */
+.dashboard-hfc-page .hfc-badge-no-disponible {
+    background: #cbd5e1;
+    color: #334155;
+}
+
+/* ==========================================
+   HFC - PANEL LATERAL RKPS
+   ========================================== */
+
+.dashboard-hfc-page .hfc-panel-redesign {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.dashboard-hfc-page .hfc-panel-section {
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--hfc-line);
+}
+
+.dashboard-hfc-page .hfc-panel-section h3 {
+    margin: 0 0 14px;
+    color: var(--hfc-text);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* Estado operativo */
+
+.dashboard-hfc-page .hfc-panel-state {
+    display: inline-flex;
+    padding: 7px 11px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.dashboard-hfc-page .hfc-panel-state.ok {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.dashboard-hfc-page .hfc-panel-state.warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.dashboard-hfc-page .hfc-panel-state.neutral {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+/* Tarjetas de métricas */
+
+.dashboard-hfc-page .hfc-panel-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.dashboard-hfc-page .hfc-panel-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+    padding: 13px 10px;
+    border: 1px solid var(--hfc-line);
+    border-radius: 9px;
+}
+
+.dashboard-hfc-page .hfc-panel-metric span {
+    font-size: 12px;
+    color: #526779;
+}
+
+.dashboard-hfc-page .hfc-panel-metric strong {
+    color: #10263a;
+    font-size: 22px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.dashboard-hfc-page .hfc-panel-modems,
+.dashboard-hfc-page .hfc-panel-tas {
+    background: #eff6ff;
+    border-color: #dbeafe;
+}
+
+.dashboard-hfc-page .hfc-panel-offline,
+.dashboard-hfc-page .hfc-panel-inc {
+    background: #fff1f2;
+    border-color: #fee2e2;
+}
+
+.dashboard-hfc-page .hfc-panel-percent {
+    background: #f1f5f9;
+}
+
+.dashboard-hfc-page .hfc-panel-wo {
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+
+/* Casos de Oracle Helix */
+
+.dashboard-hfc-page .hfc-panel-helix,
+.dashboard-hfc-page .hfc-panel-case-list,
+.dashboard-hfc-page .hfc-panel-case-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dashboard-hfc-page .hfc-panel-count {
+    align-self: flex-end;
+    color: #b91c1c;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.dashboard-hfc-page .hfc-panel-success {
+    margin: 0;
+    padding: 12px;
+    border-radius: 8px;
+    background: #e8f7ed;
+    color: #166534;
+    font-size: 12px;
+}
+
+.dashboard-hfc-page .hfc-panel-case-group h4 {
+    margin: 4px 0 0;
+    padding: 9px 11px;
+    border-radius: 7px;
+    background: #f1f5f9;
+    font-size: 13px;
+}
+
+.dashboard-hfc-page .hfc-panel-case {
+    padding: 12px;
+    border: 1px solid var(--hfc-line);
+    border-left: 3px solid #94a3b8;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.dashboard-hfc-page .hfc-panel-case-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 7px;
+}
+
+.dashboard-hfc-page .hfc-panel-case-head strong {
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.dashboard-hfc-page .hfc-panel-case-data {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: #526779;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+/* Ubicación y catálogo */
+
+.dashboard-hfc-page .hfc-panel-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+}
+
+.dashboard-hfc-page .hfc-panel-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #e5ebef;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.dashboard-hfc-page .hfc-panel-field span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.dashboard-hfc-page .hfc-panel-field strong {
+    color: #10263a;
+    font-size: 13px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.dashboard-hfc-page .hfc-panel-description {
+    margin-top: 9px;
+}
+
+@media (max-width: 520px) {
+    .dashboard-hfc-page .hfc-panel-metric {
+        padding: 10px 7px;
+    }
+
+    .dashboard-hfc-page .hfc-panel-metric strong {
+        font-size: 18px;
+    }
+
+    .dashboard-hfc-page .hfc-panel-fields {
+        grid-template-columns: 1fr;
+    }
+}
+/* ==========================================
+   HFC - INDICADOR DE ESTADO ANIMADO
+   ========================================== */
+
+.dashboard-hfc-page .hfc-panel-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.dashboard-hfc-page .hfc-panel-status-dot {
+    width: 9px;
+    height: 9px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: currentColor;
+    animation: hfc-status-pulse 1.6s ease-in-out infinite;
+}
+
+.dashboard-hfc-page .hfc-panel-state.critical {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+@keyframes hfc-status-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.35;
+        transform: scale(0.75);
+    }
+}
+
+/* Respetar usuarios con animaciones reducidas */
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-hfc-page .hfc-panel-status-dot {
+        animation: none;
+    }
+}
+
+/* ==========================================
+   DASHBOARD HFC - REDISEÑO VISUAL RKPS
+   Solo presentación. Sin cambios funcionales.
+   ========================================== */
+
+.dashboard-hfc-page .hfc-app {
+    background: #f3f7f5;
+    padding: 16px;
+    gap: 12px;
+    color: #10263a;
+}
+
+/* Tarjetas generales */
+
+.dashboard-hfc-page .hfc-card {
+    background: #fff;
+    border: 1px solid #dce9e3;
+    border-radius: 13px;
+    box-shadow: 0 2px 9px rgba(15, 45, 35, 0.03);
+}
+
+/* Fuentes de información */
+
+.dashboard-hfc-page .hfc-sourcebar {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #dce9e3;
+    border-radius: 13px;
+}
+
+.dashboard-hfc-page .hfc-exec-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+.dashboard-hfc-page .hfc-exec-meta > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 7px;
+    min-width: 0;
+    padding: 15px;
+    border: 1px solid #dce9e3;
+    border-radius: 10px;
+    background: #effaf6;
+}
+
+.dashboard-hfc-page .hfc-exec-meta > div:nth-child(2) {
+    background: #fff3f3;
+    border-color: #f5dddd;
+}
+
+.dashboard-hfc-page .hfc-exec-meta > div:nth-child(3) {
+    background: #f0f6fc;
+    border-color: #dbe7f5;
+}
+
+.dashboard-hfc-page .hfc-exec-meta > div > span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #526779;
+}
+
+.dashboard-hfc-page .hfc-exec-meta > div > strong {
+    font-size: 13px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.dashboard-hfc-page #btnRefresh {
+    align-self: center;
+    background: #087a4c;
+    border-color: #087a4c;
+    color: #fff;
+    white-space: nowrap;
+}
+
+/* Estado de actualización */
+
+.dashboard-hfc-page .hfc-query-status {
+    padding: 2px 5px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* Resumen operativo */
+
+.dashboard-hfc-page .hfc-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #dce9e3;
+    border-radius: 11px;
+    background: #fff;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(1) {
+    background: #fff1f2;
+    border-color: #ffe0e3;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(2) {
+    background: #f5f7fa;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(3) {
+    background: #eff6ff;
+    border-color: #dbeafe;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(4) {
+    background: #eefaf5;
+    border-color: #d7f0e3;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi span {
+    color: #526779;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi strong {
+    display: block;
+    margin: 8px 0;
+    color: #10263a;
+    font-size: clamp(23px, 2vw, 30px);
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi:first-child strong {
+    color: #b91c1c;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi small {
+    color: #64748b;
+    font-size: 11px;
+}
+
+/* Pestañas */
+
+.dashboard-hfc-page .hfc-tabs {
+    border-bottom: 1px solid #dce9e3;
+    gap: 10px;
+}
+
+.dashboard-hfc-page .hfc-tab {
+    padding: 12px 15px;
+    border-bottom: 2px solid transparent;
+    color: #526779;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.dashboard-hfc-page .hfc-tab.active {
+    color: #087a4c;
+    border-bottom-color: #087a4c;
+}
+
+/* Contenedor de filtros */
+
+.dashboard-hfc-page .hfc-toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.dashboard-hfc-page .hfc-filters {
+    display: grid;
+    grid-template-columns:
+        0.8fr 1fr 1.3fr 1.2fr 1.2fr 1.5fr;
+    gap: 11px;
+    align-items: end;
+}
+
+.dashboard-hfc-page .hfc-filters label {
+    display: block;
+    min-width: 0;
+}
+
+.dashboard-hfc-page .hfc-filters label > span {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+}
+
+/* Selectores nativos y buscador */
+
+.dashboard-hfc-page .hfc-filters select,
+.dashboard-hfc-page .hfc-filters input,
+.dashboard-hfc-page .hfc-filters .hfc-zone-trigger,
+.dashboard-hfc-page .hfc-filters .hfc-filter-multi-trigger {
+    width: 100%;
+    height: 40px;
+    min-height: 40px;
+    padding: 8px 11px;
+    background: #fff;
+    border: 1px solid #cfdfd8;
+    border-radius: 8px;
+    color: #10263a;
+    font-size: 12px;
+    box-shadow: none;
+}
+
+.dashboard-hfc-page .hfc-filters :is(
+    select,
+    input,
+    .hfc-zone-trigger,
+    .hfc-filter-multi-trigger
+):focus-visible {
+    outline: 2px solid #53b98a;
+    outline-offset: 2px;
+}
+
+/* Botones */
+
+.dashboard-hfc-page .hfc-toolbar-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 9px;
+    margin-top: 0;
+}
+
+.dashboard-hfc-page .hfc-btn {
+    border: 1px solid #cfdfd8;
+    border-radius: 8px;
+    background: #fff;
+    color: #10263a;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 10px 14px;
+    cursor: pointer;
+}
+
+.dashboard-hfc-page .hfc-btn:hover {
+    border-color: #79bea0;
+    background: #f0faf5;
+}
+
+.dashboard-hfc-page #btnExportVista {
+    background: #087a4c;
+    border-color: #087a4c;
+    color: #fff;
+}
+
+.dashboard-hfc-page #btnExportVista:hover,
+.dashboard-hfc-page #btnRefresh:hover {
+    background: #06643e;
+}
+
+/* Encabezado de resultados */
+
+.dashboard-hfc-page .hfc-table-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid #e5eee9;
+}
+
+.dashboard-hfc-page .hfc-table-section-title {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.dashboard-hfc-page .hfc-table-section-title > strong {
+    color: #10263a;
+    font-size: 15px;
+}
+
+.dashboard-hfc-page .hfc-table-section-title > span {
+    color: #64748b;
+    font-size: 11px;
+}
+
+/* Tabla */
+
+.dashboard-hfc-page .hfc-table-wrap {
+    border: 1px solid #dce9e3;
+    border-radius: 10px;
+    overflow: auto;
+}
+
+.dashboard-hfc-page .hfc-table th {
+    padding: 11px 10px;
+    background: #eff5f2;
+    color: #334155;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: none;
+}
+
+.dashboard-hfc-page .hfc-table td {
+    padding: 11px 10px;
+    border-bottom: 1px solid #e4ebe7;
+    color: #20364a;
+    font-size: 12px;
+}
+
+.dashboard-hfc-page .hfc-table tbody tr:hover {
+    background: #f1faf5;
+}
+
+/* Responsive */
+
+@media (max-width: 1200px) {
+    .dashboard-hfc-page .hfc-filters {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .dashboard-hfc-page .hfc-sourcebar {
+        flex-direction: column;
+    }
+
+    .dashboard-hfc-page .hfc-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .dashboard-hfc-page .hfc-exec-meta,
+    .dashboard-hfc-page .hfc-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-hfc-page .hfc-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-hfc-page .hfc-table-section-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard-hfc-page .hfc-toolbar-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+}
+/* HFC - FILTROS UNIFICADOS RKPS */
+
+.dashboard-hfc-page :is(.hfc-zone-multi,.hfc-filter-multi,.hfc-extra-multi){
+    position:relative;width:100%;min-width:0;
+}
+.dashboard-hfc-page :is(.hfc-zone-trigger,.hfc-filter-multi-trigger,.hfc-extra-trigger){
+    display:flex;align-items:center;justify-content:space-between;
+    gap:8px;width:100%;height:40px;min-height:40px;padding:8px 12px;
+    background:#fff;border:1px solid #cfdfd8;border-radius:8px;
+    color:#10263a;font-family:inherit;font-size:12px;font-weight:500;
+    text-align:left;cursor:pointer;
+}
+.dashboard-hfc-page :is(.hfc-zone-trigger,.hfc-filter-multi-trigger,.hfc-extra-trigger)>span{
+    display:block;flex:1;min-width:0;margin:0!important;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    color:#10263a!important;font-size:12px!important;font-weight:500!important;
+}
+.dashboard-hfc-page :is(.hfc-zone-menu,.hfc-filter-multi-menu,.hfc-extra-menu){
+    display:none;position:absolute;top:calc(100% + 6px);left:0;
+    z-index:1000;width:max(100%,290px);min-width:0;
+    max-width:min(340px,calc(100vw - 40px));max-height:none;
+    overflow:hidden;background:#fff;border:1px solid #dce9e3;
+    border-radius:10px;box-shadow:0 12px 28px rgba(15,45,35,.12);
+}
+.dashboard-hfc-page .hfc-zone-multi.open .hfc-zone-menu,
+.dashboard-hfc-page .hfc-filter-multi.open .hfc-filter-multi-menu,
+.dashboard-hfc-page .hfc-extra-multi.open .hfc-extra-menu{
+    display:block;
+}
+.dashboard-hfc-page :is(.hfc-zone-actions,.hfc-filter-multi-actions,.hfc-extra-actions){
+    display:flex;align-items:center;justify-content:space-between;
+    gap:8px;padding:9px;background:#f8faf9;
+    border-bottom:1px solid #e5eee9;
+}
+.dashboard-hfc-page :is(.hfc-zone-actions,.hfc-filter-multi-actions,.hfc-extra-actions) button{
+    padding:7px 10px;background:#fff;border:1px solid #dce9e3;
+    border-radius:7px;color:#334155;font-size:12px;
+    font-weight:600;cursor:pointer;
+}
+.dashboard-hfc-page .hfc-extra-search,
+.dashboard-hfc-page .hfc-zone-search{
+    display:block!important;width:calc(100% - 18px)!important;
+    height:36px!important;min-height:36px!important;margin:9px!important;
+    padding:8px 10px!important;background:#fff!important;
+    border:1px solid #cfdfd8!important;border-radius:7px!important;
+    color:#10263a!important;font-size:12px!important;
+}
+.dashboard-hfc-page :is(.hfc-zone-options,.hfc-filter-multi-options,.hfc-extra-options){
+    display:flex;flex-direction:column;gap:2px;max-height:260px;
+    padding:5px;overflow-x:hidden;overflow-y:auto;
+    scrollbar-width:thin;scrollbar-color:#cbded4 #fff;
+}
+.dashboard-hfc-page :is(.hfc-zone-option,.hfc-filter-multi-option,.hfc-extra-option){
+    display:flex!important;align-items:center;justify-content:flex-start;
+    gap:9px;width:100%;min-width:0;min-height:35px;
+    margin:0!important;padding:8px 10px;border-radius:7px;
+    background:transparent;color:#334155;
+    font-size:12px;font-weight:500;cursor:pointer;
+}
+.dashboard-hfc-page :is(.hfc-zone-option,.hfc-filter-multi-option,.hfc-extra-option):hover{
+    background:#effaf5;
+}
+.dashboard-hfc-page :is(.hfc-zone-option,.hfc-filter-multi-option,.hfc-extra-option)[hidden]{
+    display:none!important;
+}
+.dashboard-hfc-page :is(.hfc-zone-option,.hfc-filter-multi-option,.hfc-extra-option) input[type=checkbox]{
+    appearance:auto!important;width:15px!important;height:15px!important;
+    min-width:15px!important;min-height:15px!important;
+    flex:0 0 15px;margin:0!important;padding:0!important;
+    accent-color:#087a4c;
+}
+.dashboard-hfc-page :is(.hfc-zone-option,.hfc-filter-multi-option,.hfc-extra-option) span{
+    display:block!important;flex:1;min-width:0;margin:0!important;
+    color:#334155!important;font-size:12px!important;
+    font-weight:500!important;text-align:left;
+    white-space:normal;overflow-wrap:anywhere;
+}
+.dashboard-hfc-page .hfc-extra-native{
+    position:absolute!important;width:1px!important;height:1px!important;
+    opacity:0!important;pointer-events:none!important;
+}
+@media(max-width:650px){
+    .dashboard-hfc-page :is(.hfc-zone-menu,.hfc-filter-multi-menu,.hfc-extra-menu){
+        width:100%;max-width:100%;
+    }
+}
+/* ==========================================
+   HFC - FICHAS KPIs ESTILO RKPS
+   ========================================== */
+
+.dashboard-hfc-page .hfc-kpis .kpi {
+    position: relative;
+    overflow: hidden;
+    padding: 15px 20px 13px 24px;
+    min-height: 120px;
+    border-radius: 12px;
+}
+
+/* Barra de color a la izquierda */
+
+.dashboard-hfc-page .hfc-kpis .kpi::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    border-radius: 12px 0 0 12px;
+}
+
+/* Colores de las barras */
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(1)::before {
+    background: #d92d20;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(2)::before {
+    background: #64748b;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(3)::before {
+    background: #3b82f6;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(4)::before {
+    background: #16a34a;
+}
+
+/* Títulos superiores: mismo estilo del texto inferior */
+
+.dashboard-hfc-page .hfc-kpis .kpi > span,
+.dashboard-hfc-page .hfc-kpis .hfc-summary-card__label {
+    display: block;
+    margin: 0 !important;
+    color: #526779 !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 1.4;
+    letter-spacing: 0.1px;
+}
+
+/* Evitar separación adicional del encabezado */
+
+.dashboard-hfc-page .hfc-kpis .hfc-summary-card__head {
+    margin: 0;
+    padding: 0;
+}
+
+/* Números principales */
+
+.dashboard-hfc-page .hfc-kpis .kpi > strong,
+.dashboard-hfc-page .hfc-kpis .hfc-summary-card__value {
+    display: block;
+    margin: 5px 0 0 !important;
+    font-size: 29px !important;
+    font-weight: 800 !important;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+}
+
+/* Texto inferior */
+
+.dashboard-hfc-page .hfc-kpis .kpi > small,
+.dashboard-hfc-page .hfc-kpis .hfc-summary-card__meta {
+    display: block;
+    margin-top: 10px !important;
+    padding-top: 8px;
+    border-top: 1px solid rgba(100, 116, 139, 0.13);
+    color: #526779 !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 1.4;
+}
+/* HFC - Igualar textos superiores e inferiores de KPIs */
+
+.dashboard-hfc-page .hfc-kpis .kpi > span,
+.dashboard-hfc-page .hfc-kpis .kpi .hfc-summary-card__label,
+.dashboard-hfc-page .hfc-kpis .kpi > small,
+.dashboard-hfc-page .hfc-kpis .kpi .hfc-summary-card__meta {
+    display: block !important;
+    font-family: "Segoe UI", Arial, sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 1.5 !important;
+    letter-spacing: 0.1px !important;
+    color: #526779 !important;
+    text-transform: none !important;
+}
+
+/* Título superior */
+
+.dashboard-hfc-page .hfc-kpis .kpi .hfc-summary-card__label {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Información inferior */
+
+.dashboard-hfc-page .hfc-kpis .kpi > small,
+.dashboard-hfc-page .hfc-kpis .kpi .hfc-summary-card__meta {
+    margin-top: 10px !important;
+    padding-top: 8px !important;
+    border-top: 1px solid rgba(100, 116, 139, 0.13);
+    opacity: 1 !important;
+    white-space: normal !important;
+}
+
+/* Asegurar que el bloque inferior ocupe todo el ancho */
+
+.dashboard-hfc-page .hfc-kpis .kpi {
+    align-items: stretch;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi .hfc-summary-card__meta {
+    width: 100%;
 }
