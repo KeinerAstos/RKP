@@ -422,42 +422,6 @@ function hfcDescripcionCorta(valor){
 
 /* HFC HELIX: INC, WO y TAS por nodo */
 
-// Fotografia completa Helix: solo conteos por nodo, no numeros de caso.
-let hfcHelixGlobal = null;
-let hfcHelixGlobalError = null;
-function hfcHelixNodos(valor) {
-  return [...new Set(String(valor ?? "").toUpperCase().split(",")
-    .map(s => s.trim()).filter(s => /^[A-Z0-9._-]{1,120}$/.test(s)))];
-}
-function hfcHelixEstadoGlobalFila(fila) {
-  if (!hfcHelixGlobal?.nodos) return null;
-  const nodos = hfcHelixNodos(fila.service_group);
-  if (!nodos.length) return "PENDIENTE";
-  if (nodos.some(n => !Object.prototype.hasOwnProperty.call(hfcHelixGlobal.nodos, n)))
-    return "PENDIENTE";
-  return nodos.some(n => {
-    const d = hfcHelixGlobal.nodos[n];
-    return Number(d.inc || 0) + Number(d.wo || 0) + Number(d.tas || 0) > 0;
-  }) ? "CON_CASOS" : "SIN_CASOS";
-}
-async function hfcHelixCargarGlobal() {
-  try {
-    const url = window.dhUrl("backend/api/hfc_helix_global.php");
-    const respuesta = await fetch(url, {cache:"no-store", signal:AbortSignal.timeout(15000)});
-    const json = await respuesta.json();
-    if (!respuesta.ok || json.ok !== true || json.data?.estado !== "completo_nodos_validos"
-        || typeof json.data.nodos !== "object" || !json.data.nodos
-        || Object.keys(json.data.nodos).length !== Number(json.data.nodos_consultados)) {
-      throw new Error("Snapshot Helix incompleto");
-    }
-    hfcHelixGlobal = json.data;
-    hfcHelixGlobalError = null;
-  } catch (error) {
-    hfcHelixGlobalError = String(error.message || error);
-    console.warn("[HFC HELIX GLOBAL]", hfcHelixGlobalError);
-    // Conservar la ultima fotografia valida en memoria.
-  }
-}
 const hfcHelixCache = new Map();
 const hfcHelixPendientes = [];
 const hfcHelixEnCola = new Set();
@@ -497,8 +461,6 @@ function hfcHelixEstadoFiltro(fila) {
         return "NO_APLICA";
     }
 
-    const global = hfcHelixEstadoGlobalFila(fila);
-    if (global) return global === "PENDIENTE" ? "CONSULTANDO" : global;
     const nodo = hfcHelixNodo(fila.service_group);
     const resultado = hfcHelixEstado(nodo);
 
@@ -565,16 +527,6 @@ function badgeInc(r) {
     `;
   }
 
-  const nodos = hfcHelixNodos(r.service_group);
-  const global = hfcHelixEstadoGlobalFila(r);
-  if (global && (nodos.length > 1 || !hfcHelixEstado(nodos[0]))) {
-    if (global === "CON_CASOS") return '<div class="hfc-inc-cell"><span class="badge hfc-badge-inc">CON CASOS</span></div>';
-    if (global === "SIN_CASOS") return '<div class="hfc-inc-cell"><span class="badge hfc-badge-sin-casos">SIN CASOS</span></div>';
-    return '<div class="hfc-inc-cell"><span class="badge neutral">PENDIENTE</span></div>';
-  }
-  if (nodos.length > 1 && !global) {
-    return '<div class="hfc-inc-cell"><span class="badge neutral">SIN COBERTURA GLOBAL</span></div>';
-  }
   const nodo = hfcHelixNodo(r.service_group);
   const resultado = hfcHelixEstado(nodo);
 
@@ -744,11 +696,8 @@ function hfcHelixConsultarVisibles() {
 
     if (!fila || hfcHelixNoAplica(fila)) return;
 
-    if (hfcHelixNodos(nodo).length !== 1 || nodo.includes(",")) {
-      return; // Los compuestos se cubren mediante el snapshot global.
-    }
-    if (hfcHelixEstadoGlobalFila(fila)) {
-      return; // La tabla ya dispone del estado global; el detalle es bajo demanda.
+    if (!/^[A-Z0-9._-]{1,120}$/.test(nodo)) {
+      return;
     }
 
     if (
@@ -936,7 +885,7 @@ async function refresh(){
   if(hfcRefreshing)return;
   hfcRefreshing=true;
   try{
-    const [a,b]=await Promise.all([fetchJSON(API.estado),fetchJSON(API.inc),hfcHelixCargarGlobal()]);
+    const [a,b]=await Promise.all([fetchJSON(API.estado),fetchJSON(API.inc)]);
     rows=a.rows||[];incs=b.rows||[];window.__HFC_EXEC_ALL_ROWS__=rows;loadFilters();apply();renderIncidents();
     $("liveStatus").textContent=`Base cargada · ${fmt(rows.length)} elementos · chequeo de cambios ${window.RKP_HFC_POLL_MS/1000} s`;
     window.dispatchEvent(new CustomEvent('rkp-hfc-data',{detail:{total:rows.length}}));
@@ -981,23 +930,46 @@ function render(){
 }
 /* HFC - Resumen de casos confirmados en caché Helix */
 function hfcResumenCasosCache() {
-    const filas = filtered.filter(affected);
-    const resumen = {sinCasos: 0, conCasos: 0, pendientes: 0, errores: 0};
-    // Comparar la cantidad del inventario completo evita presentar como vigente
-    // un snapshot de una version HFC con diferente numero de afectados.
-    const afectadosActuales = rows.filter(affected).length;
-    const vigente = hfcHelixGlobal &&
-      afectadosActuales === Number(hfcHelixGlobal.registros_afectados);
-    if (!vigente) {
-      resumen.pendientes = filas.length;
-      return resumen;
-    }
-    for (const fila of filas) {
-      const estado = hfcHelixEstadoGlobalFila(fila);
-      if (estado === "CON_CASOS") resumen.conCasos++;
-      else if (estado === "SIN_CASOS") resumen.sinCasos++;
-      else resumen.pendientes++;
-    }
+    const nodos = new Set(
+        filtered.filter(affected)
+            .map(r => hfcHelixNodo(r.service_group))
+            .filter(Boolean)
+    );
+
+    const resumen = {
+        sinCasos: 0,
+        conCasos: 0,
+        pendientes: 0,
+        errores: 0
+    };
+
+    nodos.forEach(nodo => {
+        const resultado = hfcHelixEstado(nodo);
+
+        if (!resultado) {
+            resumen.pendientes++;
+            return;
+        }
+
+        if (resultado.estado !== 'ok') {
+            resumen.errores++;
+            return;
+        }
+
+        const datos = resultado.data || {};
+
+        const total =
+            Number(datos.inc || 0) +
+            Number(datos.wo || 0) +
+            Number(datos.tas || 0);
+
+        if (total > 0) {
+            resumen.conCasos++;
+        } else {
+            resumen.sinCasos++;
+        }
+    });
+
     return resumen;
 }
 
@@ -1032,9 +1004,7 @@ function hfcActualizarKpiHelix() {
         detalle.textContent =
             `Con casos ${fmt(resumen.conCasos)} · ` +
             `Pendientes ${fmt(resumen.pendientes)} · ` +
-            `No disponibles ${fmt(resumen.errores)}` +
-            (hfcHelixGlobal ? ` · Foto ${hfcHelixGlobal.calculado_en || "sin fecha"}` :
-            ` · Sin snapshot global${hfcHelixGlobalError ? " (error de carga)" : ""}`);
+            `No disponibles ${fmt(resumen.errores)}`;
     }
 }
 function renderKpis(){
@@ -4180,17 +4150,6 @@ function hfcPanelDetalleHelix(fila) {
         `;
     }
 
-    if (hfcHelixNodos(nodo).length > 1) {
-        const estado = hfcHelixEstadoGlobalFila(fila);
-        const etiqueta = estado === "CON_CASOS" ? "CON CASOS" :
-            estado === "SIN_CASOS" ? "SIN CASOS" : "SIN RESULTADO GLOBAL";
-        return `<div class="hfc-panel-helix" id="hfc-panel-helix">
-            <span class="badge neutral">${etiqueta}</span>
-            <p>Cluster compuesto por ${hfcHelixNodos(nodo).map(esc).join(", ")}.
-            El estado procede del barrido global. El detalle de numeros de caso
-            requiere la consulta individual de cada nodo y deduplicacion.</p>
-        </div>`;
-    }
     const resultado = window.hfcHelixGetResult?.(nodo);
 
     if (!resultado) {
