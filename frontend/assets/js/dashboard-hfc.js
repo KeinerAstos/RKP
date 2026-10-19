@@ -928,14 +928,41 @@ function apply(){
 function render(){
   renderKpis();renderTop10();renderZoneDetail();renderTable();
 }
-/* HFC - Resumen de casos confirmados en caché Helix */
-function hfcResumenCasosCache() {
-    const nodos = new Set(
-        filtered.filter(affected)
-            .map(r => hfcHelixNodo(r.service_group))
-            .filter(Boolean)
-    );
+/* Caché global Helix: resultados precalculados desde Oracle */
+let hfcHelixGlobal = null;
 
+async function hfcCargarHelixGlobal() {
+    try {
+        const respuesta = await fetch(
+            '/RKP/backend/api/hfc_helix_global.php',
+            { cache: 'no-store' }
+        );
+
+        if (!respuesta.ok) {
+            throw new Error(`HTTP ${respuesta.status}`);
+        }
+
+        const json = await respuesta.json();
+
+        if (!json.ok || !json.data?.nodos) {
+            throw new Error('Respuesta global Helix inválida');
+        }
+
+        hfcHelixGlobal = json.data;
+        hfcActualizarKpiHelix();
+
+        console.log(
+            'Helix global cargado:',
+            Object.keys(hfcHelixGlobal.nodos).length,
+            'nodos'
+        );
+    } catch (error) {
+        console.error('Error cargando Helix global:', error);
+    }
+}
+/* HFC - Resumen de casos confirmados en caché Helix */
+
+function hfcResumenCasosCache() {
     const resumen = {
         sinCasos: 0,
         conCasos: 0,
@@ -943,28 +970,51 @@ function hfcResumenCasosCache() {
         errores: 0
     };
 
-    nodos.forEach(nodo => {
-        const resultado = hfcHelixEstado(nodo);
+    // Si la fotografía global aún no está disponible,
+    // los elementos afectados quedan pendientes.
+    const nodosGlobales = hfcHelixGlobal?.nodos || {};
 
-        if (!resultado) {
+    filtered.filter(affected).forEach(fila => {
+        // Un registro HFC puede contener varios nodos.
+        const nodos = [...new Set(
+            String(fila.service_group || '')
+                .toUpperCase()
+                .split(',')
+                .map(n => n.trim())
+                .filter(Boolean)
+        )];
+
+        if (nodos.length === 0) {
             resumen.pendientes++;
             return;
         }
 
-        if (resultado.estado !== 'ok') {
-            resumen.errores++;
-            return;
+        let tieneCasos = false;
+        let faltanDatos = false;
+
+        for (const nodo of nodos) {
+            if (!Object.prototype.hasOwnProperty.call(nodosGlobales, nodo)) {
+                faltanDatos = true;
+                continue;
+            }
+
+            const datos = nodosGlobales[nodo];
+
+            const total =
+                Number(datos.inc || 0) +
+                Number(datos.wo || 0) +
+                Number(datos.tas || 0);
+
+            if (total > 0) {
+                tieneCasos = true;
+            }
         }
 
-        const datos = resultado.data || {};
-
-        const total =
-            Number(datos.inc || 0) +
-            Number(datos.wo || 0) +
-            Number(datos.tas || 0);
-
-        if (total > 0) {
+        // Cada fila afectada se cuenta una sola vez.
+        if (tieneCasos) {
             resumen.conCasos++;
+        } else if (faltanDatos) {
+            resumen.pendientes++;
         } else {
             resumen.sinCasos++;
         }
@@ -973,6 +1023,7 @@ function hfcResumenCasosCache() {
     return resumen;
 }
 
+hfcCargarHelixGlobal();
 /* Actualizar solamente la segunda tarjeta */
 function hfcActualizarKpiHelix() {
     const tarjeta = $('kpis')?.children[1];

@@ -858,3 +858,101 @@
         animation: none;
     }
 }
+
+/* ==============================================
+   RKPS - SIDEBAR ROJO CORPORATIVO
+   ============================================== */
+
+:root {
+    --rkps-red: #C8102E;
+    --rkps-red-dark: #A50D26;
+    --rkps-red-soft: rgba(200, 16, 46, 0.16);
+    --rkps-red-hover: rgba(200, 16, 46, 0.26);
+    --rkps-red-border: rgba(200, 16, 46, 0.45);
+}
+
+/* Vista general y otras opciones principales activas */
+.nav .nav__item.active,
+.nav .nav__item[aria-current="page"] {
+    background: var(--rkps-red) !important;
+    background-color: var(--rkps-red) !important;
+    border-color: var(--rkps-red) !important;
+    color: #fff !important;
+}
+
+/* Hover de opciones principales */
+.nav .nav__item:hover {
+    background: var(--rkps-red-hover) !important;
+    border-color: var(--rkps-red-border) !important;
+    color: #fff !important;
+}
+
+/* Mantener rojo sólido en opción activa */
+.nav .nav__item.active:hover,
+.nav .nav__item[aria-current="page"]:hover {
+    background: var(--rkps-red-dark) !important;
+    border-color: var(--rkps-red-dark) !important;
+}
+
+/* Rutinas: desplegable abierto o seleccionado */
+.nav .nav__group > .nav__toggle[aria-expanded="true"],
+.nav .nav__group > .nav__toggle.active,
+.nav .nav__group > .nav__toggle[aria-expanded="true"]:hover,
+.nav .nav__group > .nav__toggle.active:hover {
+    background: var(--rkps-red-soft) !important;
+    background-color: var(--rkps-red-soft) !important;
+    border-color: var(--rkps-red-border) !important;
+    color: #fff !important;
+}
+
+/* Opciones dentro de Rutinas */
+.nav .nav__submenu .nav__subitem {
+    transition: background-color .2s ease, border-color .2s ease;
+}
+
+/* Submenús seleccionados */
+.nav .nav__submenu .nav__subitem.active,
+.nav .nav__submenu .nav__subitem.selected,
+.nav .nav__submenu .nav__subitem.is-active,
+.nav .nav__submenu .nav__subitem[aria-current],
+.nav .nav__submenu .nav__subitem[aria-selected="true"] {
+    background: var(--rkps-red) !important;
+    background-color: var(--rkps-red) !important;
+    border-color: var(--rkps-red) !important;
+    color: #fff !important;
+}
+
+/* Hover de submenús */
+.nav .nav__submenu .nav__subitem:hover {
+    background: var(--rkps-red-hover) !important;
+    background-color: var(--rkps-red-hover) !important;
+    border-color: var(--rkps-red-border) !important;
+    color: #fff !important;
+}
+
+/* Submenú seleccionado con hover */
+.nav .nav__submenu .nav__subitem.active:hover,
+.nav .nav__submenu .nav__subitem[aria-current]:hover {
+    background: var(--rkps-red-dark) !important;
+    border-color: var(--rkps-red-dark) !important;
+}
+
+/* Cuando Rutinas contiene una opción seleccionada */
+.nav .nav__group:has(.nav__subitem.active) > .nav__toggle,
+.nav .nav__group:has(.nav__subitem[aria-current]) > .nav__toggle {
+    background: var(--rkps-red-soft) !important;
+    border-color: var(--rkps-red-border) !important;
+}
+
+/* Iconos */
+.nav .nav__item.active .nav__icon,
+.nav .nav__item.active .nav__chevron,
+.nav .nav__toggle[aria-expanded="true"] .nav__icon {
+    color: #fff !important;
+}
+
+/* Barra izquierda del menú activo */
+.nav .nav__item.active::before,
+.nav .nav__item[aria-current="page"]::before {
+    background: #ff7184 !important;
+}

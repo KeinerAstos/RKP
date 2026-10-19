@@ -782,8 +782,90 @@
             $('prev').addEventListener('click', () => { page--; expanded = null; render(); }); $('next').addEventListener('click', () => { page++; expanded = null; render(); });
             const csvCell = value => { let s = String(value ?? ''); if (/^[\s\uFEFF]*[=+@-]/.test(s) || /^[\t\r\n]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
             $('export').addEventListener('click', () => {
-                const rows = tab === 'inc' ? [['INC', 'Título', 'Estado', 'Segundos en estado', 'Tiempo en estado', 'Grupo de soporte', 'TAS verificables'], ...visible.map(r => [r.inc.numero, r.inc.titulo, r.inc.estado, r.seconds, duration(r.seconds), r.inc.grupo_soporte, r.tasks.length])] : [['INC padre', 'TAS', 'Título', 'Estado', 'Segundos en estado', 'Tiempo en estado', 'Grupo de soporte', 'Relación'], ...visible.flatMap(r => r.tasks.map(t => [r.inc.numero, t.numero, t.titulo, t.estado, t.segundos_en_estado, duration(t.segundos_en_estado), t.grupo_soporte, t.relacion]))];
-                const url = URL.createObjectURL(new Blob(['\uFEFF' + rows.map(r => r.map(csvCell).join(';')).join('\r\n')], { type: 'text/csv;charset=utf-8' })); const a = node('a'); a.href = url; a.download = `estados-helix-${tab}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+                let rows;
+
+                if (tab === 'inc') {
+                    rows = [
+                        [
+                            'INC',
+                            'Título',
+                            'Estado',
+                            'Segundos en estado',
+                            'Tiempo en estado',
+                            'Grupo de soporte',
+                            'TAS verificables',
+                            'Categoría operacional 1',
+                            'Categoría operacional 2',
+                            'Categoría operacional 3'
+                        ],
+                        ...visible.map(r => [
+                            r.inc.numero,
+                            r.inc.titulo,
+                            r.inc.estado,
+                            r.seconds,
+                            duration(r.seconds),
+                            r.inc.grupo_soporte,
+                            r.tasks.length,
+
+                            // Categorías operacionales separadas
+                            r.inc.categoria_operacional_nivel_1 || '',
+                            r.inc.categoria_operacional_nivel_2 || '',
+                            r.inc.categoria_operacional_nivel_3 || ''
+                        ])
+                    ];
+                } else {
+                    rows = [
+                        [
+                            'INC padre',
+                            'TAS',
+                            'Título',
+                            'Estado',
+                            'Segundos en estado',
+                            'Tiempo en estado',
+                            'Grupo de soporte',
+                            'Relación',
+                            'Categoría operacional 1',
+                            'Categoría operacional 2',
+                            'Categoría operacional 3'
+                        ],
+                        ...visible.flatMap(r =>
+                            r.tasks.map(t => [
+                                r.inc.numero,
+                                t.numero,
+                                t.titulo,
+                                t.estado,
+                                t.segundos_en_estado,
+                                duration(t.segundos_en_estado),
+                                t.grupo_soporte,
+                                t.relacion,
+
+                                // La categoría corresponde al INC padre
+                                r.inc.categoria_operacional_nivel_1 || '',
+                                r.inc.categoria_operacional_nivel_2 || '',
+                                r.inc.categoria_operacional_nivel_3 || ''
+                            ])
+                        )
+                    ];
+                }
+
+                const url = URL.createObjectURL(
+                    new Blob(
+                        [
+                            '\uFEFF' +
+                            rows
+                                .map(r => r.map(csvCell).join(';'))
+                                .join('\r\n')
+                        ],
+                        { type: 'text/csv;charset=utf-8' }
+                    )
+                );
+
+                const a = node('a');
+                a.href = url;
+                a.download = `estados-helix-${tab}.csv`;
+                a.click();
+
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
             });
             function summary(data) {
                 const r = data.resumen_relaciones, count = v => Number.isInteger(v) && v >= 0 ? v : null, show = v => v == null ? 'No disponible' : String(v);

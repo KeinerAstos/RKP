@@ -825,3 +825,98 @@
 }
 .gkp-page .sidebar-brand__text--logo { display: block; }
 .gkp-page .sidebar-brand__text--logo span { margin-top: 0; color: #9bb7a9; font-size: 10px; }
+
+/* =====================================================
+   RKPS - SIDEBAR CORPORATIVO ROJO
+   ===================================================== */
+
+:root {
+    --sidebar-red: #C8102E;
+    --sidebar-red-dark: #A50D26;
+    --sidebar-red-soft: rgba(200, 16, 46, 0.16);
+    --sidebar-red-hover: rgba(200, 16, 46, 0.25);
+    --sidebar-red-border: rgba(200, 16, 46, 0.45);
+}
+
+/* Opciones principales seleccionadas */
+.nav .nav__item.active,
+.nav .nav__item[aria-current="page"],
+.gkp-page .nav__item.active {
+    background: var(--sidebar-red) !important;
+    border-color: var(--sidebar-red) !important;
+    color: #fff !important;
+}
+
+/* Hover de opción seleccionada */
+.nav .nav__item.active:hover,
+.nav .nav__item[aria-current="page"]:hover,
+.gkp-page .nav__item.active:hover {
+    background: var(--sidebar-red-dark) !important;
+    border-color: var(--sidebar-red-dark) !important;
+    color: #fff !important;
+}
+
+/* Hover de opciones principales */
+.nav .nav__item:not(.active):hover {
+    background: var(--sidebar-red-hover) !important;
+    border-color: var(--sidebar-red-border) !important;
+    color: #fff !important;
+}
+
+/* Rutinas: desplegable abierto o sección seleccionada */
+.nav .nav__group.is-active > .nav__toggle,
+.nav .nav__toggle[aria-expanded="true"] {
+    background: var(--sidebar-red-soft) !important;
+    border-color: var(--sidebar-red-border) !important;
+    color: #fff !important;
+}
+
+/* Rutinas: efecto hover */
+.nav .nav__toggle:hover,
+.nav .nav__toggle:focus-visible {
+    background: var(--sidebar-red-hover) !important;
+    border-color: var(--sidebar-red-border) !important;
+    color: #fff !important;
+}
+
+/* Submenús seleccionados: Recursos ZTE y demás */
+.nav .nav__subitem.active,
+.nav .nav__subitem[aria-current="page"],
+.gkp-page .nav__subitem.active {
+    background: var(--sidebar-red) !important;
+    border-color: var(--sidebar-red) !important;
+    color: #fff !important;
+}
+
+/* Hover de submenús */
+.nav .nav__subitem:not(.active):hover,
+.gkp-page .nav__subitem:not(.active):hover {
+    background: var(--sidebar-red-hover) !important;
+    border-color: var(--sidebar-red-border) !important;
+    color: #fff !important;
+}
+
+/* Hover de submenús seleccionados */
+.nav .nav__subitem.active:hover,
+.nav .nav__subitem[aria-current="page"]:hover,
+.gkp-page .nav__subitem.active:hover {
+    background: var(--sidebar-red-dark) !important;
+    border-color: var(--sidebar-red-dark) !important;
+    color: #fff !important;
+}
+
+/* Indicador vertical de opción activa */
+.nav .nav__item.active::before,
+.nav .nav__item[aria-current="page"]::before {
+    background: #FF7184 !important;
+}
+
+/* Transiciones */
+.nav .nav__item,
+.nav .nav__toggle,
+.nav .nav__subitem {
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
