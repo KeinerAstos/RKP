@@ -790,7 +790,7 @@
                             'INC',
                             'Título',
                             'Estado',
-                            'Segundos en estado',
+
                             'Tiempo en estado',
                             'Grupo de soporte',
                             'TAS verificables',
@@ -802,7 +802,7 @@
                             r.inc.numero,
                             r.inc.titulo,
                             r.inc.estado,
-                            r.seconds,
+
                             duration(r.seconds),
                             r.inc.grupo_soporte,
                             r.tasks.length,
@@ -820,7 +820,7 @@
                             'TAS',
                             'Título',
                             'Estado',
-                            'Segundos en estado',
+
                             'Tiempo en estado',
                             'Grupo de soporte',
                             'Relación',
@@ -834,7 +834,7 @@
                                 t.numero,
                                 t.titulo,
                                 t.estado,
-                                t.segundos_en_estado,
+
                                 duration(t.segundos_en_estado),
                                 t.grupo_soporte,
                                 t.relacion,
