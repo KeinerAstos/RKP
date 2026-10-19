@@ -1393,3 +1393,273 @@
 .dashboard-hfc-page .hfc-kpis .kpi .hfc-summary-card__meta {
     width: 100%;
 }
+/* ============================================================
+   RKPS - DASHBOARD HFC
+   TEMA CORPORATIVO ROJO / BLANCO - VERSION REFINADA
+   ============================================================ */
+
+.dashboard-hfc-page {
+    --rkps-hfc-red: #c8102e;
+    --rkps-hfc-red-dark: #a50d26;
+    --rkps-hfc-red-soft: #fff1f3;
+    --rkps-hfc-red-border: #f1ccd3;
+    --rkps-hfc-text: #172b49;
+    --rkps-hfc-muted: #64748b;
+    --rkps-hfc-border: #e5e9ee;
+}
+
+/* 1. FONDO GENERAL */
+
+.dashboard-hfc-page .hfc-app {
+    background: #f7f8fa;
+}
+
+/* 2. TARJETAS SUPERIORES */
+
+.dashboard-hfc-page .hfc-sourcebar {
+    background: #fff;
+    border: 1px solid #e8ebef;
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, .035);
+}
+
+/* Mantener estilos de estado de las fuentes */
+.dashboard-hfc-page .hfc-sourcebar > * {
+    border-radius: 10px;
+}
+
+/* 3. TARJETAS KPI */
+
+.dashboard-hfc-page .hfc-kpis {
+    gap: 14px;
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi {
+    position: relative;
+    min-width: 0;
+    padding: 20px 18px 18px 24px;
+    background: #fff;
+    border: 1px solid var(--rkps-hfc-border);
+    border-radius: 13px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, .045);
+    overflow: hidden;
+}
+
+/* Barra lateral de identificación */
+
+.dashboard-hfc-page .hfc-kpis .kpi::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    border-radius: 13px 0 0 13px;
+}
+
+/* Afectados */
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(1) {
+    background: #fff1f3;
+    border-color: #f4cbd3;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(1)::before {
+    background: #c8102e;
+}
+
+/* Sin casos Helix */
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(2) {
+    background: #f7f8fa;
+    border-color: #e2e5ea;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(2)::before {
+    background: #64748b;
+}
+
+/* Elementos en alcance */
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(3) {
+    background: #fff;
+    border-color: #e5e9ee;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(3)::before {
+    background: #64748b;
+}
+
+/* Fabricantes */
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(4) {
+    background: #fff;
+    border-color: #e5e9ee;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(4)::before {
+    background: #c8102e;
+}
+
+/* Textos KPI */
+
+.dashboard-hfc-page .hfc-kpis .kpi > span,
+.dashboard-hfc-page .hfc-kpis .hfc-summary-card__label {
+    color: #475569 !important;
+    font-size: 12px !important;
+    font-weight: 600;
+}
+
+.dashboard-hfc-page .hfc-kpis .kpi > strong,
+.dashboard-hfc-page .hfc-kpis .hfc-summary-card__value {
+    color: #172b49;
+    font-weight: 800;
+}
+
+/* Destacar afectados y fabricantes */
+
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(1) strong,
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(4) strong,
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(1) .hfc-summary-card__value,
+.dashboard-hfc-page .hfc-kpis .kpi:nth-child(4) .hfc-summary-card__value {
+    color: #b91c35;
+}
+
+/* Textos inferiores */
+
+.dashboard-hfc-page .hfc-kpis .kpi small,
+.dashboard-hfc-page .hfc-kpis .hfc-summary-card__meta {
+    color: #64748b;
+    border-top-color: #e5e9ee;
+}
+
+/* 4. CONTENEDORES Y SECCIONES */
+
+.dashboard-hfc-page .hfc-card {
+    background: #fff;
+    border: 1px solid #e7ebef;
+    border-radius: 13px;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, .035);
+}
+
+/* 5. PESTAÑAS */
+
+.dashboard-hfc-page .hfc-tab {
+    color: #475569;
+}
+
+.dashboard-hfc-page .hfc-tab.active {
+    color: #c8102e;
+    border-bottom-color: #c8102e;
+}
+
+.dashboard-hfc-page .hfc-tab:hover {
+    color: #a50d26;
+}
+
+/* 6. BOTONES PRINCIPALES */
+
+.dashboard-hfc-page #btnRefresh,
+.dashboard-hfc-page #btnExportVista,
+.dashboard-hfc-page .hfc-btn.primary {
+    background: #c8102e;
+    border: 1px solid #c8102e;
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.dashboard-hfc-page #btnRefresh:hover:not(:disabled),
+.dashboard-hfc-page #btnExportVista:hover:not(:disabled),
+.dashboard-hfc-page .hfc-btn.primary:hover:not(:disabled) {
+    background: #a50d26;
+    border-color: #a50d26;
+    color: #fff;
+}
+
+/* 7. BOTONES SECUNDARIOS */
+
+.dashboard-hfc-page .hfc-btn:not(.primary):not(#btnRefresh):not(#btnExportVista) {
+    background: #fff;
+    border: 1px solid #d9dfe6;
+    color: #344054;
+}
+
+.dashboard-hfc-page .hfc-btn:not(.primary):not(#btnRefresh):not(#btnExportVista):hover:not(:disabled) {
+    background: #fff1f3;
+    border-color: #c8102e;
+    color: #a50d26;
+}
+
+/* 8. FILTROS */
+
+.dashboard-hfc-page .hfc-filters input,
+.dashboard-hfc-page .hfc-filters select {
+    background: #fff;
+    border-color: #d9e0e6;
+}
+
+.dashboard-hfc-page :is(
+    input,
+    select,
+    button,
+    summary,
+    [tabindex]
+):focus-visible {
+    outline: 2px solid #c8102e;
+    outline-offset: 2px;
+}
+
+/* Opciones de selección */
+
+.dashboard-hfc-page :is(
+    .hfc-zone-option,
+    .hfc-filter-multi-option,
+    .hfc-extra-option
+) input[type="checkbox"] {
+    accent-color: #c8102e;
+}
+
+/* 9. TABLAS */
+
+.dashboard-hfc-page .hfc-table-wrap {
+    border-color: #e5e9ee;
+}
+
+.dashboard-hfc-page .hfc-table th {
+    background: #f5f7f9;
+    color: #334155;
+}
+
+.dashboard-hfc-page .hfc-table tbody tr:hover {
+    background: #fff8f9;
+}
+
+/* Conservar estados e incidentes originales */
+
+/* 10. SELECCIONES */
+
+.dashboard-hfc-page .top-row.active {
+    background: #fff1f3;
+    color: #a50d26;
+}
+
+.dashboard-hfc-page .top-row:hover {
+    border-color: #e7a6b4;
+}
+
+/* 11. RESPONSIVE */
+
+@media (max-width: 760px) {
+    .dashboard-hfc-page .hfc-kpis {
+        gap: 10px;
+    }
+
+    .dashboard-hfc-page .hfc-kpis .kpi {
+        padding: 15px 12px 13px 18px;
+    }
+}

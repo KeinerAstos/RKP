@@ -1,0 +1,1308 @@
+.helix-estados-page .app {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible
+}
+
+.helix-estados-page .main {
+    min-width: 0;
+    height: auto;
+    overflow: visible
+}
+
+.helix-estados {
+    color: var(--gkp-ink);
+    gap: 12px;
+    min-width: 0
+}
+
+.helix-estados .hx-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px
+}
+
+.helix-estados .hx-panel {
+    min-width: 0;
+    max-width: 100%;
+    background: var(--gkp-surface);
+    border: 1px solid var(--gkp-line);
+    border-radius: 12px;
+    padding: 14px
+}
+
+.helix-estados h2,
+.helix-estados h3,
+.helix-estados p {
+    margin: 0
+}
+
+.helix-estados h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    letter-spacing: .04em
+}
+
+.helix-estados svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    flex-shrink: 0
+}
+
+.helix-estados .hx-numbers {
+    display: grid;
+    grid-template-columns: .8fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0
+}
+
+.helix-estados .hx-numbers>div+div {
+    border-left: 1px solid var(--gkp-line);
+    padding-left: 12px
+}
+
+.helix-estados .hx-numbers strong {
+    display: block;
+    font-size: 22px;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums
+}
+
+.helix-estados .hx-numbers span,
+.helix-estados .hx-muted {
+    font-size: 12px;
+    color: var(--gkp-muted)
+}
+
+.helix-estados .hx-good {
+    color: var(--gkp-green-strong)
+}
+
+.helix-estados .hx-warn {
+    color: #885b12
+}
+
+.helix-estados .hx-toolbar,
+.helix-estados .hx-tabs,
+.helix-estados .hx-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px
+}
+
+.helix-estados .hx-toolbar {
+    align-items: end
+}
+
+.helix-estados label {
+    display: grid;
+    gap: 4px;
+    font-size: 12px;
+    min-width: 0
+}
+
+.helix-estados .hx-search {
+    flex: 1 1 220px
+}
+
+.helix-estados input,
+.helix-estados select,
+.helix-estados button {
+    font: inherit;
+    font-size: 12px;
+    min-height: 36px;
+    padding: 7px 10px;
+    color: var(--gkp-ink);
+    background: var(--gkp-surface);
+    border: 1px solid var(--gkp-line);
+    border-radius: 7px;
+    max-width: 100%
+}
+
+.helix-estados button {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px
+}
+
+.helix-estados button:hover {
+    border-color: var(--gkp-green)
+}
+
+.helix-estados .hx-primary,
+.helix-estados [role=tab][aria-selected=true] {
+    background: var(--gkp-green-strong);
+    color: white;
+    border-color: var(--gkp-green-strong)
+}
+
+.helix-estados button:disabled {
+    opacity: .55;
+    cursor: default
+}
+
+.helix-estados :focus-visible {
+    outline: 2px solid var(--gkp-green);
+    outline-offset: 3px
+}
+
+.helix-estados .hx-status {
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 10px 12px;
+    border-left: 1px solid var(--gkp-line)
+}
+
+.helix-estados .hx-status[data-state=error] {
+    color: #9a2534;
+    border-color: #9a2534;
+    background: #fff1f2
+}
+
+.helix-estados .hx-status[data-state=loading] {
+    color: #805a0b;
+    border-color: #b38020
+}
+
+.helix-estados .hx-results {
+    padding: 0;
+    overflow: hidden
+}
+
+.helix-estados .hx-scroll {
+    max-width: 100%;
+    max-height: 60vh;
+    overflow: auto
+}
+
+.helix-estados table {
+    width: 100%;
+    min-width: 780px;
+    border-collapse: collapse;
+    font-size: 12px;
+    text-align: left
+}
+
+.helix-estados th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--gkp-paper);
+    font-size: 11px;
+    color: var(--gkp-ink-2)
+}
+
+.helix-estados th,
+.helix-estados td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--gkp-line-soft);
+    vertical-align: top
+}
+
+.helix-estados td {
+    font-size: 12px;
+    color: var(--gkp-ink);
+    line-height: 1.5
+}
+
+.helix-estados td:first-child {
+    max-width: 320px;
+    min-width: 220px;
+    overflow-wrap: anywhere
+}
+
+.helix-estados td strong,
+.helix-estados td small {
+    display: block
+}
+
+.helix-estados td small {
+    font-size: 12px;
+    color: var(--gkp-ink-2);
+    margin-top: 4px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden
+}
+
+.helix-estados .hx-time {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600
+}
+
+.helix-estados .hx-eye {
+    color: var(--gkp-green-strong);
+    padding: 7px
+}
+
+.helix-estados .hx-expanded>td {
+    background: var(--gkp-paper);
+    padding: 16px
+}
+
+.helix-estados .hx-detail-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px
+}
+
+.helix-estados h3 {
+    font-size: 15px
+}
+
+.helix-estados dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 12px 0
+}
+
+.helix-estados dt {
+    font-size: 11px;
+    color: var(--gkp-muted)
+}
+
+.helix-estados dd {
+    margin: 3px 0 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 13px
+}
+
+.helix-estados .hx-pagination {
+    padding: 10px 12px;
+    justify-content: flex-end
+}
+
+.helix-estados .hx-empty {
+    padding: 26px 14px;
+    color: var(--gkp-muted);
+    font-size: 13px
+}
+
+.helix-estados dialog {
+    width: min(720px, calc(100% - 24px));
+    max-height: 85dvh;
+    overflow: auto;
+    padding: 20px;
+    color: var(--gkp-ink);
+    background: var(--gkp-surface);
+    border: 1px solid var(--gkp-line);
+    border-radius: 12px
+}
+
+.helix-estados dialog::backdrop {
+    background: rgba(3, 5, 8, .6)
+}
+
+.helix-estados dialog p {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+    line-height: 1.5
+}
+
+.helix-estados [hidden] {
+    display: none !important
+}
+
+/* Mantener el fondo y resaltar únicamente el texto. */
+.helix-estados tbody tr:hover {
+    background: transparent;
+}
+
+.helix-estados tbody tr:hover td,
+.helix-estados tbody tr:hover td small {
+    font-weight: 700;
+}
+
+.helix-estados tbody tr:hover td strong {
+    font-weight: 900;
+}
+
+/* Detalle lateral derecho. */
+.helix-estados #hx-detail {
+    position: fixed;
+    inset: 0 0 0 auto;
+    margin: 0;
+    box-sizing: border-box;
+    width: min(880px, 94vw);
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    padding: 20px;
+    overflow: auto;
+    color: var(--gkp-ink);
+    background: var(--gkp-surface);
+    border: 0;
+    border-left: 1px solid var(--gkp-line);
+    border-radius: 14px 0 0 14px;
+    box-shadow: -12px 0 36px rgba(0, 0, 0, .12);
+}
+
+.helix-estados #hx-detail::backdrop {
+    background: rgba(20, 40, 30, .15);
+}
+
+.helix-estados #hx-detail .hx-detail-heading {
+    position: sticky;
+    top: -20px;
+    z-index: 2;
+    padding: 14px 0;
+    background: var(--gkp-surface);
+}
+
+.helix-estados #hx-detail .hx-scroll {
+    margin-top: 12px;
+}
+
+@media (max-width: 760px) {
+    .helix-estados #hx-detail {
+        width: 100vw;
+        border-radius: 0;
+    }
+}
+
+@media(max-width:760px) {
+    .helix-estados .hx-summary {
+        grid-template-columns: 1fr
+    }
+
+    .helix-estados .hx-toolbar>label {
+        flex: 1 1 160px
+    }
+
+    .helix-estados dl {
+        grid-template-columns: 1fr
+    }
+
+    .helix-estados .hx-numbers strong {
+        font-size: 20px
+    }
+}
+
+/* RKP_HELIX_DOS_TABLAS_V1 */
+.helix-estados #hx-cutoff,
+.helix-estados #hx-cutoff+p.hx-muted,
+.helix-estados #hx-status[data-state=success] {
+    display: none !important
+}
+
+.helix-estados tbody tr:hover {
+    background: transparent !important
+}
+
+.helix-estados tbody tr:hover td,
+.helix-estados tbody tr:hover td small {
+    font-weight: 700
+}
+
+.helix-estados tbody tr:hover td strong {
+    font-weight: 900
+}
+
+.helix-estados .hx-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    min-width: 0;
+    align-items: start
+}
+
+.helix-estados .hx-workspace.has-detail {
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+}
+
+.helix-estados #hx-view {
+    min-width: 0
+}
+
+.helix-estados #hx-detail {
+    position: static !important;
+    inset: auto !important;
+    margin: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0;
+    max-width: 100% !important;
+    max-height: 75dvh !important;
+    overflow: auto;
+    padding: 14px;
+    border: 1px solid var(--gkp-line) !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    background: var(--gkp-surface);
+    color: var(--gkp-ink)
+}
+
+.helix-estados #hx-detail[hidden] {
+    display: none !important
+}
+
+.helix-estados #hx-detail .hx-detail-heading {
+    position: static !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px
+}
+
+.helix-estados #hx-detail-body>h3 {
+    margin: 16px 0 10px
+}
+
+.helix-estados #hx-detail .hx-scroll {
+    max-height: 48dvh
+}
+
+@media(max-width:1000px) {
+    .helix-estados .hx-workspace.has-detail {
+        grid-template-columns: repeat(2, minmax(360px, 1fr));
+        overflow-x: auto
+    }
+}
+/* ==========================================================
+RKPS - ESTADOS HELIX
+DISEÑO CORPORATIVO ROJO Y BLANCO
+AJUSTES VISUALES FINALES
+========================================================== */
+
+.helix-estados {
+    --hx-brand: #c8102e;
+    --hx-brand-dark: #a50d26;
+    --hx-brand-soft: #fff1f3;
+    --hx-brand-border: #f1c6cf;
+    --hx-neutral-border: #e2e8f0;
+    --hx-dark: #172b49;
+}
+
+/* ==========================================================
+1. TARJETAS SUPERIORES INC / TAS
+========================================================== */
+
+.helix-estados .hx-summary {
+    gap: 16px;
+}
+
+.helix-estados .hx-summary .hx-panel {
+    position: relative;
+    overflow: hidden;
+    padding: 20px 24px;
+    background: #fff;
+    border: 1px solid var(--hx-neutral-border);
+    border-left: 4px solid var(--hx-brand);
+    border-radius: 13px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, .045);
+}
+
+/* Evitar duplicar la barra lateral del bloque anterior */
+.helix-estados .hx-summary .hx-panel::before {
+    display: none;
+}
+
+.helix-estados .hx-summary h2 {
+    color: var(--hx-dark);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .02em;
+}
+
+/* Números de los indicadores */
+.helix-estados .hx-numbers {
+    margin: 16px 0 12px;
+    gap: 14px;
+}
+
+.helix-estados .hx-numbers strong {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--hx-dark);
+}
+
+.helix-estados .hx-numbers span {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* Indicadores operativos */
+.helix-estados .hx-numbers strong.hx-good {
+    color: #15803d;
+}
+
+.helix-estados .hx-numbers strong.hx-warn {
+    color: #996000;
+}
+
+/* Separadores internos */
+.helix-estados .hx-numbers > div + div {
+    border-left: 1px solid #e2e8f0;
+    padding-left: 16px;
+}
+
+/* Información inferior de las tarjetas */
+.helix-estados .hx-summary .hx-muted {
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* ==========================================================
+2. PESTAÑAS INCIDENTES / TAREAS
+========================================================== */
+
+.helix-estados .hx-tabs {
+    gap: 0;
+    border-bottom: 1px solid #e2e8f0;
+    margin-top: 12px;
+}
+
+.helix-estados .hx-tabs [role="tab"] {
+    min-height: 42px;
+    padding: 11px 18px;
+    background: #fff !important;
+    color: #475569 !important;
+    border: 0 !important;
+    border-bottom: 3px solid transparent !important;
+    border-radius: 8px 8px 0 0;
+    font-weight: 700;
+    opacity: 1 !important;
+}
+
+/* Seleccionada */
+.helix-estados .hx-tabs [role="tab"][aria-selected="true"] {
+    background: #fff !important;
+    color: var(--hx-brand) !important;
+    border-bottom: 3px solid var(--hx-brand) !important;
+}
+
+/* Hover */
+.helix-estados .hx-tabs [role="tab"]:hover:not(:disabled) {
+    background: #fff6f7 !important;
+    color: var(--hx-brand-dark) !important;
+}
+
+/* ==========================================================
+3. BUSCADOR Y FILTROS
+========================================================== */
+
+.helix-estados .hx-toolbar {
+    gap: 12px;
+    padding: 14px 0;
+}
+
+.helix-estados .hx-toolbar label {
+    color: #344054;
+    font-weight: 600;
+}
+
+.helix-estados .hx-toolbar input,
+.helix-estados .hx-toolbar select {
+    min-height: 39px;
+    background: #fff;
+    color: #172b49;
+    border: 1px solid #d9e1e8;
+    border-radius: 8px;
+}
+
+.helix-estados .hx-toolbar input:focus,
+.helix-estados .hx-toolbar select:focus {
+    outline: none;
+    border-color: var(--hx-brand);
+    box-shadow: 0 0 0 3px rgba(200, 16, 46, .12);
+}
+
+/* ==========================================================
+4. BOTONES ACTUALIZAR Y EXPORTAR
+========================================================== */
+
+/* Actualizar habilitado */
+.helix-estados #hx-refresh:not(:disabled) {
+    background: var(--hx-brand) !important;
+    color: #fff !important;
+    border: 1px solid var(--hx-brand) !important;
+    border-radius: 8px;
+    font-weight: 700;
+    opacity: 1 !important;
+}
+
+.helix-estados #hx-refresh:hover:not(:disabled) {
+    background: var(--hx-brand-dark) !important;
+    border-color: var(--hx-brand-dark) !important;
+}
+
+/* Exportar CSV */
+.helix-estados #hx-export:not(:disabled) {
+    background: #fff !important;
+    color: var(--hx-brand) !important;
+    border: 1px solid var(--hx-brand-border) !important;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.helix-estados #hx-export:hover:not(:disabled) {
+    background: var(--hx-brand-soft) !important;
+    border-color: var(--hx-brand) !important;
+}
+
+/* Botones deshabilitados */
+.helix-estados button:disabled {
+    background: #f1f5f9 !important;
+    color: #64748b !important;
+    border-color: #d9e1e8 !important;
+    opacity: 1 !important;
+    cursor: not-allowed;
+}
+
+/* ==========================================================
+5. TABLA DE INCIDENTES Y TAREAS
+========================================================== */
+
+.helix-estados .hx-results {
+    background: #fff;
+    border: 1px solid var(--hx-neutral-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.helix-estados th {
+    background: #f5f7f9;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.helix-estados td {
+    color: #344054;
+    border-bottom-color: #e8edf2;
+}
+
+.helix-estados td strong {
+    color: #172b49;
+}
+
+/* Mantener el comportamiento actual de las filas */
+.helix-estados tbody tr:hover {
+    background: transparent !important;
+}
+
+/* ==========================================================
+6. BOTONES DE DETALLE
+========================================================== */
+
+.helix-estados .hx-eye {
+    background: #fff !important;
+    border: 1px solid var(--hx-brand-border) !important;
+    color: var(--hx-brand) !important;
+    border-radius: 8px;
+}
+
+.helix-estados .hx-eye:hover:not(:disabled) {
+    background: var(--hx-brand-soft) !important;
+    border-color: var(--hx-brand) !important;
+    color: var(--hx-brand-dark) !important;
+}
+
+/* ==========================================================
+7. DETALLES Y EVIDENCIAS
+========================================================== */
+
+.helix-estados #hx-detail {
+    background: #fff;
+    border-color: var(--hx-neutral-border) !important;
+}
+
+.helix-estados #hx-detail .hx-detail-heading {
+    border-bottom: 1px solid var(--hx-neutral-border);
+    padding-bottom: 12px;
+}
+
+.helix-estados #hx-detail-title,
+.helix-estados #hx-dialog-title {
+    color: #172b49;
+}
+
+/* ==========================================================
+8. PANTALLAS PEQUEÑAS
+========================================================== */
+
+@media (max-width: 760px) {
+    .helix-estados .hx-summary .hx-panel {
+        padding: 16px;
+    }
+
+    .helix-estados .hx-numbers strong {
+        font-size: 21px;
+    }
+
+    .helix-estados .hx-tabs [role="tab"] {
+        padding: 10px 12px;
+    }
+}
+    /* ==========================================================
+RKPS - ESTADOS HELIX
+AJUSTE DE SCROLL EN TABLA
+========================================================== */
+
+/* Contenedor scroll principal de la tabla */
+.helix-estados .hx-scroll {
+    scrollbar-width: thin;                 /* Firefox */
+    scrollbar-color: #cbd5e1 #f8fafc;      /* Firefox */
+    border-radius: 10px;
+}
+
+/* WebKit: Chrome, Edge */
+.helix-estados .hx-scroll::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.helix-estados .hx-scroll::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 10px;
+}
+
+.helix-estados .hx-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+    border: 2px solid #f8fafc;
+}
+
+.helix-estados .hx-scroll::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Opcional: si también aparece scroll en otros paneles */
+.helix-estados .hx-results {
+    overflow: hidden;
+    border-radius: 12px;
+}
+/* ==========================================================
+   RKPS - ESTADOS HELIX FICHA CORPO
+   ========================================================== */
+
+/* PANEL PRINCIPAL */
+.helix-estados #hx-detail {
+    position: relative;
+    padding: 0 !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 4px solid #c8102e !important;
+    border-radius: 13px !important;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .05) !important;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+/* SCROLL */
+.helix-estados #hx-detail::-webkit-scrollbar {
+    width: 7px;
+}
+
+.helix-estados #hx-detail::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+
+.helix-estados #hx-detail::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+/* ENCABEZADO */
+.helix-estados #hx-detail .hx-detail-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 !important;
+    padding: 16px 18px !important;
+    background: #fff;
+    border-bottom: 1px solid #e7ebf0;
+}
+
+.helix-estados #hx-detail .hx-detail-heading h3 {
+    margin: 0;
+    color: #172b49;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+/* BOTÓN CERRAR */
+.helix-estados #hx-detail-close {
+    background: #fff !important;
+    color: #475569 !important;
+    border: 1px solid #dce3ea !important;
+    border-radius: 8px;
+    padding: 7px 12px;
+}
+
+.helix-estados #hx-detail-close:hover:not(:disabled) {
+    background: #fff1f3 !important;
+    color: #c8102e !important;
+    border-color: #efb7c1 !important;
+}
+
+/* CONTENIDO */
+.helix-estados #hx-detail-body {
+    padding: 18px;
+    min-width: 0;
+}
+
+/* NÚMERO DEL INCIDENTE
+   Se destaca cuando aparece como elemento independiente. */
+.helix-estados #hx-detail-body > strong:first-child {
+    display: block;
+    margin-bottom: 10px;
+    color: #172b49;
+    font-size: 23px;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+/* TÍTULOS DE SECCIÓN */
+.helix-estados #hx-detail-body > h3 {
+    margin: 20px 0 12px;
+    padding-left: 11px;
+    border-left: 3px solid #c8102e;
+    color: #172b49;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.helix-estados #hx-detail-body > h3:first-child {
+    margin-top: 0;
+}
+
+/* DESCRIPCIONES */
+.helix-estados #hx-detail-body p {
+    color: #526779;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+/* CUADRÍCULA DE INFORMACIÓN */
+.helix-estados #hx-detail-body dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 16px 0;
+}
+
+/* TARJETAS INDIVIDUALES */
+.helix-estados #hx-detail-body dl > div {
+    min-width: 0;
+    padding: 13px 14px;
+    background: #f8fafc;
+    border: 1px solid #e5eaf0;
+    border-radius: 10px;
+    transition: border-color .15s ease;
+}
+
+.helix-estados #hx-detail-body dl > div:hover {
+    border-color: #e8aab7;
+}
+
+/* ETIQUETAS */
+.helix-estados #hx-detail-body dt {
+    margin-bottom: 7px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* VALORES */
+.helix-estados #hx-detail-body dd {
+    margin: 0;
+    color: #172b49;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* TIEMPO AL CORTE */
+.helix-estados #hx-detail-body .hx-time {
+    color: #c8102e;
+    font-weight: 800;
+}
+
+/* BLOQUE DE FUENTE DE VERIFICACIÓN */
+.helix-estados #hx-detail-body dl > div:has(dt) {
+    position: relative;
+}
+
+/* EVIDENCIA ADICIONAL */
+.helix-estados #hx-detail-body dl + p {
+    margin: 12px 0 18px;
+    padding: 12px 14px;
+    background: #fff4f6;
+    border: 1px solid #f7dce2;
+    border-left: 3px solid #c8102e;
+    border-radius: 9px;
+    color: #526779;
+}
+
+/* TAREAS RELACIONADAS */
+.helix-estados #hx-detail-body > h3:not(:first-child) {
+    margin-top: 22px;
+    padding: 13px 14px;
+    background: #f8fafc;
+    border: 1px solid #e5eaf0;
+    border-left: 3px solid #c8102e;
+    border-radius: 9px;
+}
+
+/* MENSAJE SIN TAREAS */
+.helix-estados #hx-detail-body > h3:not(:first-child) + p {
+    margin: 0 0 14px;
+    padding: 13px 14px;
+    background: #ffffff;
+    border: 1px solid #e5eaf0;
+    border-radius: 9px;
+    color: #64748b;
+}
+
+/* LISTAS DE TAS */
+.helix-estados #hx-detail-body ul,
+.helix-estados #hx-detail-body ol {
+    margin: 12px 0;
+    padding: 12px 15px 12px 30px;
+    background: #fff;
+    border: 1px solid #e5eaf0;
+    border-radius: 9px;
+}
+
+.helix-estados #hx-detail-body li {
+    padding: 6px 0;
+    color: #344054;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* RESPONSIVE */
+@media (max-width: 760px) {
+    .helix-estados #hx-detail-body {
+padding: 14px;
+    }
+
+    .helix-estados #hx-detail-body dl {
+grid-template-columns: 1fr;
+    }
+
+    .helix-estados #hx-detail .hx-detail-heading {
+padding: 14px !important;
+    }
+}
+    /* ==========================================================
+    RKPS - ESTADOS HELIX
+    ESTRUCTURA VISUAL DEL DETALLE
+    ========================================================== */
+
+    /* Encabezado principal del incidente */
+    .helix-estados .hx-detail-hero {
+display: flex;
+flex-direction: column;
+gap: 10px;
+padding-bottom: 18px;
+border-bottom: 1px solid #e5eaf0;
+    }
+
+    .helix-estados .hx-detail-number-row {
+display: flex;
+flex-wrap: wrap;
+align-items: center;
+gap: 12px;
+    }
+
+    /* Número INC destacado */
+    .helix-estados .hx-detail-number {
+margin: 0;
+color: #172b49;
+font-size: clamp(19px, 2vw, 25px);
+font-weight: 800;
+letter-spacing: -.02em;
+overflow-wrap: anywhere;
+    }
+
+    /* Estado del incidente */
+    .helix-estados .hx-detail-status {
+display: inline-flex;
+align-items: center;
+padding: 6px 10px;
+border-radius: 6px;
+background: #f1f5f9;
+color: #475569;
+font-size: 11px;
+font-weight: 700;
+    }
+
+    .helix-estados .hx-detail-status[data-tone="progress"] {
+background: #e5f2ff;
+color: #075ca8;
+    }
+
+    .helix-estados .hx-detail-status[data-tone="pending"] {
+background: #fff3d6;
+color: #996000;
+    }
+
+    /* Descripción del incidente */
+    .helix-estados #hx-detail-body .hx-detail-description {
+margin: 0;
+color: #344054;
+font-size: 13px;
+font-weight: 600;
+line-height: 1.6;
+    }
+
+    /* Categoría operacional */
+    .helix-estados .hx-detail-category {
+display: flex;
+flex-direction: column;
+gap: 5px;
+padding: 11px 13px;
+background: #fff7f8;
+border: 1px solid #f5dce1;
+border-radius: 9px;
+    }
+
+    .helix-estados .hx-detail-category span {
+color: #64748b;
+font-size: 11px;
+    }
+
+    .helix-estados .hx-detail-category strong {
+color: #172b49;
+font-size: 12px;
+font-weight: 700;
+overflow-wrap: anywhere;
+    }
+
+    /* Evidencia */
+    .helix-estados .hx-detail-evidence {
+margin-top: 18px;
+    }
+
+    .helix-estados .hx-detail-evidence > h3 {
+margin: 0 0 12px;
+padding-left: 11px;
+border-left: 3px solid #c8102e;
+color: #172b49;
+font-size: 14px;
+font-weight: 800;
+    }
+
+    /* Cuadrícula de campos operativos */
+    .helix-estados .hx-detail-evidence dl {
+display: grid;
+grid-template-columns: repeat(2, minmax(0, 1fr));
+gap: 10px;
+    }
+
+    /* Destacar tiempo al corte (tercer campo) */
+    .helix-estados .hx-detail-evidence dl > div:nth-child(3) dd {
+color: #c8102e;
+font-size: 15px;
+font-weight: 800;
+    }
+
+    /* Nota de verificación */
+    .helix-estados .hx-detail-evidence dl + p {
+margin: 12px 0 0;
+padding: 13px 14px;
+background: #fff2f4;
+border: 1px solid #f5dce1;
+border-left: 3px solid #c8102e;
+border-radius: 9px;
+color: #64748b;
+font-size: 12px;
+line-height: 1.6;
+    }
+
+    /* Sección de tareas */
+    .helix-estados .hx-detail-tasks {
+margin-top: 20px;
+border: 1px solid #e5eaf0;
+border-radius: 10px;
+background: #fff;
+overflow: hidden;
+    }
+
+    .helix-estados .hx-detail-tasks-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 12px;
+padding: 13px 15px;
+background: #f8fafc;
+border-bottom: 1px solid #e5eaf0;
+    }
+
+    .helix-estados .hx-detail-tasks-header h3 {
+margin: 0;
+color: #172b49;
+font-size: 13px;
+font-weight: 800;
+    }
+
+    /* Contador de TAS */
+    .helix-estados .hx-detail-tasks-count {
+display: inline-flex;
+justify-content: center;
+align-items: center;
+white-space: nowrap;
+padding: 5px 10px;
+background: #e9edf2;
+color: #344054;
+border-radius: 7px;
+font-size: 11px;
+font-weight: 800;
+    }
+
+    /* Mensaje sin tareas */
+    .helix-estados #hx-detail-body .hx-detail-tasks-empty {
+margin: 0;
+padding: 18px 15px;
+background: #fff;
+color: #64748b;
+font-size: 12px;
+    }
+
+    /* Tabla de TAS del detalle */
+    .helix-estados .hx-detail-tasks .hx-scroll {
+max-height: 360px;
+border-radius: 0;
+    }
+
+    /* Adaptación a móvil */
+    @media (max-width: 760px) {
+.helix-estados .hx-detail-number {
+    font-size: 19px;
+}
+
+.helix-estados .hx-detail-evidence dl {
+    grid-template-columns: 1fr;
+}
+
+.helix-estados .hx-detail-tasks-header {
+    padding: 12px;
+}
+    }
+
+
+/* ==========================================================
+   ESTADOS HELIX - DETALLE COMPACTO
+   Se aplican solo al panel derecho, sin modificar estados.
+   ========================================================== */
+.helix-estados #hx-detail .hx-detail-heading {
+    padding: 10px 14px !important;
+}
+.helix-estados #hx-detail-body {
+    padding: 12px 14px 14px;
+}
+.helix-estados .hx-detail-hero {
+    gap: 5px;
+    padding-bottom: 10px;
+}
+.helix-estados .hx-detail-number-row {
+    gap: 8px;
+}
+.helix-estados .hx-detail-number {
+    font-size: 19px;
+    line-height: 1.2;
+    letter-spacing: normal;
+}
+.helix-estados .hx-detail-status {
+    padding: 3px 8px;
+    font-size: 10px;
+}
+.helix-estados #hx-detail-body .hx-detail-description {
+    font-size: 12px;
+    line-height: 1.4;
+}
+.helix-estados .hx-detail-category {
+    gap: 2px;
+    padding: 7px 10px;
+}
+.helix-estados .hx-detail-category span {
+    font-size: 10px;
+}
+.helix-estados .hx-detail-category strong {
+    font-size: 11px;
+}
+.helix-estados .hx-detail-evidence {
+    margin-top: 11px;
+}
+.helix-estados .hx-detail-evidence > h3 {
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+.helix-estados #hx-detail-body .hx-detail-evidence dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin: 8px 0;
+}
+.helix-estados #hx-detail-body .hx-detail-evidence dl > div {
+    padding: 8px 10px;
+    border-radius: 7px;
+}
+.helix-estados #hx-detail-body .hx-detail-evidence dt {
+    margin-bottom: 3px;
+    font-size: 10px;
+}
+.helix-estados #hx-detail-body .hx-detail-evidence dd {
+    font-size: 11px;
+    line-height: 1.35;
+}
+.helix-estados .hx-detail-evidence dl > div:nth-child(3) dd {
+    font-size: 12px;
+}
+.helix-estados #hx-detail-body .hx-detail-evidence dl + p {
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    font-size: 11px;
+    line-height: 1.4;
+}
+.helix-estados .hx-detail-tasks {
+    margin-top: 12px;
+}
+.helix-estados .hx-detail-tasks-header {
+    padding: 8px 11px;
+}
+.helix-estados .hx-detail-tasks-header h3 {
+    font-size: 12px;
+}
+.helix-estados .hx-detail-tasks-count {
+    padding: 3px 7px;
+}
+.helix-estados .hx-detail-tasks .hx-scroll {
+    max-height: 240px;
+}
+.helix-estados .hx-detail-tasks th,
+.helix-estados .hx-detail-tasks td {
+    padding: 6px 8px;
+    font-size: 11px;
+}
+@media (max-width: 760px) {
+    .helix-estados #hx-detail-body .hx-detail-evidence dl {
+grid-template-columns: 1fr;
+    }
+}

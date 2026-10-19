@@ -765,9 +765,9 @@
     --gkp-surface: #ffffff;
     --gkp-line: #d9e5df;
     --gkp-line-soft: #e8efeb;
-    --gkp-green: #087b57;
-    --gkp-green-strong: #006b4c;
-    --gkp-green-soft: #e4f7ee;
+    --gkp-red: #c8102e;
+    --gkp-red-strong: #a50d26;
+    --gkp-red-soft: #fff0f3;
     background: var(--gkp-paper);
 }
 
@@ -942,4 +942,104 @@
     .gkp-panel-heading { min-height: 0; }
     .gkp-page .panel-ok-state { grid-template-columns: 1fr; place-items: center; text-align: center; }
     .gkp-page .panel-ok-state img { width: 70px; height: 70px; }
+}
+/* ======================================================
+   RKPS - TEMA CORPORATIVO ROJO Y BLANCO
+   Vista general
+   ====================================================== */
+
+.gkp-page {
+    --rkps-primary: #c8102e;
+    --rkps-primary-dark: #a50d26;
+    --rkps-primary-soft: #fff0f3;
+    --rkps-primary-border: #efb7c1;
+}
+
+/* Boton Monitoreo general */
+.gkp-page #gkp-monitor-toggle {
+    background: #c8102e !important;
+    border-color: #c8102e !important;
+    color: #fff !important;
+}
+
+.gkp-page #gkp-monitor-toggle:hover {
+    background: #a50d26 !important;
+    border-color: #a50d26 !important;
+}
+
+/* Limpiar filtros */
+.gkp-page .rkps-clear-filter {
+    background: #fff !important;
+    border: 1px solid #c8102e !important;
+    color: #c8102e !important;
+}
+
+.gkp-page .rkps-clear-filter:hover {
+    background: #c8102e !important;
+    color: #fff !important;
+}
+
+/* Contadores de eventos */
+.gkp-page .gkp-panel-total strong {
+    color: #c8102e !important;
+}
+
+/* Bordes superiores de paneles */
+.gkp-page .gkp-panel {
+    border-top: 3px solid #c8102e;
+}
+
+/* Campos de busqueda */
+.gkp-page .rkps-filters input:focus,
+.gkp-page .rkps-filters select:focus {
+    outline: none;
+    border-color: #c8102e !important;
+    box-shadow: 0 0 0 3px rgba(200, 16, 46, .12);
+}
+
+/* Botones de detalle */
+.gkp-page .gkp-table td:last-child button {
+    border-color: #efb7c1 !important;
+    color: #c8102e !important;
+    background: #fff !important;
+}
+
+.gkp-page .gkp-table td:last-child button:hover {
+    background: #fff0f3 !important;
+    border-color: #c8102e !important;
+}
+
+/* Estado sin excepciones */
+.gkp-page .panel-ok-state {
+    background: #fff8f9 !important;
+}
+
+/* Se conserva el verde de los estados positivos reales */
+.gkp-page .panel-ok-state strong {
+    color: #087b57;
+}
+/* =============================================
+   RKPS - TARJETAS SUPERIORES CORPORATIVAS
+   ============================================= */
+
+.gkp-page .topbar-card {
+    background: #ffffff;
+    border: 1px solid #e9d5d9;
+    border-radius: 10px;
+}
+
+.gkp-page .topbar-card__icon {
+    background: #fff0f3 !important;
+    color: #c8102e !important;
+    border-color: #f1b7c2 !important;
+}
+
+.gkp-page .topbar-card:hover {
+    border-color: #e7a4b0;
+}
+
+/* Indicadores visuales decorativos */
+.gkp-page .topbar-card__icon svg {
+    color: #c8102e !important;
+    stroke: currentColor;
 }
