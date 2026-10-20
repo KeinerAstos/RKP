@@ -90,7 +90,7 @@ RUTINAS = [
         "cada_minutos": 120,
         "desfase_minutos": 15,
         "timeout_minutos": 110,
-        "habilitada": False,
+        "habilitada": true,
     },
     # Ejemplo de la próxima rutina:
     # {
