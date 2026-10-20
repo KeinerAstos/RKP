@@ -1,1 +1,0 @@
-{"generado_en": "2026-10-20T13:23:08.575323+00:00", "data": {"consulta": "temperatura_actual_olt", "periodo": "ultimos_10_minutos", "criterio": "temperatura_mayor_o_igual_70", "umbrales": {"amarillo": 70.0, "naranja": 80.0, "rojo": 90.0}, "cantidad": 0, "datos": []}}

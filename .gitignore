@@ -90,3 +90,9 @@ REGISTRAR_CMTS_KNOWN_HOSTS.py
 
 # Lanzador iniciar_rutinas.py: logs y candado de ejecución
 /data/rutinas/
+
+# Resultados generados por las rutinas
+/backend/storage/influx/*.json
+
+# Bloqueos temporales de ejecución
+/backend/storage/**/*.lock

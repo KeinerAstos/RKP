@@ -71,6 +71,7 @@
 
         table.hidden = !hayRegistros;
         status.hidden = hayRegistros;
+        status.style.display = hayRegistros ? 'none' : '';
         status.dataset.state = hayRegistros ? '' : 'empty';
 
         status.textContent = hayRegistros
@@ -100,6 +101,7 @@
 
         table.hidden = true;
         status.hidden = false;
+        status.style.display = '';
         status.dataset.state = 'loading';
         status.textContent = 'Cargando…';
 
@@ -153,6 +155,7 @@
 
             table.hidden = true;
             status.hidden = false;
+            status.style.display = '';
             status.dataset.state = 'error';
 
             status.textContent = error.name === 'AbortError'
