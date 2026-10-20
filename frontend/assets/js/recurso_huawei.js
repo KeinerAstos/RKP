@@ -57,7 +57,20 @@
             columnas.forEach((columna) => {
                 const td = document.createElement('td');
 
-                td.textContent = mostrarValor(fila[columna]);
+                const valor = fila[columna];
+                const sinGemPorts =
+                    columna.toLowerCase() === 'total' &&
+                    (
+                        valor === 0 ||
+                        (
+                            typeof valor === 'string' &&
+                            valor.trim() === '0'
+                        )
+                    );
+
+                td.textContent = sinGemPorts
+                    ? 'Sin GEM ports en el sistema'
+                    : mostrarValor(valor);
 
                 tr.append(td);
             });
