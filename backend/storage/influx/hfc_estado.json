@@ -9,7 +9,7 @@
   "ventana_dias": 4,
   "version_saturacion": "2026-10-01-v2",
   "fase": "consultando_influx",
-  "bloque_actual": 3,
-  "porcentaje": 9.38,
-  "ultimo_bloque_en": "2026-10-20T08:32:45-05:00"
+  "bloque_actual": 4,
+  "porcentaje": 12.5,
+  "ultimo_bloque_en": "2026-10-20T08:34:25-05:00"
 }

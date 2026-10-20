@@ -19,9 +19,11 @@ def licencias_bajas() -> dict:
 @router.get("/recursos-huawei")
 def recursos_huawei() -> dict:
     try:
-        filas = consultar_mysql(
-            "SELECT * FROM OLT.recursos_huawei ORDER BY `nombre_columna` DESC"
-        )
+        filas = consultar_mysql("""
+    SELECT *
+    FROM OLT.recursos_huawei
+    ORDER BY CAST(total AS UNSIGNED) DESC, olt ASC
+    """)
 
         # También permite mostrar encabezados si la tabla está vacía.
         estructura = consultar_mysql("SHOW COLUMNS FROM OLT.recursos_huawei")
