@@ -15,6 +15,7 @@ import time
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
+from iniciar_rutinas import Candado
 
 from microservicios.cmts.dashboard_hfc.conexion import config
 from microservicios.config import settings
@@ -208,22 +209,59 @@ def ejecutar(args):
     progreso = carpeta / "progreso_global.json"
     publicado = carpeta / "resumen_global.json"
     candado = carpeta / "proceso_global.lock"
-    # Impide dos ejecuciones que escriban el mismo progreso.
-    fd = os.open(str(candado), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+
+    # Bloqueo del sistema operativo: se libera al terminar el proceso.
+    bloqueo = Candado(candado)
+
     try:
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write(f"PID={os.getpid()} inicio={utc()}\n")
+
+        # Recuperar un barrido pendiente o iniciar uno nuevo.
+        estado = None
+
         if progreso.exists():
-            estado = json.loads(progreso.read_text(encoding="utf-8"))
-            if estado.get("identidad") != identidad:
-                raise RuntimeError("Inventario, seleccion o tamano de lote cambiaron. "
-                                   "Use otro --output-dir para comenzar un barrido nuevo.")
-        else:
-            estado = {"identidad": identidad, "inicio": utc(), "modo": "full" if args.full else "prueba",
-                      "inventario_sha256": inventario_hash, "registros_afectados": afectados,
-                      "total_nodos_validos": len(nodos), "nodos_objetivo": len(seleccion),
-                      "invalidos": invalidos, "lotes": {}, "estado": "en_progreso"}
+            anterior = json.loads(progreso.read_text(encoding="utf-8"))
+
+            misma_identidad = anterior.get("identidad") == identidad
+            terminado = anterior.get("estado") == "completado"
+
+            if misma_identidad and not terminado:
+                estado = anterior
+                print("Reanudando barrido anterior.", flush=True)
+            else:
+                motivo = "completado" if terminado else "inventario_cambiado"
+
+                marca = datetime.now(timezone.utc).strftime(
+                    "%Y%m%d_%H%M%S_%f"
+                )
+
+                archivo_historico = carpeta / (
+                    f"progreso_global_{marca}_{motivo}.json"
+                )
+
+                os.replace(progreso, archivo_historico)
+
+                print(
+                    f"Progreso anterior archivado: {archivo_historico}",
+                    flush=True
+                )
+
+        if estado is None:
+            estado = {
+                "identidad": identidad,
+                "inicio": utc(),
+                "modo": "full" if args.full else "prueba",
+                "inventario_sha256": inventario_hash,
+                "registros_afectados": afectados,
+                "total_nodos_validos": len(nodos),
+                "nodos_objetivo": len(seleccion),
+                "invalidos": invalidos,
+                "lotes": {},
+                "estado": "en_progreso",
+            }
+
             escribir_atomico(progreso, estado)
+            print("Iniciando nuevo barrido Helix.", flush=True)
+
         total_lotes = (len(seleccion) + args.batch_size - 1) // args.batch_size
         print(f"Inventario: {afectados} filas afectadas; {len(nodos)} nodos validos; "
               f"{len(invalidos)} componente(s) invalido(s): {invalidos[:10]}")
@@ -274,8 +312,33 @@ def ejecutar(args):
                    "sin_casos": len(resultados)-con, "exclusiones": invalidos,
                    "nota": "Totales por nodo individual, NO por fila HFC; casos consultados durante el barrido"}
         if args.full:
+            # Publicar el resumen existente.
             escribir_atomico(publicado, resumen)
             print(f"Resumen completo publicado: {publicado}")
+
+            # Publicar el snapshot requerido por la API PHP.
+            ruta_snapshot = (
+                Path(__file__).resolve().parents[3]
+                / "data"
+                / "dashboard_hfc"
+                / "helix_global_snapshot.json"
+            )
+
+            snapshot = {
+                "estado": "completo_nodos_validos",
+                "calculado_en": resumen["calculado_en"],
+                "inventario_sha256": inventario_hash,
+                "registros_afectados": afectados,
+                "nodos_consultados": len(resultados),
+                "con_casos": con,
+                "sin_casos": len(resultados) - con,
+                "exclusiones": invalidos,
+                "nodos": resultados,
+            }
+
+            escribir_atomico(ruta_snapshot, snapshot)
+            print(f"Snapshot global publicado: {ruta_snapshot}")
+
         else:
             print("PRUEBA: no se publico resumen global")
         estado["estado"] = "completado"
@@ -284,7 +347,7 @@ def ejecutar(args):
         print(json.dumps(resumen, indent=2, ensure_ascii=False))
         return 0
     finally:
-        candado.unlink(missing_ok=True)
+        bloqueo.archivo.close()
 
 
 def main():

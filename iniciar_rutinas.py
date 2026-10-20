@@ -77,6 +77,21 @@ RUTINAS = [
         "timeout_minutos": 25,
         "habilitada": True,
     },
+        {
+        "nombre": "dashboard_hfc_helix",
+        "descripcion": "Dashboard HFC: barrido global de casos Helix",
+        "modulo": "microservicios.cmts.dashboard_hfc.casos_globales_helix",
+        "argumentos": [
+            "--full",
+            "--batch-size", "300",
+            "--budget", "180",
+            "--retries", "1",
+        ],
+        "cada_minutos": 120,
+        "desfase_minutos": 15,
+        "timeout_minutos": 110,
+        "habilitada": False,
+    },
     # Ejemplo de la próxima rutina:
     # {
     #     "nombre": "otra_rutina",
