@@ -192,7 +192,7 @@ def exportar(cmts: str = "", desde: str = "", hasta: str = ""):
     def stream():
         buffer = io.StringIO(newline="")
         writer = csv.writer(buffer, delimiter=";")
-        writer.writerow(["Fecha Colombia", "CMTS", "IP", "Total INIT", "Gravedad", "Consulta", "Detalle", "Alcance", "Ciclo"])
+        writer.writerow(["Fecha Colombia", "CMTS", "IP", "Total INIT", "Gravedad", "Consulta", "Detalle", "Alcance", "Ciclo", "INIT por categoría"])
         yield "\ufeffsep=;\r\n" + buffer.getvalue()
         buffer.seek(0); buffer.truncate(0)
         for row in service.export_rows(cmts, desde, hasta):
@@ -200,7 +200,9 @@ def exportar(cmts: str = "", desde: str = "", hasta: str = ""):
             if stamp.tzinfo is None: stamp = stamp.replace(tzinfo=timezone.utc)
             fecha = stamp.astimezone(timezone(timedelta(hours=-5))).strftime("%Y-%m-%d %H:%M:%S")
             valid = str(row.get("ok", "")).lower() == "true" and row.get("total_init") not in (None, "")
-            values = [fecha, row["cmts"], row["ip"], row["total_init"] if valid else "", row["estado"], "ÉXITO" if valid else "FALLÓ", str(row.get("error") or "").replace("\r", " ").replace("\n", " "), row["alcance"], row["run_id"]]
+            values = [fecha, row["cmts"], row["ip"], row["total_init"] if valid else "", row["estado"], "ÉXITO" if valid else "FALLÓ", str(row.get("error") or "").replace("\r", " ").replace("\n", " "), row["alcance"], row["run_id"],
+                      "; ".join(f"{k}: {v}" for k, v in (service.normalize(row).get("categorias_init") or {}).items())
+                      if service.normalize(row).get("categorias_init") is not None else "Sin desglose"]
             writer.writerow([_safe_cell(str(v), i == 3) for i, v in enumerate(values)])
             yield buffer.getvalue(); buffer.seek(0); buffer.truncate(0)
     return StreamingResponse(stream(), media_type="text/csv; charset=utf-8", headers={"Content-Disposition": "attachment; filename=cmts-init-historico.csv"})
@@ -237,3 +239,4 @@ def exportar_excel(busqueda: str = "", estado: str = "", ordenar: str = "total_i
         raise
     filename = "cmts-init-historico-5-dias.xlsx" if history else "cmts-init-actual.xlsx"
     return FileResponse(path, media_type=MIME, filename=filename, background=BackgroundTask(path.unlink, missing_ok=True))
+

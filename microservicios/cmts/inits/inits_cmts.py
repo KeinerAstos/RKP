@@ -7,6 +7,7 @@ import configparser
 import csv
 import ctypes
 import ipaddress
+import json
 import os
 import re
 import shutil
@@ -31,6 +32,8 @@ FIELDS = [
     "estado",
     "error",
 ]
+LEGACY_FIELDS = FIELDS.copy()
+FIELDS = FIELDS + ["categorias_init"]
 COMMAND = "show cable modem init"
 BOGOTA = timezone(timedelta(hours=-5))
 MAX_OUTPUT_BYTES = 4 * 1024 * 1024
@@ -114,7 +117,7 @@ def _atomic_csv(path: Path, rows: Iterable[dict]) -> None:
         with temp.open("w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=FIELDS)
             writer.writeheader()
-            writer.writerows(rows)
+            writer.writerows(_csv_row(row) for row in rows)
         os.replace(temp, path)
     finally:
         temp.unlink(missing_ok=True)
@@ -221,9 +224,17 @@ def read_csv(path: Path) -> list[dict]:
         return []
     with path.open(newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
-        if reader.fieldnames != FIELDS:
+        if reader.fieldnames not in (FIELDS, LEGACY_FIELDS):
             raise ValueError(f"Esquema inválido en {path.name}")
         return [normalize(row) for row in reader]
+
+
+def _csv_row(row: dict) -> dict:
+    result = {key: row.get(key, "") for key in FIELDS}
+    categories = result.get("categorias_init")
+    if isinstance(categories, dict):
+        result["categorias_init"] = json.dumps(categories, sort_keys=True, separators=(",", ":"))
+    return result
 
 
 def normalize(row: dict) -> dict:
@@ -232,7 +243,20 @@ def normalize(row: dict) -> dict:
         total = int(total) if total not in (None, "") else None
     except (ValueError, TypeError):
         total = None
-    return {**row, "total_init": total, "ok": str(row.get("ok", "")).lower() == "true"}
+    categories = row.get("categorias_init")
+    if isinstance(categories, str):
+        try:
+            categories = json.loads(categories) if categories else None
+        except ValueError:
+            categories = None
+    valid = str(row.get("ok", "")).lower() == "true" and total is not None
+    if not (valid and isinstance(categories, dict)
+            and all(isinstance(k, str) and re.fullmatch(r"(?:init|bpi)\([^\s)]+\)", k)
+                    and type(v) is int and v >= 0 for k, v in categories.items())
+            and sum(categories.values()) == total):
+        categories = None
+    return {**row, "total_init": total, "ok": str(row.get("ok", "")).lower() == "true",
+            "categorias_init": categories}
 
 
 def _append_history(path: Path, rows: list[dict]) -> None:
@@ -240,15 +264,18 @@ def _append_history(path: Path, rows: list[dict]) -> None:
     temp = path / ("historico." + rows[0]["run_id"] + ".tmp")
     try:
         with temp.open("w", newline="", encoding="utf-8") as dest:
+            writer = csv.DictWriter(dest, fieldnames=FIELDS)
+            writer.writeheader()
             if history.exists():
                 with history.open("r", newline="", encoding="utf-8-sig") as src:
-                    if next(csv.reader(src), []) != FIELDS:
+                    reader = csv.DictReader(src)
+                    if reader.fieldnames not in (FIELDS, LEGACY_FIELDS):
                         raise ValueError("Esquema del histórico incompatible")
-                    src.seek(0)
-                    shutil.copyfileobj(src, dest, length=65536)
-            else:
-                csv.DictWriter(dest, fieldnames=FIELDS).writeheader()
-            csv.DictWriter(dest, fieldnames=FIELDS).writerows(rows)
+                    if reader.fieldnames == LEGACY_FIELDS:
+                        backup = path / ("historico.pre-categorias." + uuid.uuid4().hex + ".bak")
+                        shutil.copy2(history, backup)
+                    writer.writerows(_csv_row(row) for row in reader)
+            writer.writerows(_csv_row(row) for row in rows)
         os.replace(temp, history)
     finally:
         temp.unlink(missing_ok=True)
@@ -304,7 +331,7 @@ def _reconcile_published_cycle_locked(path: Path) -> None:
     if history.exists():
         with history.open(newline="", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
-            if reader.fieldnames != FIELDS:
+            if reader.fieldnames not in (FIELDS, LEGACY_FIELDS):
                 raise ValueError("Esquema del histórico incompatible")
             if any(row.get("run_id") == published_id for row in reader):
                 return
@@ -325,7 +352,7 @@ def apply_retention(path: Path | None = None) -> None:
             "w", newline="", encoding="utf-8"
         ) as dst:
             reader = csv.DictReader(src)
-            if reader.fieldnames != FIELDS:
+            if reader.fieldnames not in (FIELDS, LEGACY_FIELDS):
                 raise ValueError("Esquema del histórico incompatible")
             writer = csv.DictWriter(dst, fieldnames=FIELDS)
             writer.writeheader()
@@ -605,7 +632,7 @@ def history(
     total = 0
     with (data_dir() / "historico.csv").open(newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
-        if reader.fieldnames != FIELDS:
+        if reader.fieldnames not in (FIELDS, LEGACY_FIELDS):
             raise ValueError("Esquema del histórico incompatible")
         for raw in reader:
             if cmts and cmts.casefold() not in raw["cmts"].casefold():
@@ -714,16 +741,25 @@ def main() -> int:
 
 
 def parse(output: str) -> int:
+    return sum(parse_categories(output).values())
+
+
+def parse_categories(output: str) -> dict[str, int]:
     """Valida filas INIT y total explícito del CMTS; nunca cuenta cabeceras."""
     if ERROR.search(output):
         raise ValueError("Respuesta CLI de error o paginada")
-    macs = set()
+    macs = {}
     for line in output.splitlines():
         match = MAC.match(line.strip())
         if match:
-            if not re.search(r"\b(?:init|bpi)\([^\s)]+\)", line, re.I):
+            status = re.search(r"\b(?:init|bpi)\([^\s)]+\)", line, re.I)
+            if not status:
                 raise ValueError(f"Fila MAC sin estado INIT reconocido: {line[:250]!r}")
-            macs.add(re.sub(r"[.:-]", "", match.group()).lower())
+            mac = re.sub(r"[.:-]", "", match.group()).lower()
+            category = status.group().lower()
+            if mac in macs and macs[mac] != category:
+                raise ValueError("MAC repetida con categorías INIT diferentes")
+            macs[mac] = category
     totals = re.findall(r"(?im)^\s*total\s+cm\s+(\d+)\s*$", output)
     if totals:
         total = int(totals[-1])
@@ -731,16 +767,23 @@ def parse(output: str) -> int:
             raise ValueError(
                 f"Salida incompleta/inconsistente: total cm {total}, filas únicas {len(macs)}"
             )
-        return total
+        return _count_categories(macs)
     if macs:
-        return len(macs)
+        return _count_categories(macs)
     if re.search(
         r"\b(?:total(?:\s+(?:cable\s+)?modems?)?\s*[:=]\s*0\b|no\s+(?:cable\s+)?modems?\s+(?:found|in\s+init)\b)",
         output,
         re.I,
     ):
-        return 0
+        return {}
     raise ValueError("Salida no reconocida: no se publica cero")
+
+
+def _count_categories(macs: dict[str, str]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for category in macs.values():
+        counts[category] = counts.get(category, 0) + 1
+    return dict(sorted(counts.items()))
 
 
 def _read_cli_prompt(
@@ -785,6 +828,7 @@ def query(item: dict[str, str]) -> dict:
         item,
         fecha=now(),
         total_init=None,
+        categorias_init=None,
         ok=False,
         estado="ERROR DE CONSULTA",
         error="",
@@ -859,8 +903,9 @@ def query(item: dict[str, str]) -> dict:
         channel.sendall(COMMAND + "\n")
         output, _ = _read_cli_prompt(channel, deadline, prompt)
         stage = "VALIDACION_SALIDA"
-        total = parse(output)
-        result.update(total_init=total, ok=True, estado=severity(total))
+        categories = parse_categories(output)
+        total = sum(categories.values())
+        result.update(total_init=total, categorias_init=categories, ok=True, estado=severity(total))
     except Exception as exc:
         message = str(exc)
         for secret in (settings.cmts_password, settings.cmts_init_jump_password):
@@ -885,3 +930,4 @@ def query(item: dict[str, str]) -> dict:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="assets/css/sidebar.css">
     <link rel="stylesheet" href="assets/css/gkp.css?v=20261009">
     <link rel="stylesheet" href="assets/css/module-page.css?v=20261009">
-    <link rel="stylesheet" href="assets/css/cmts-inits.css">
+    <link rel="stylesheet" href="assets/css/cmts-inits.css?v=20261028-categorias">
 <link rel="stylesheet" href="assets/css/responsive-tables.css?v=1">
 </head>
 <body class="gkp-page hfc-page cmts-init-page">
@@ -42,11 +42,12 @@
                 <div class="init-table-panel"><div class="init-section-title"><h3>Top 10 CMTS por INIT</h3></div><ol id="init-top" class="init-top"></ol></div>
                 <div class="init-table-panel"><div class="init-section-title"><h3>Tendencia del CMTS</h3><label>Equipo <select id="init-trend-cmts" aria-label="CMTS para consultar tendencia"></select></label></div><canvas id="init-trend" height="170" aria-label="Gráfica histórica de módems INIT" role="img"></canvas><p id="init-trend-empty" class="init-muted" hidden>Sin lecturas válidas para graficar.</p></div>
             </section>
-            <section class="init-table-panel init-history"><div class="init-section-title"><h3>Histórico reciente</h3><button id="init-export-history" type="button">Exportar histórico CSV</button><div class="init-history-controls"><label>CMTS <input id="init-history-cmts" type="search" placeholder="Todos"></label><label>Desde <input id="init-history-from" type="date"></label><label>Hasta <input id="init-history-to" type="date"></label><button id="init-history-prev" type="button">Anterior</button> <button id="init-history-next" type="button">Siguiente</button></div></div><div class="init-history-meta" id="init-history-meta"></div><div class="init-table-scroll" tabindex="0" role="region" aria-label="Histórico paginado; desplazamiento interno"><table class="gkp-table"><thead><tr><th>Fecha</th><th>CMTS</th><th>IP</th><th>Total INIT</th><th>Resultado</th></tr></thead><tbody id="init-history-rows"></tbody></table></div></section>
+            <section class="init-table-panel init-history"><div class="init-section-title"><h3>Histórico reciente</h3><button id="init-export-history" type="button">Exportar histórico CSV</button><div class="init-history-controls"><label>CMTS <input id="init-history-cmts" type="search" placeholder="Todos"></label><label>Desde <input id="init-history-from" type="date"></label><label>Hasta <input id="init-history-to" type="date"></label><button id="init-history-prev" type="button">Anterior</button> <button id="init-history-next" type="button">Siguiente</button></div></div><div class="init-history-meta" id="init-history-meta"></div><div class="init-table-scroll" tabindex="0" role="region" aria-label="Histórico paginado; desplazamiento interno"><table class="gkp-table"><thead><tr><th>Fecha</th><th>CMTS</th><th>IP</th><th>INIT por categoría</th><th>Resultado</th></tr></thead><tbody id="init-history-rows"></tbody></table></div></section>
         </div>
         <?php require __DIR__ . '/components/footer.php'; ?>
     </main>
 </div>
-<script src="assets/js/sidebar.js" defer></script><script src="assets/js/cmts-inits.js" defer></script>
+<script src="assets/js/sidebar.js" defer></script><script src="assets/js/cmts-inits.js?v=20261028-categorias" defer></script>
 </body>
 </html>
+

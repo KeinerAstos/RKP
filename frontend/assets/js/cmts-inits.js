@@ -24,6 +24,31 @@
     };
     const notice = (text, state = '') => { nodes.notice.textContent = text; nodes.notice.dataset.state = state; };
     const badge = (text, type) => { const el = document.createElement('span'); el.className = `init-badge init-badge--${type}`; el.textContent = text; return el; };
+    function initCell(row) {
+        const cell = document.createElement('td');
+        cell.className = 'init-category-cell';
+        if (!row.ok || row.total_init == null) { cell.textContent = '—'; return cell; }
+        const total = document.createElement('strong');
+        total.textContent = `Total: ${number.format(row.total_init)}`;
+        cell.append(total);
+        const entries = row.categorias_init && typeof row.categorias_init === 'object'
+            ? Object.entries(row.categorias_init).sort(([a], [b]) => a.localeCompare(b)) : null;
+        if (entries === null) {
+            const message = document.createElement('small');
+            message.textContent = 'Sin desglose en esta lectura'; cell.append(message);
+        } else if (!entries.length) {
+            const message = document.createElement('small'); message.textContent = 'Sin INIT'; cell.append(message);
+        } else {
+            const list = document.createElement('dl'); list.className = 'init-category-list';
+            entries.forEach(([category, count]) => {
+                const label = document.createElement('dt'); label.textContent = category;
+                const value = document.createElement('dd'); value.textContent = number.format(count);
+                list.append(label, value);
+            });
+            cell.append(list);
+        }
+        return cell;
+    }
     function render() {
         const filtered = current.filter((row) => `${row.cmts} ${row.ip}`.toLocaleLowerCase().includes(nodes.search.value.trim().toLocaleLowerCase()) && (!nodes.filter.value || (nodes.filter.value === 'error' ? !row.ok || row.total_init == null : row.estado === nodes.filter.value)));
         filtered.sort((a, b) => {
@@ -36,7 +61,7 @@
             const tr = document.createElement('tr');
             const target = document.createElement('td'); const name = document.createElement('strong'); name.textContent = row.cmts; const ip = document.createElement('small'); ip.textContent = row.ip; target.append(name, ip); tr.append(target);
             const when = document.createElement('td'); when.textContent = date(row.fecha); tr.append(when);
-            const total = document.createElement('td'); total.textContent = row.total_init == null ? '—' : number.format(row.total_init); tr.append(total);
+            tr.append(initCell(row));
             const severity = document.createElement('td'); severity.append(badge(row.estado, ({ CRITICO: 'critical', RIESGO: 'risk', ATENCION: 'attention', 'SIN INIT': 'ok', 'ERROR DE CONSULTA': 'error' })[row.estado] || 'error')); tr.append(severity);
             const result = document.createElement('td'); result.append(badge(row.ok ? 'ÉXITO' : 'FALLÓ', row.ok ? 'ok' : 'error')); tr.append(result);
             const delta = document.createElement('td'); delta.textContent = row.variacion == null ? '—' : `${row.variacion > 0 ? '+' : ''}${number.format(row.variacion)}`; const comparison = document.createElement('small'); comparison.className = 'init-comparison'; comparison.textContent = row.comparado_con ? `Contra ${date(row.comparado_con)}` : 'Sin lectura válida anterior'; delta.append(comparison); tr.append(delta);
@@ -117,7 +142,15 @@
         try {
             const payload = await api('historico', { limit: 100, offset: historyOffset, cmts: nodes.historyCmts.value, desde: nodes.historyFrom.value, hasta: nodes.historyTo.value }); const page = payload.data;
             historyTotal = page.total; const fragment = document.createDocumentFragment();
-            page.items.forEach((row) => { const tr = document.createElement('tr'); [date(row.fecha), row.cmts, row.ip, row.total_init == null ? '—' : number.format(row.total_init), row.ok ? 'ÉXITO' : 'FALLÓ'].forEach((value) => { const td = document.createElement('td'); td.textContent = value; tr.append(td); }); fragment.append(tr); });
+            page.items.forEach((row) => {
+                const tr = document.createElement('tr');
+                [date(row.fecha), row.cmts, row.ip].forEach((value) => {
+                    const td = document.createElement('td'); td.textContent = value; tr.append(td);
+                });
+                tr.append(initCell(row));
+                const result = document.createElement('td'); result.textContent = row.ok ? 'ÉXITO' : 'FALLÓ';
+                tr.append(result); fragment.append(tr);
+            });
             nodes.history.replaceChildren(fragment); nodes.historyMeta.textContent = historyTotal ? `${number.format(historyOffset + 1)}–${number.format(Math.min(historyOffset + page.items.length, historyTotal))} de ${number.format(historyTotal)} filas` : 'Sin histórico';
             nodes.prev.disabled = historyOffset === 0; nodes.next.disabled = historyOffset + 100 >= historyTotal;
         } catch (error) { nodes.historyMeta.textContent = error.message || 'Histórico no disponible'; }
@@ -186,3 +219,4 @@
     document.addEventListener('visibilitychange', visibility); window.addEventListener('resize', resize); window.addEventListener('pagehide', cleanup, { once: true });
     Promise.all([loadActual(), loadHistory()]).then(() => loadStatus());
 })();
+
