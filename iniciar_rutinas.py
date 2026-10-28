@@ -90,7 +90,27 @@ RUTINAS = [
         "cada_minutos": 120,
         "desfase_minutos": 15,
         "timeout_minutos": 110,
-        "habilitada": true,
+        "habilitada": True,
+    },
+    {
+        "nombre": "cmts_init",
+        "descripcion": "Monitoreo INIT: ciclo global SSH -> CSV",
+        "modulo": "iniciar_rutinas",
+        "argumentos": ["--ciclo-cmts-init"],
+        "cada_minutos": 15,
+        "desfase_minutos": 0,
+        "timeout_minutos": 120,
+        "habilitada": False,
+    },
+    {
+        "nombre": "topologias",
+        "descripcion": "Materializa una topología aleatoria y convierte Visio a JPG",
+        "modulo": "iniciar_rutinas",
+        "argumentos": ["--ciclo-topologias"],
+        "cada_minutos": 2,
+        "desfase_minutos": 0,
+        "timeout_minutos": 25,
+        "habilitada": False,
     },
     # Ejemplo de la próxima rutina:
     # {
@@ -323,7 +343,7 @@ def bucle(rutinas: list[Rutina], python: str) -> int:
     _msg(f"Lanzador iniciado en {RAIZ} con {python}")
     for r in activas:
         r.proxima = r.calcular_proxima(datetime.now())
-        _msg(f"{r.nombre}: cada {r.cada_minutos} min (desfase {r.desfase_minutos}) · próxima {r.proxima:%H:%M}")
+        _msg(f"{r.nombre}: cada {str(r.cada_segundos) + chr(32) + 's' if r.cada_segundos else str(r.cada_minutos) + chr(32) + 'min'} (desfase {r.desfase_minutos}) · próxima {r.proxima:%H:%M:%S}")
     for r in rutinas:
         if not r.habilitada:
             _msg(f"{r.nombre}: deshabilitada (RUTINA_{r.nombre.upper()}_HABILITADA)")
@@ -358,7 +378,7 @@ def listar(rutinas: list[Rutina], python: str) -> int:
         estado = "HABILITADA" if r.habilitada else "deshabilitada"
         print(f"- {r.nombre} [{estado}] {r.descripcion}")
         print(f"    python -m {r.modulo} {' '.join(r.argumentos)}")
-        print(f"    cada {r.cada_minutos} min, desfase {r.desfase_minutos}, máximo {r.timeout_minutos} min, "
+        print(f"    cada {str(r.cada_segundos) + ' s' if r.cada_segundos else str(r.cada_minutos) + ' min'}, desfase {r.desfase_minutos}, máximo {r.timeout_minutos} min, "
               f"próxima {r.calcular_proxima(datetime.now()):%Y-%m-%d %H:%M}")
         print(f"    log: {r.ruta_log}")
     return 0
@@ -451,16 +471,58 @@ def ciclo_estados_helix() -> int:
         candado.archivo.close()
 
 
+def ciclo_cmts_init() -> int:
+    from microservicios.config import settings
+    from microservicios.cmts.inits import inits_cmts as service
+    if not settings.cmts_init_enabled:
+        _msg("cmts_init: CMTS_INIT_ENABLED=false; turno omitido")
+        return 0
+    claim = service.claim_cycle()
+    if not claim["created"]:
+        _msg("cmts_init: otra consulta sigue activa; turno omitido")
+        return 0
+    result = service.run_cycle(claim["run_id"], claimed=True)
+    failures = sum(not row["ok"] for row in result["rows"])
+    _msg(f"cmts_init: {len(result['rows'])} CMTS; {failures} fallidos")
+    return 2 if failures else 0
+
+
+def ciclo_topologias() -> int:
+    candado = Candado(CARPETA_LOGS / "topologias.lock")
+    try:
+        from microservicios.olt.topologias.service import materializar_aleatoria
+        materializar_aleatoria()
+        return 0
+    finally:
+        candado.archivo.close()
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Lanzador de rutinas de RKP")
     g = p.add_mutually_exclusive_group()
     g.add_argument("--listar", action="store_true", help="Muestra las rutinas registradas")
     g.add_argument("--ahora", metavar="NOMBRE", help="Ejecuta una rutina una vez, en primer plano")
     g.add_argument("--ciclo-estados-helix", action="store_true", help=argparse.SUPPRESS)
+    g.add_argument("--ciclo-cmts-init", action="store_true", help=argparse.SUPPRESS)
+    g.add_argument("--ciclo-topologias", action="store_true", help=argparse.SUPPRESS)
     a = p.parse_args()
+    if a.ciclo_cmts_init:
+        return ciclo_cmts_init()
+    if a.ciclo_topologias:
+        return ciclo_topologias()
     if a.ciclo_estados_helix:
         return ciclo_estados_helix()
     env = _leer_env()
+    # Compatibilidad con las variables existentes; RUTINA_* tiene prioridad.
+    for key, value in os.environ.items():
+        if key.startswith("RUTINA_"):
+            env[key] = value
+    def configuracion(clave, defecto):
+        return os.environ.get(clave, env.get(clave, defecto))
+    env.setdefault("RUTINA_CMTS_INIT_HABILITADA", configuracion("CMTS_INIT_ENABLED", "false"))
+    if "RUTINA_CMTS_INIT_CADA_MINUTOS" not in env and "RUTINA_CMTS_INIT_CADA_SEGUNDOS" not in env:
+        env["RUTINA_CMTS_INIT_CADA_SEGUNDOS"] = str(max(60, int(configuracion("CMTS_INIT_INTERVAL_SECONDS", "900"))))
+    env.setdefault("RUTINA_TOPOLOGIAS_HABILITADA", "true" if configuracion("TOPOLOGIAS_AUTO", "0") == "1" else "false")
     python = env.get("RUTINAS_PYTHON", "").strip() or sys.executable
     rutinas = cargar_rutinas(env)
     if a.listar:

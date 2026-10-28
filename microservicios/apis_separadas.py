@@ -142,39 +142,20 @@ def create_service():
 
     @asynccontextmanager
     async def lifespan(app):
-        topologies_task = None
         helix = None
-        scheduler_started = False
         try:
             if name == 'olt/casos_helix':
                 from microservicios.config import settings
                 from microservicios.olt.casos_helix import service, worker
                 helix = (service, worker)
                 worker.start_worker(service.consultar_olt, ttl_seconds=settings.oracle_helix_cache_seconds)
-            if name == 'cmts/inits':
-                await module.start_scheduler()
-                scheduler_started = True
-            if name == 'olt/topologias' and os.environ.get('TOPOLOGIAS_AUTO') == '1':
-                from microservicios.olt.topologias import service
-                async def refresh():
-                    while True:
-                        try:
-                            await asyncio.to_thread(service.materializar_aleatoria)
-                        except Exception:
-                            logging.exception('Falló rutina de topologías')
-                        await asyncio.sleep(120)
-                topologies_task = asyncio.create_task(refresh())
             yield
         finally:
-            if scheduler_started:
+            if name == 'cmts/inits':
                 await module.stop_scheduler()
             if helix:
                 helix[1].stop_worker()
                 helix[0].close_oracle_pool()
-            if topologies_task:
-                topologies_task.cancel()
-                with suppress(asyncio.CancelledError):
-                    await topologies_task
 
     app = FastAPI(title=spec.health_name, lifespan=lifespan)
     install_errors(app)

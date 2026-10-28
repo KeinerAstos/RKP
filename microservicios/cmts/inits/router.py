@@ -64,27 +64,8 @@ async def _run_probe(run_id: str, cmts: str) -> None:
 
 
 async def start_scheduler() -> None:
-    global _scheduler_task
-    if settings.cmts_init_enabled and _scheduler_task is None:
-        _scheduler_task = asyncio.create_task(_scheduled_cycles())
-
-
-async def _scheduled_cycles() -> None:
-    while True:
-        global _cycle_task
-        if _cycle_task is None or _cycle_task.done():
-            try:
-                claim = service.claim_cycle()
-            except (RuntimeError, OSError) as exc:
-                print(f"[CMTS INIT] No se pudo reservar ciclo: {type(exc).__name__}")
-                await asyncio.sleep(5)
-                continue
-            if not claim["created"]:
-                await asyncio.sleep(5)
-                continue
-            _cycle_task = asyncio.create_task(_run_cycle(claim["run_id"], True))
-        await asyncio.shield(_cycle_task)
-        await asyncio.sleep(max(60, settings.cmts_init_interval_seconds))
+    """La programación automática pertenece a iniciar_rutinas.py."""
+    return None
 
 
 async def stop_scheduler() -> None:

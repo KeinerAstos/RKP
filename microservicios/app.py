@@ -19,7 +19,6 @@ from microservicios.cmts.dashboard_hfc.router_helix import (
 )
 from microservicios.cmts.inits.router import (
     router as cmts_inits_router,
-    start_scheduler as start_cmts_inits_scheduler,
     stop_scheduler as stop_cmts_inits_scheduler,
 )
 from microservicios.cmts.intermitencias.router import (
@@ -55,31 +54,13 @@ from microservicios.olt.topologias import service as topologias_service
 from microservicios.olt.topologias.router import router as topologias_router
 
 
-async def worker_topologias() -> None:
-    while True:
-        try:
-            await asyncio.to_thread(topologias_service.materializar_aleatoria)
-        except Exception as exc:
-            print(f"[TOPOLOGIAS AUTO] ERROR: {exc}")
-
-        await asyncio.sleep(120)
-
-
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    tarea = None
 
     start_helix_worker(
         casos_helix_service.consultar_olt,
         ttl_seconds=settings.oracle_helix_cache_seconds,
     )
-    await start_cmts_inits_scheduler()
-
-    if os.environ.get("TOPOLOGIAS_AUTO") == "1":
-        print("[TOPOLOGIAS AUTO] Worker habilitado")
-        tarea = asyncio.create_task(worker_topologias())
-    else:
-        print("[TOPOLOGIAS AUTO] Worker deshabilitado")
 
     try:
         yield
@@ -88,13 +69,6 @@ async def lifespan(_app: FastAPI):
         stop_helix_worker()
         casos_helix_service.close_oracle_pool()  # RKP_HELIX_OPT_V1
 
-        if tarea is not None:
-            tarea.cancel()
-
-            try:
-                await tarea
-            except asyncio.CancelledError:
-                pass
 
 
 app = FastAPI(
